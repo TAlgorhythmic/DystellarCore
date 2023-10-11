@@ -1,0 +1,57 @@
+name: DystellarCore
+version: '${project.version}'
+main: net.zylesh.dystellarcore.DystellarCore
+depend:
+  - LuckPerms
+  - PlaceholderAPI
+softdepend:
+  - Practice-Core
+  - SkyWars-Core
+author: MCTitiPorca
+description: Base commands and utilities for Dystellar Network
+website: dystellar.gg
+load: STARTUP
+commands:
+  setspawn:
+    usage: /setspawn
+    description: Set main spawn.
+    permission: dystellar.admin
+    permission-message: Unknown command.
+  gamemode:
+    usage: "/gamemode <gm> <optional: player>"
+    description: Change your gamemode.
+    aliases:
+      - gm
+    permission: dystellar.mod
+    permission-message: Unknown command.
+  heal:
+    permission: dystellar.mod
+    permission-message: Unknown command.
+    aliases:
+      - hl
+    description: Heal yourself or another player.
+    usage: "/heal <optional: player>"
+  fly:
+    description: Fly.
+    usage: "/fly <optional: player>"
+  freeze:
+    aliases:
+      - ss
+    permission: dystellar.mod
+    permission-message: Unknown command.
+    usage: /freeze <player>
+    description: Freeze a player
+  leavemessage:
+    description: Leave a message for an offline player.
+    usage: /lm <player> <message>
+    permission: dystellar.mod
+    permission-message: Unknown command.
+    aliases:
+      - lm
+  broadcast:
+    aliases:
+      - bc
+    usage: /bc <message>
+    description: Broadcast to entire server.
+    permission: dystellar.broadcast
+    permission-message: Unknown command.

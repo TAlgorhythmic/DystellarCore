@@ -1,0 +1,43 @@
+teleport-on-join: false
+teleport-on-void: false
+scoreboard-enabled: false
+allow-banned-players: false
+ranked-ban-message: "&cYou are banned from playing ranked. Contact staff for more information."
+mute-message: "&cYou are muted. Expires in <time>"
+ban-message:
+  - "&4&lYou are banned"
+  - "Reason: <reason>"
+  - "Expires: <time>"
+  - "You may purchase an unban at https://dystellar.gg/"
+blacklist-message:
+  - "&4&lYou are blacklisted"
+  - "Reason: <reason>"
+  - "Expires: Never"
+  - "This type of punishment cannot be appealed."
+broadcast-format: "[&cBroadcast&f] &e<message>"
+# Title has a limit of 16 characters, while every line has a limit of 32 characters.
+####################################################################################
+# Placeholders:
+# <player_name>
+# <ping>
+####################################################################################
+scoreboard:
+  title: "&3Dystellar"
+  lines:
+    - "some text"
+    - "some text"
+    - "some text"
+    - "some text"
+  refresh-rate: 10 # in ticks. 20 ticks = 1 second.
+freeze-message:
+  - "--------------------------------"
+  - "&cYou have been frozen!"
+  - "--------------------------------"
+unfreeze-message: "&aYou have been unfreezed. Sorry and thanks for your time!"
+mariadb:
+  enabled: false
+  host: "localhost"
+  port: 3306
+  database: "core"
+  user: "root"
+  password: "super_secret_password"
