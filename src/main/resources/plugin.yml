@@ -55,3 +55,13 @@ commands:
     description: Broadcast to entire server.
     permission: dystellar.broadcast
     permission-message: Unknown command.
+  join:
+    description: Join a server.
+    usage: /join <server>
+    aliases:
+      - j
+  editmode:
+    description: Edit mode for admins.
+    permission: dystellar.editmode
+    usage: /editmode
+    permission-message: Unknown command.

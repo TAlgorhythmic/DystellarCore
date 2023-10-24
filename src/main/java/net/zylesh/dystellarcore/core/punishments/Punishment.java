@@ -2,9 +2,10 @@ package net.zylesh.dystellarcore.core.punishments;
 
 import net.zylesh.dystellarcore.core.User;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
-public abstract class Punishment {
+public abstract class Punishment implements Comparable<Punishment> {
 
     private final LocalDateTime creationDate;
     private final LocalDateTime expirationDate;
@@ -38,5 +39,27 @@ public abstract class Punishment {
 
     public LocalDateTime getExpirationDate() {
         return expirationDate;
+    }
+
+    public abstract int getPriorityScale();
+
+    @Override
+    public int compareTo(Punishment o) {
+        if (getPriorityScale() != o.getPriorityScale()) {
+            return Integer.compare(getPriorityScale(), o.getPriorityScale());
+        }
+        if (expirationDate == null && o.expirationDate != null) {
+            return -1;
+        } else if (o.expirationDate == null && expirationDate != null) {
+            return 1;
+        }
+        long time = Duration.between(LocalDateTime.now(), expirationDate).getSeconds();
+        long otime = Duration.between(LocalDateTime.now(), o.expirationDate).getSeconds();
+        if (time > otime) {
+            return -1;
+        } else if (otime > time) {
+            return 1;
+        }
+        return 0;
     }
 }

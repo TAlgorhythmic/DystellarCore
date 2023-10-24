@@ -4,6 +4,8 @@ scoreboard-enabled: false
 allow-banned-players: false
 ranked-ban-message: "&cYou are banned from playing ranked. Contact staff for more information."
 mute-message: "&cYou are muted. Expires in <time>"
+handle-spawn-protection: false
+handle-spawn-mechanics: false
 ban-message:
   - "&4&lYou are banned"
   - "Reason: <reason>"
@@ -28,7 +30,7 @@ scoreboard:
     - "some text"
     - "some text"
     - "some text"
-  refresh-rate: 10 # in ticks. 20 ticks = 1 second.
+  refresh-rate: 500 # in milliseconds. 1000 millis = 1 second.
 freeze-message:
   - "--------------------------------"
   - "&cYou have been frozen!"

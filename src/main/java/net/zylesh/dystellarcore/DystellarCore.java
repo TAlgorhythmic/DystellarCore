@@ -1,7 +1,10 @@
 package net.zylesh.dystellarcore;
 
 import net.zylesh.dystellarcore.commands.*;
+import net.zylesh.dystellarcore.core.User;
+import net.zylesh.dystellarcore.listeners.SpawnMechanics;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
+import net.zylesh.dystellarcore.serialization.MariaDB;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -13,10 +16,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public final class DystellarCore extends JavaPlugin {
 
     private static DystellarCore INSTANCE;
+
+    private static final ScheduledExecutorService asyncManager = Executors.newScheduledThreadPool(2);
+
+    public static ScheduledExecutorService getAsyncManager() {
+        return asyncManager;
+    }
 
     public static DystellarCore getInstance() {
         return INSTANCE;
@@ -24,6 +35,8 @@ public final class DystellarCore extends JavaPlugin {
 
     private final File conf = new File(getDataFolder(), "config.yml");
     private final YamlConfiguration config = YamlConfiguration.loadConfiguration(conf);
+    private final File si = new File(getDataFolder(), "spawnitems.yml");
+    private final YamlConfiguration spawnitems = YamlConfiguration.loadConfiguration(si);
 
     public static boolean SKYWARS_HOOK = false;
     public static boolean PRACTICE_HOOK = false;
@@ -41,6 +54,8 @@ public final class DystellarCore extends JavaPlugin {
     public static String BLACKLIST_MESSAGE;
     public static String RANKED_BAN_MESSAGE;
     public static String MUTE_MESSAGE;
+    public static boolean HANDLE_SPAWN_PROTECTION = false;
+    public static boolean HANDLE_SPAWN_MECHANICS = false;
 
     @Override
     public void onEnable() {
@@ -58,22 +73,45 @@ public final class DystellarCore extends JavaPlugin {
             }
         }
         loadConfig();
+        initialize();
+        Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        if (HANDLE_SPAWN_MECHANICS) new SpawnMechanics();
+        if (HANDLE_SPAWN_PROTECTION) new EditmodeCommand();
         new SetSpawnCommand();
         new GameModeCommand();
         new HealCommand();
         new FlyCommand();
         new FreezeCommand();
+        new BroadcastCommand();
+        new JoinCommand();
+        new User.UserListener();
+    }
 
+    @Override
+    public void onDisable() {
+        Bukkit.getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
     }
 
     private void loadConfig() {
         try {
             Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[Dystellar] Loading configuration...");
-            if (!conf.exists()) {
-                saveResource("config.yml", true);
-            }
+            if (!conf.exists()) saveResource("config.yml", true);
+            if (!si.exists()) saveResource("spawnitems.yml", true);
             config.load(conf);
+            spawnitems.load(si);
+            MariaDB.loadFromConfig();
             Bukkit.getConsoleSender().sendMessage("[Dystellar] Configuration loaded successfully");
+            if (MariaDB.ENABLED) {
+                try {
+                    Bukkit.getLogger().info("Testing database configuration provided in config.yml");
+                    MariaDB.dataSourceTestInit();
+                    Bukkit.getLogger().info("Your configuration looks great!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Bukkit.getLogger().severe("Failed to initialize database, check your configuration. Server will now shutdown.");
+                    Bukkit.getServer().shutdown();
+                }
+            }
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
@@ -105,6 +143,8 @@ public final class DystellarCore extends JavaPlugin {
         BLACKLIST_MESSAGE = builder.toString();
         RANKED_BAN_MESSAGE = getConfig().getString("ranked-ban-message");
         MUTE_MESSAGE = getConfig().getString("mute-message");
+        HANDLE_SPAWN_PROTECTION = getConfig().getBoolean("handle-spawn-protection");
+        HANDLE_SPAWN_MECHANICS = getConfig().getBoolean("handle-spawn-mechanics");
     }
 
     @Override
@@ -112,10 +152,15 @@ public final class DystellarCore extends JavaPlugin {
         return config;
     }
 
+    public YamlConfiguration getSpawnitems() {
+        return spawnitems;
+    }
+
     @Override
     public void saveConfig() {
         try {
             config.save(conf);
+            spawnitems.save(si);
         } catch (IOException e) {
             e.printStackTrace();
         }

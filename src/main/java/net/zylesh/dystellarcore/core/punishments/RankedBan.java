@@ -40,4 +40,9 @@ public class RankedBan extends Punishment {
     public String getMessage() {
         return DystellarCore.RANKED_BAN_MESSAGE;
     }
+
+    @Override
+    public int getPriorityScale() {
+        return 4;
+    }
 }

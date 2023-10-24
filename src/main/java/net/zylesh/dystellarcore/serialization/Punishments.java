@@ -23,9 +23,7 @@ public class Punishments {
                 ";" +
                 classPath + // 6
                 ";" +
-                p.getReason() + // 7
-                ";" +
-                p.hashCode(); // 8
+                p.getReason(); // 7
     }
 
     @SuppressWarnings("unchecked")

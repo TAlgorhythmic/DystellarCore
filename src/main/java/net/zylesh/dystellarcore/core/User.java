@@ -2,17 +2,18 @@ package net.zylesh.dystellarcore.core;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
-import net.zylesh.dystellarcore.serialization.*;
+import net.zylesh.dystellarcore.serialization.MariaDB;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class User {
 
@@ -22,11 +23,18 @@ public class User {
         return users.get(p.getUniqueId());
     }
 
+    public static Map<UUID, User> getUsers() {
+        return users;
+    }
+
     private final UUID id;
     private boolean globalChatEnabled;
-    private Suffix suffix;
-    private Set<Punishment> punishment = new HashSet<>();
+    private boolean privateMessagesActive = true;
+    private Suffix suffix = Suffix.NONE;
+    private final TreeSet<Punishment> punishments = new TreeSet<>();
     private String language = "en";
+    private User lastMessagedPlayer;
+
 
     public User(UUID id) {
         this.id = id;
@@ -34,7 +42,7 @@ public class User {
 
     public void punish(Punishment punishment) {
         punishment.onPunishment(this);
-        this.punishment.add(punishment);
+        this.punishments.add(punishment);
     }
 
     public boolean isGlobalChatEnabled() {
@@ -61,8 +69,8 @@ public class User {
         this.language = language;
     }
 
-    public Punishment getPunishment() {
-        return punishment;
+    public Set<Punishment> getPunishments() {
+        return punishments;
     }
 
     public UUID getUUID() {
@@ -73,42 +81,77 @@ public class User {
      * Do not use if you don't know what you are doing, if you want to punish a player use user.punish(punishment) instead.
      * this method only works on offline players!
      */
-    public void setPunishment(Punishment punishment) {
-        this.punishment = punishment;
+    public void addPunishment(Punishment punishment) {
+        this.punishments.add(punishment);
+    }
+
+    public User getLastMessagedPlayer() {
+        return lastMessagedPlayer;
+    }
+
+    public void setLastMessagedPlayer(User lastMessagedPlayer) {
+        this.lastMessagedPlayer = lastMessagedPlayer;
+    }
+
+    public boolean isPrivateMessagesActive() {
+        return privateMessagesActive;
+    }
+
+    public void setPrivateMessagesActive(boolean privateMessagesActive) {
+        this.privateMessagesActive = privateMessagesActive;
     }
 
     public static class UserListener implements Listener {
 
         public UserListener() {
             Bukkit.getPluginManager().registerEvents(this, DystellarCore.getInstance());
+            DystellarCore.getAsyncManager().scheduleAtFixedRate(() -> {
+                synchronized (users) {
+                    for (User user : users.values()) {
+                       MariaDB.savePlayerToDatabase(user);
+                    }
+                }
+            }, 10L, 10L, TimeUnit.MINUTES);
         }
 
         @EventHandler
-        public void onJoin(PlayerLoginEvent event) {
+        public void onJoin(AsyncPlayerPreLoginEvent event) {
             if (MariaDB.ENABLED) {
-                User user = MariaDB.loadPlayerFromDatabase(event.getPlayer().getUniqueId());
+                User user = null;
+                try {
+                    user = MariaDB.loadPlayerFromDatabase(event.getUniqueId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 if (user == null) {
-                    event.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.RED + "Failed to load data from database, contact administration if you think this could be an error.");
+                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "Failed to load data from database, contact administration if you think this could be an error.");
                     return;
                 }
-                if (user.getPunishment() && !user.getPunishment().allowJoinMinigames() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
-                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, user.getPunishment().getMessage());
+                if (!user.getPunishments().isEmpty() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
+                    for (Punishment punishment : user.punishments) {
+                        if (!punishment.allowJoinMinigames()) {
+                            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage());
+                            return;
+                        }
+                    }
                 }
-                users.put(event.getPlayer().getUniqueId(), user);
+                users.put(event.getUniqueId(), user);
             }
         }
+
+
 
         @EventHandler
         public void onLeave(PlayerQuitEvent event) {
             if (MariaDB.ENABLED) {
-                MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId()));
+                DystellarCore.getAsyncManager().submit(() -> MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId())));
             }
         }
 
         @EventHandler
         public void onKick(PlayerKickEvent event) {
             if (MariaDB.ENABLED) {
-                MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId()));
+                DystellarCore.getAsyncManager().submit(() -> MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId())));
             }
         }
     }
