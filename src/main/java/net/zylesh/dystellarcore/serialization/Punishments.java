@@ -4,6 +4,9 @@ import net.zylesh.dystellarcore.core.punishments.Punishment;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Punishments {
 
@@ -36,5 +39,17 @@ public class Punishments {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String serializeNotes(Set<String> notes) {
+        StringBuilder sb = new StringBuilder();
+        for (String note : notes) sb.append(note).append(";");
+        return sb.toString();
+    }
+
+    public static Set<String> deserializeNotes(String s) {
+        Set<String> notes = new HashSet<>();
+        Collections.addAll(notes, s.split(";"));
+        return notes;
     }
 }

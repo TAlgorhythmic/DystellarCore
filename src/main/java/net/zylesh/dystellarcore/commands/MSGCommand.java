@@ -1,5 +1,6 @@
 package net.zylesh.dystellarcore.commands;
 
+import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.User;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Player;
 public class MSGCommand implements CommandExecutor {
 
     public MSGCommand() {
+        Bukkit.getPluginCommand("message").setExecutor(this);
         Bukkit.getPluginCommand("msg").setExecutor(this);
     }
 
@@ -33,19 +35,19 @@ public class MSGCommand implements CommandExecutor {
                             for (int i = 1; i < strings.length; i++) {
                                 message.append(strings[i]).append(" ");
                             }
-                            player.sendMessage(MSG_SEND_FORMAT
+                            player.sendMessage(DystellarCore.MSG_SEND_FORMAT
                                     .replaceAll("-sender", player.getPlayerListName())
                                     .replaceAll("-receiver", playerInt.getPlayerListName())
                                     .replaceAll("-message", message.toString()));
-                            playerInt.sendMessage(MSG_RECEIVE_FORMAT
+                            playerInt.sendMessage(DystellarCore.MSG_RECEIVE_FORMAT
                                     .replaceAll("-sender", player.getPlayerListName())
                                     .replaceAll("-receiver", playerInt.getPlayerListName())
                                     .replaceAll("-message", message.toString()));
                         } else {
-                            player.sendMessage(PLAYER_MSG_DISABLED.replaceAll("-player", strings[0]));
+                            player.sendMessage(DystellarCore.PLAYER_MSG_DISABLED.replaceAll("-player", strings[0]));
                         }
                     } else {
-                        player.sendMessage(PLAYER_NOT_ONLINE.replaceAll("-player", strings[0]));
+                        player.sendMessage(ChatColor.RED + strings[0] + " is not online.");
                     }
                 }
             } else {

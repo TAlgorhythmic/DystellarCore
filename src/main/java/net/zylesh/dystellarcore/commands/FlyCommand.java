@@ -9,7 +9,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 
 public class FlyCommand implements CommandExecutor {
 
@@ -23,7 +22,7 @@ public class FlyCommand implements CommandExecutor {
             if (!(commandSender instanceof Player)) return true;
             Player player = (Player) commandSender;
             if (!player.hasPermission("dystellar.plus")) {
-                player.sendMessage(ChatColor.RED + "You need " + ChatColor.AQUA + "plus " + ChatColor.RED + "rank to enable fly mode.");
+                player.sendMessage(ChatColor.RED + "You need " + ChatColor.GREEN + "plus " + ChatColor.RED + "rank to enable fly mode.");
                 return true;
             }
             if ((DystellarCore.PRACTICE_HOOK && Practice.getPlayerUser(player.getUniqueId()).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) {

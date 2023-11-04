@@ -2,9 +2,10 @@ package net.zylesh.dystellarcore.core;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
+import net.zylesh.dystellarcore.serialization.Mapping;
 import net.zylesh.dystellarcore.serialization.MariaDB;
+import net.zylesh.dystellarcore.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,15 +13,21 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class User {
 
-    protected static final Map<UUID, User> users = new HashMap<>();
+    protected static final Map<UUID, User> users = new ConcurrentHashMap<>();
 
     public static User get(Player p) {
         return users.get(p.getUniqueId());
+    }
+
+    public synchronized static User get(UUID uuid) {
+        return users.get(uuid);
     }
 
     public static Map<UUID, User> getUsers() {
@@ -34,15 +41,35 @@ public class User {
     private final TreeSet<Punishment> punishments = new TreeSet<>();
     private String language = "en";
     private User lastMessagedPlayer;
+    private final String ip;
+    private final String name;
+    private final Set<String> notes = new HashSet<>();
 
-
-    public User(UUID id) {
+    public User(UUID id, String ip, String name) {
         this.id = id;
+        this.ip = ip;
+        this.name = name;
     }
 
     public void punish(Punishment punishment) {
-        punishment.onPunishment(this);
         this.punishments.add(punishment);
+        punishment.onPunishment(this);
+    }
+
+    public Set<String> getNotes() {
+        return notes;
+    }
+
+    public void addNote(String note) {
+        notes.add(note);
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public boolean isGlobalChatEnabled() {
@@ -117,21 +144,24 @@ public class User {
         @EventHandler
         public void onJoin(AsyncPlayerPreLoginEvent event) {
             if (MariaDB.ENABLED) {
-                User user = null;
-                try {
-                    user = MariaDB.loadPlayerFromDatabase(event.getUniqueId());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (user == null) {
-                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "Failed to load data from database, contact administration if you think this could be an error.");
-                    return;
-                }
+                User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
+                Mapping map = MariaDB.loadMapping(event.getAddress().getHostName());
+                if (user == null) user = new User(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
+
                 if (!user.getPunishments().isEmpty() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
+                    LocalDateTime now = LocalDateTime.now();
                     for (Punishment punishment : user.punishments) {
-                        if (!punishment.allowJoinMinigames()) {
-                            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage());
+                        if (punishment.getExpirationDate().isBefore(now) && !punishment.allowJoinMinigames()) {
+                            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage().replaceAll("<reason>", punishment.getReason()).replaceAll("<time>", Utils.getTimeFormat(punishment.getExpirationDate())));
                             return;
+                        }
+                    }
+                }
+                if (map != null && map.getPunishments() != null && !map.getPunishments().isEmpty()) {
+                    LocalDateTime now = LocalDateTime.now();
+                    for (Punishment punishment : map.getPunishments()) {
+                        if (punishment.getExpirationDate().isBefore(now)) {
+                            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage().replaceAll("<reason>", punishment.getReason()).replaceAll("<time>", Utils.getTimeFormat(punishment.getExpirationDate())));
                         }
                     }
                 }

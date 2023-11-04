@@ -1,17 +1,16 @@
 package net.zylesh.dystellarcore.core.punishments;
 
-import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.commands.Punish;
 import net.zylesh.dystellarcore.core.User;
-import net.zylesh.dystellarcore.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
 
-public class Mute extends Punishment {
+public class Warn extends Punishment {
 
-    public Mute(LocalDateTime expirationDate, String reason) {
+    public Warn(LocalDateTime expirationDate, String reason) {
         super(expirationDate, reason);
     }
 
@@ -20,19 +19,32 @@ public class Mute extends Punishment {
         if (user == null) return;
         Player p = Bukkit.getPlayer(user.getUUID());
         if (p != null) {
-            p.sendMessage(ChatColor.RED + "You have been muted:");
             p.sendMessage(ChatColor.GRAY.toString() + ChatColor.STRIKETHROUGH + "--------------------------------------");
             p.sendMessage(" ");
+            p.sendMessage(ChatColor.RED + "You have been warned!");
             p.sendMessage(ChatColor.RED + "Reason: " + ChatColor.WHITE + getReason());
-            p.sendMessage(ChatColor.RED + "Time: " + ChatColor.WHITE + Utils.getTimeFormat(getExpirationDate()));
+            p.sendMessage(" ");
+            p.sendMessage(ChatColor.RED + "Accumulation of several warns will get you banned!");
             p.sendMessage(" ");
             p.sendMessage(ChatColor.GRAY.toString() + ChatColor.STRIKETHROUGH + "--------------------------------------");
+            int warns = (int) user.getPunishments().stream()
+                    .filter(punishment -> punishment instanceof Warn)
+                    .count();
+            try {
+                switch (warns) {
+                    case 3: user.punish(Punish.BAN_3_WARNS.call()); break;
+                    case 5: user.punish(Punish.BAN_5_WARNS.call()); break;
+                    case 7: user.punish(Punish.BAN_7_WARNS.call()); break;
+                    case 10: user.punish(Punish.BLACKLIST_10_WARNS); break;
+                }
+            } catch (Exception ignored) {}
+
         }
     }
 
     @Override
     public boolean allowChat() {
-        return false;
+        return true;
     }
 
     @Override
@@ -52,11 +64,11 @@ public class Mute extends Punishment {
 
     @Override
     public String getMessage() {
-        return DystellarCore.MUTE_MESSAGE;
+        return null;
     }
 
     @Override
     public int getPriorityScale() {
-        return 3;
+        return 5;
     }
 }

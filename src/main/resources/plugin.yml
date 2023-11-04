@@ -41,13 +41,6 @@ commands:
     permission-message: Unknown command.
     usage: /freeze <player>
     description: Freeze a player
-  leavemessage:
-    description: Leave a message for an offline player.
-    usage: /lm <player> <message>
-    permission: dystellar.mod
-    permission-message: Unknown command.
-    aliases:
-      - lm
   broadcast:
     aliases:
       - bc
@@ -65,3 +58,37 @@ commands:
     permission: dystellar.editmode
     usage: /editmode
     permission-message: Unknown command.
+  punish:
+    aliases:
+      - p
+    description: Punish a player.
+    permission: dystellar.staff
+    usage: /punish <player>
+  message:
+    aliases:
+      - msg
+    usage: /message <player> <message>
+    description: Send a message to a player.
+  reply:
+    aliases:
+      - r
+    description: Reply to a previous message.
+    usage: /reply <message>
+  ban:
+    description: Ban a player
+    usage: /ban <player> <time> <reason> [banIP:<true/false>]
+  blacklist:
+    usage: /blacklist <player> <reason>
+    description: Blacklist a player.
+  mute:
+    description: Mute a player.
+    usage: /mute <player> <time> <reason>
+  note:
+    description: Note a player.
+    usage: /note <player> <message-note>
+  punishments:
+    usage: /punishments [player]
+    description: "See player's punishments."
+  notes:
+    description: "See player's notes."
+    usage: /notes [player]

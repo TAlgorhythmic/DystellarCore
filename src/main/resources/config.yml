@@ -6,6 +6,9 @@ ranked-ban-message: "&cYou are banned from playing ranked. Contact staff for mor
 mute-message: "&cYou are muted. Expires in <time>"
 handle-spawn-protection: false
 handle-spawn-mechanics: false
+player-msg-disabled: "&c-player has disabled private messages."
+msg-send-format: "&7(&dTo -receiver&7) &b-message"
+msg-receive-format: "&7(&dFrom -sender&7) &b-message"
 ban-message:
   - "&4&lYou are banned"
   - "Reason: <reason>"
@@ -16,6 +19,16 @@ blacklist-message:
   - "Reason: <reason>"
   - "Expires: Never"
   - "This type of punishment cannot be appealed."
+kick-message: "&cYou have been kicked from the server. Reason: &f<reason>"
+warn-message:
+  - "&7&m----------------------------------"
+  - " "
+  - "&cYou have been warned!"
+  - "Reason: <reason>"
+  - " "
+  - "&4Be careful, getting multiple warnings will result in getting banned!"
+  - " "
+  - "&7&m----------------------------------"
 broadcast-format: "[&cBroadcast&f] &e<message>"
 # Title has a limit of 16 characters, while every line has a limit of 32 characters.
 ####################################################################################

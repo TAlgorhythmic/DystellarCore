@@ -1,7 +1,9 @@
 package net.zylesh.dystellarcore;
 
 import net.zylesh.dystellarcore.commands.*;
+import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
+import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
@@ -13,11 +15,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 public final class DystellarCore extends JavaPlugin {
 
@@ -56,6 +62,12 @@ public final class DystellarCore extends JavaPlugin {
     public static String MUTE_MESSAGE;
     public static boolean HANDLE_SPAWN_PROTECTION = false;
     public static boolean HANDLE_SPAWN_MECHANICS = false;
+    public static String PLAYER_MSG_DISABLED;
+    public static String MSG_SEND_FORMAT;
+    public static String MSG_RECEIVE_FORMAT;
+    public static List<String> WARN_MESSAGE;
+    public static String KICK_MESSAGE;
+    public static int REFRESH_RATE_SCORE;
 
     @Override
     public void onEnable() {
@@ -77,6 +89,7 @@ public final class DystellarCore extends JavaPlugin {
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         if (HANDLE_SPAWN_MECHANICS) new SpawnMechanics();
         if (HANDLE_SPAWN_PROTECTION) new EditmodeCommand();
+        if (SCOREBOARD_ENABLED) new Scoreboards();
         new SetSpawnCommand();
         new GameModeCommand();
         new HealCommand();
@@ -85,6 +98,15 @@ public final class DystellarCore extends JavaPlugin {
         new BroadcastCommand();
         new JoinCommand();
         new User.UserListener();
+        new MSGCommand();
+        new Punish();
+        new ReplyCommand();
+        new BanCommand();
+        new BlacklistCommand();
+        new MuteCommand();
+        new NoteCommand();
+        new PunishmentsCommand();
+        new NotesCommand();
     }
 
     @Override
@@ -105,6 +127,7 @@ public final class DystellarCore extends JavaPlugin {
                 try {
                     Bukkit.getLogger().info("Testing database configuration provided in config.yml");
                     MariaDB.dataSourceTestInit();
+                    initDb();
                     Bukkit.getLogger().info("Your configuration looks great!");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -117,12 +140,35 @@ public final class DystellarCore extends JavaPlugin {
         }
     }
 
+    private void initDb() throws IOException, SQLException {
+        String setup;
+        try (InputStream in = getClassLoader().getResourceAsStream("database.sql")) {
+            setup = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining());
+            String[] queries = setup.split(";");
+            for (String query : queries) {
+                if (query.isEmpty()) continue;
+                try (Connection connection = MariaDB.DS.getConnection()) {
+                    PreparedStatement statement = connection.prepareStatement(query);
+                    statement.execute();
+                }
+            }
+        }
+        getLogger().info("§2Database setup complete.");
+    }
+
     private void initialize() {
-        BROADCAST_FORMAT = getConfig().getString("broadcast-format");
-        SCOREBOARD_TITLE = getConfig().getString("scoreboard.title");
-        SCOREBOARD_LINES = getConfig().getStringList("scoreboard.lines");
-        FREEZE_MESSAGE = getConfig().getStringList("freeze-message");
-        UNFREEZE_MESSAGE = getConfig().getString("unfreeze-message");
+        BROADCAST_FORMAT = ChatColor.translateAlternateColorCodes('&', getConfig().getString("broadcast-format"));
+        SCOREBOARD_TITLE = ChatColor.translateAlternateColorCodes('&', getConfig().getString("scoreboard.title"));
+        SCOREBOARD_LINES = new ArrayList<>();
+        for (String line : getConfig().getStringList("scoreboard.lines")) {
+            SCOREBOARD_LINES.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        REFRESH_RATE_SCORE = getConfig().getInt("scoreboard.refresh-rate");
+        FREEZE_MESSAGE = new ArrayList<>();
+        for (String line : getConfig().getStringList("freeze-message")) {
+            FREEZE_MESSAGE.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        UNFREEZE_MESSAGE = ChatColor.translateAlternateColorCodes('&', getConfig().getString("unfreeze-message"));
         SCOREBOARD_ENABLED = getConfig().getBoolean("scoreboard-enabled");
         VOID_TELEPORT = getConfig().getBoolean("teleport-on-void");
         JOIN_TELEPORT = getConfig().getBoolean("teleport-on-join");
@@ -131,20 +177,29 @@ public final class DystellarCore extends JavaPlugin {
         List<String> ban_msg = getConfig().getStringList("ban-message");
         StringBuilder builder = new StringBuilder();
         for (String ban : ban_msg) {
-            builder.append(ban).append("\n");
+            builder.append(ChatColor.translateAlternateColorCodes('&', ban)).append("\n");
         }
         builder.delete(builder.length() - 3, builder.length());
         BAN_MESSAGE = builder.toString();
         List<String> blacklist_msg = getConfig().getStringList("blacklist-message");
         builder = new StringBuilder();
         for (String blacklist : blacklist_msg) {
-            builder.append(blacklist).append("\n");
+            builder.append(ChatColor.translateAlternateColorCodes('&', blacklist)).append("\n");
         }
         BLACKLIST_MESSAGE = builder.toString();
-        RANKED_BAN_MESSAGE = getConfig().getString("ranked-ban-message");
-        MUTE_MESSAGE = getConfig().getString("mute-message");
+        RANKED_BAN_MESSAGE = ChatColor.translateAlternateColorCodes('&', getConfig().getString("ranked-ban-message"));
+        MUTE_MESSAGE = ChatColor.translateAlternateColorCodes('&', getConfig().getString("mute-message"));
         HANDLE_SPAWN_PROTECTION = getConfig().getBoolean("handle-spawn-protection");
         HANDLE_SPAWN_MECHANICS = getConfig().getBoolean("handle-spawn-mechanics");
+        PLAYER_MSG_DISABLED = ChatColor.translateAlternateColorCodes('&', getConfig().getString("player-msg-disabled"));
+        MSG_SEND_FORMAT = ChatColor.translateAlternateColorCodes('&', getConfig().getString("msg-send-format"));
+        MSG_RECEIVE_FORMAT = ChatColor.translateAlternateColorCodes('&', getConfig().getString("msg-receive-format"));
+        WARN_MESSAGE = new ArrayList<>();
+        for (String line : getConfig().getStringList("warn-message")) {
+            WARN_MESSAGE.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        KICK_MESSAGE = ChatColor.translateAlternateColorCodes('&', getConfig().getString("kick-message"));
+        Suffix.initialize();
     }
 
     @Override

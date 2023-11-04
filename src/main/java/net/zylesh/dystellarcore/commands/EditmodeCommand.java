@@ -38,7 +38,7 @@ public class EditmodeCommand implements CommandExecutor, Listener {
         Player p = (Player)commandSender;
         if (!playersOnEditmode.contains(p.getUniqueId())) playersOnEditmode.add(p.getUniqueId());
         else playersOnEditmode.remove(p.getUniqueId());
-        p.sendMessage(ChatColor.GREEN + "Modo edicion activado: " + ChatColor.YELLOW + playersOnEditmode.contains(p.getUniqueId()));
+        p.sendMessage(ChatColor.DARK_AQUA + "Editmode enabled: " + ChatColor.WHITE + playersOnEditmode.contains(p.getUniqueId()));
         return true;
     }
 

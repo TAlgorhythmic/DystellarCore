@@ -12,6 +12,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.Inventory;
@@ -192,7 +193,6 @@ public class SpawnMechanics implements Listener {
         if (CUSTOM_ENABLED) event.getPlayer().getInventory().setItem(CUSTOM_SLOT, CUSTOM_ITEM);
         event.getPlayer().updateInventory();
         if (DystellarCore.JOIN_TELEPORT && DystellarCore.SPAWN_LOCATION != null) event.getPlayer().teleport(DystellarCore.SPAWN_LOCATION);
-        if (event.getPlayer().hasPermission("hybicraft.vip")) Bukkit.broadcastMessage(ChatColor.RED + event.getPlayer().getName() + ChatColor.AQUA + " ha entrado al servidor.");
         event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.LEVEL_UP, 1.2f, 1.2f);
     }
 
@@ -239,5 +239,11 @@ public class SpawnMechanics implements Listener {
     @EventHandler
     public void weather(WeatherChangeEvent event) {
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onKick(PlayerKickEvent event) {
+        String reason = event.getReason();
+        event.setReason(DystellarCore.KICK_MESSAGE.replaceAll("<reason>", reason));
     }
 }

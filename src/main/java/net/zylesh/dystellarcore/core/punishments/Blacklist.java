@@ -2,6 +2,7 @@ package net.zylesh.dystellarcore.core.punishments;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.User;
+import net.zylesh.dystellarcore.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -19,7 +20,7 @@ public class Blacklist extends Punishment {
         if (user == null) return;
         Player p = Bukkit.getPlayer(user.getUUID());
         if (p != null) {
-            p.kickPlayer(getMessage());
+            p.kickPlayer(ChatColor.translateAlternateColorCodes('&', getMessage().replaceAll("<reason>", getReason()).replaceAll("<time>", Utils.getTimeFormat(getExpirationDate()))));
         }
     }
 
