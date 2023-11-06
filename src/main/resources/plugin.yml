@@ -92,3 +92,15 @@ commands:
   notes:
     description: "See player's notes."
     usage: /notes [player]
+  giveitem:
+    aliases:
+      - gi
+    description: Give an item.
+    permission: dystellar.admin
+    usage: /giveitem <args>
+  itemmeta:
+    permission: dystellar.admin
+    description: Set item meta.
+    aliases:
+      - im
+    usage: /itemmeta <args>

@@ -107,6 +107,8 @@ public final class DystellarCore extends JavaPlugin {
         new NoteCommand();
         new PunishmentsCommand();
         new NotesCommand();
+        new GiveItemCommand();
+        new ItemMetaCommand();
     }
 
     @Override
@@ -172,7 +174,7 @@ public final class DystellarCore extends JavaPlugin {
         SCOREBOARD_ENABLED = getConfig().getBoolean("scoreboard-enabled");
         VOID_TELEPORT = getConfig().getBoolean("teleport-on-void");
         JOIN_TELEPORT = getConfig().getBoolean("teleport-on-join");
-        SPAWN_LOCATION = LocationSerialization.stringToLocation(getConfig().getString("spawn-location"));
+        if (getConfig().contains("spawn-location")) SPAWN_LOCATION = LocationSerialization.stringToLocation(getConfig().getString("spawn-location"));
         ALLOW_BANNED_PLAYERS = getConfig().getBoolean("allow-banned-players");
         List<String> ban_msg = getConfig().getStringList("ban-message");
         StringBuilder builder = new StringBuilder();

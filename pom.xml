@@ -90,14 +90,14 @@
             <artifactId>api</artifactId>
             <version>1.0-RELEASE</version>
             <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/plugins/PlaceholderAPI-2.11.4.jar</systemPath>
+            <systemPath>/home/inti/Desktop/practice/practice/plugins/PlaceholderAPI-2.11.4.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>luckperms</groupId>
             <artifactId>api</artifactId>
             <version>1.0-RELEASE</version>
             <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/plugins/LuckPerms-Bukkit-Legacy-5.3.39.jar</systemPath>
+            <systemPath>/home/inti/Desktop/practice/practice/plugins/LuckPerms-Bukkit-Legacy-5.3.39.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>fr.mrmicky</groupId>
@@ -108,6 +108,18 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>3.2.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.36</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

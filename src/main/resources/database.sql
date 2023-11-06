@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS players
+CREATE TABLE IF NOT EXISTS players_core
 (
     uuid CHAR(36) NOT NULL,
     chat BOOLEAN NOT NULL,
