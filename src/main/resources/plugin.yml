@@ -104,3 +104,18 @@ commands:
     aliases:
       - im
     usage: /itemmeta <args>
+  ping:
+    usage: /ping
+    description: Get player ping.
+  toggleglobalchat:
+    description: Toggle chat.
+    usage: /toggleglobalchat
+    aliases:
+      - togglechat
+      - tgc
+  toggleprivatemessages:
+    usage: /toggleprivatemessages
+    description: Toggle private messages.
+    aliases:
+      - togglemessages
+      - tpm

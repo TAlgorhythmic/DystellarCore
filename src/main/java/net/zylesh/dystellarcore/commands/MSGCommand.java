@@ -20,13 +20,17 @@ public class MSGCommand implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
+            User playerUser = User.get(player);
+            if (!playerUser.isPrivateMessagesActive()) {
+                player.sendMessage(ChatColor.RED + "You can't send messages while having private messages disabled. Enable them with " + ChatColor.YELLOW + "/tpm");
+                return true;
+            }
             if (strings.length - 1 >= 1) {
                 Player playerInt = Bukkit.getPlayer(strings[0]);
                 if (strings[0].isEmpty() || strings[1].isEmpty()) {
                     player.sendMessage(ChatColor.RED + "Usage: /msg <player> <message>");
                 } else {
                     if (playerInt.isOnline()) {
-                        User playerUser = User.get(player);
                         User playerUserInt = User.get(playerInt);
                         if (playerUserInt.isPrivateMessagesActive()) {
                             playerUser.setLastMessagedPlayer(playerUserInt);

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 public class ReplyCommand implements CommandExecutor {
 
     public ReplyCommand() {
+        Bukkit.getPluginCommand("reply").setExecutor(this);
         Bukkit.getPluginCommand("r").setExecutor(this);
     }
 
@@ -19,8 +20,12 @@ public class ReplyCommand implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
+            User playerUser = User.get(player);
+            if (!playerUser.isPrivateMessagesActive()) {
+                player.sendMessage(ChatColor.RED + "You can't send messages while having private messages disabled. Enable them with " + ChatColor.YELLOW + "/tpm");
+                return true;
+            }
             if (strings.length - 1 >= 0) {
-                User playerUser = User.get(player);
                 if (playerUser.getLastMessagedPlayer() != null) {
                     Player lastMessaged = Bukkit.getPlayer(playerUser.getUUID());
                     if (lastMessaged != null) {

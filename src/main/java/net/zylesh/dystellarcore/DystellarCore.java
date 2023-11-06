@@ -109,6 +109,8 @@ public final class DystellarCore extends JavaPlugin {
         new NotesCommand();
         new GiveItemCommand();
         new ItemMetaCommand();
+        new PingCommand();
+        new ToggleChatCommand();
     }
 
     @Override
