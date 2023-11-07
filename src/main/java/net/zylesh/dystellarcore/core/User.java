@@ -144,8 +144,8 @@ public class User {
         @EventHandler
         public void onJoin(AsyncPlayerPreLoginEvent event) {
             if (MariaDB.ENABLED) {
-                User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
-                Mapping map = MariaDB.loadMapping(event.getAddress().getHostName());
+                User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostAddress(), event.getName());
+                Mapping map = MariaDB.loadMapping(event.getAddress().getHostAddress());
                 if (user == null) user = new User(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
 
                 if (!user.getPunishments().isEmpty() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
@@ -165,6 +165,7 @@ public class User {
                         }
                     }
                 }
+
                 users.put(event.getUniqueId(), user);
             }
         }

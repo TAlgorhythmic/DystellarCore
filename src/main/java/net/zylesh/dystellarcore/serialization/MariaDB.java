@@ -65,8 +65,8 @@ public class MariaDB {
                 user.setGlobalChatEnabled(resultSet.getBoolean("chat"));
                 user.setPrivateMessagesActive(resultSet.getBoolean("messages"));
                 user.setSuffix(Suffix.valueOf(resultSet.getString("suffix")));
-                String[] punishments = resultSet.getString("punishments").split(":");
-                for (String s : punishments) user.addPunishment(Punishments.deserialize(s));
+                String[] punishments = resultSet.getString("punishments") != null ? resultSet.getString("punishments").split(":") : null;
+                if (punishments != null) for (String s : punishments) user.addPunishment(Punishments.deserialize(s));
                 user.getNotes().addAll(Punishments.deserializeNotes(resultSet.getString("notes")));
                 user.setLanguage(resultSet.getString("lang"));
                 return user;

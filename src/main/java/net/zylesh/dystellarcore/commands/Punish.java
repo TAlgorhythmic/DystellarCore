@@ -439,8 +439,8 @@ public class Punish implements CommandExecutor, Listener {
             }
             return;
         }
-        User user = User.get(event.getPlayer());
-        if (user.getPunishments() != null && !user.getPunishments().isEmpty()) {
+        User user = User.get(event.getPlayer().getUniqueId());
+        if (user != null && user.getPunishments() != null && !user.getPunishments().isEmpty()) {
             for (Punishment punishment : user.getPunishments()) {
                 if (!punishment.allowChat()) {
                     event.setCancelled(true);
@@ -451,7 +451,7 @@ public class Punish implements CommandExecutor, Listener {
             }
         }
         String playerName = event.getPlayer().getDisplayName();
-        if (!User.get(event.getPlayer()).isGlobalChatEnabled()) event.setCancelled(true);
+        if (user != null && !user.isGlobalChatEnabled()) event.setCancelled(true);
         if (DystellarCore.PRACTICE_HOOK) {
             PlayerUser player = Practice.getPlayerUser(event.getPlayer().getUniqueId());
             if (player.isInParty() && player.isPartyChatActive()) {
@@ -478,10 +478,11 @@ public class Punish implements CommandExecutor, Listener {
 
             }
         }
+        if (user == null) Bukkit.getLogger().severe("User is null.");
         if (event.getPlayer().hasPermission("dystellar.plus")) {
-            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": " + event.getMessage())));
+            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + (user != null ? user.getSuffix() : "") + ChatColor.WHITE + ": " + event.getMessage())));
         } else {
-            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": ")) + event.getMessage());
+            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + (user != null ? user.getSuffix() : "") + ChatColor.WHITE + ": ")) + event.getMessage());
         }
     }
 }
