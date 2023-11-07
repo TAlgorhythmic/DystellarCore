@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore;
 
 import net.zylesh.dystellarcore.commands.*;
+import net.zylesh.dystellarcore.core.PacketListener;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
@@ -111,6 +112,7 @@ public final class DystellarCore extends JavaPlugin {
         new ItemMetaCommand();
         new PingCommand();
         new ToggleChatCommand();
+        new PacketListener();
     }
 
     @Override
