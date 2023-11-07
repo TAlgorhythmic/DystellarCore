@@ -479,9 +479,9 @@ public class Punish implements CommandExecutor, Listener {
             }
         }
         if (event.getPlayer().hasPermission("dystellar.plus")) {
-            event.setFormat(PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": " + ChatColor.translateAlternateColorCodes('&', event.getMessage())));
+            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": " + event.getMessage())));
         } else {
-            event.setFormat(PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": " + event.getMessage()));
+            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": ")) + event.getMessage());
         }
     }
 }
