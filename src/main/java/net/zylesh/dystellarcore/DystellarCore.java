@@ -125,19 +125,20 @@ public final class DystellarCore extends JavaPlugin {
             if (!si.exists()) saveResource("spawnitems.yml", true);
             config.load(conf);
             spawnitems.load(si);
-            MariaDB.loadFromConfig();
             Bukkit.getConsoleSender().sendMessage("[Dystellar] Configuration loaded successfully");
-            if (MariaDB.ENABLED) {
-                try {
+            try {
+                MariaDB.loadFromConfig();
+                if (MariaDB.ENABLED) {
+
                     Bukkit.getLogger().info("Testing database configuration provided in config.yml");
                     MariaDB.dataSourceTestInit();
                     initDb();
                     Bukkit.getLogger().info("Your configuration looks great!");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Bukkit.getLogger().severe("Failed to initialize database, check your configuration. Server will now shutdown.");
-                    Bukkit.getServer().shutdown();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Bukkit.getLogger().severe("Failed to initialize database, check your configuration. Server will now shutdown.");
+                Bukkit.getServer().shutdown();
             }
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
@@ -151,7 +152,7 @@ public final class DystellarCore extends JavaPlugin {
             String[] queries = setup.split(";");
             for (String query : queries) {
                 if (query.isEmpty()) continue;
-                try (Connection connection = MariaDB.DS.getConnection()) {
+                try (Connection connection = MariaDB.getConnection()) {
                     PreparedStatement statement = connection.prepareStatement(query);
                     statement.execute();
                 }

@@ -9,10 +9,10 @@ import net.zylesh.dystellarcore.core.punishments.Punishment;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.mariadb.jdbc.MariaDbDataSource;
 import org.mariadb.jdbc.MariaDbPoolDataSource;
 
 import javax.annotation.Nullable;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,8 +28,7 @@ public class MariaDB {
     private static String DATABASE;
     private static String USER;
     private static String PASSWORD;
-
-    public static DataSource DS;
+    private static MariaDbDataSource DS;
 
     public static void loadFromConfig() {
         ENABLED = DystellarCore.getInstance().getConfig().getBoolean("mariadb.enabled");
@@ -41,22 +40,22 @@ public class MariaDB {
     }
 
     public static void dataSourceTestInit() throws SQLException {
-        MariaDbPoolDataSource dataSource = new MariaDbPoolDataSource();
-        dataSource.setUrl("jdbc:mariadb://" + HOST + ":" + PORT + "/" + DATABASE);
-        dataSource.setUser(USER);
-        dataSource.setPassword(PASSWORD);
-        try (Connection connection = dataSource.getConnection()) {
+        MariaDbDataSource ds = new MariaDbDataSource("jdbc:mariadb://" + HOST + ":" + PORT + "/" + DATABASE);
+        ds.setLoginTimeout(5);
+        ds.setUser(USER);
+        ds.setPassword(PASSWORD);
+        DS = ds;
+        try (Connection connection = getConnection()) {
             if (!connection.isValid(5)) {
                 throw new SQLException("Could not create a connection.");
             }
         }
-        DS = dataSource;
     }
 
     @Nullable
     public static User loadPlayerFromDatabase(UUID uuid, String IP, String name) {
-        try (Connection connection = DS.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT chat, messages, suffix, punishments, notes, lang, inbox FROM players WHERE uuid = ?;"
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(
+                "SELECT chat, messages, suffix, punishments, notes, lang, inbox FROM players_core WHERE uuid = ?;"
         )) {
             statement.setString(1, uuid.toString());
             ResultSet resultSet = statement.executeQuery();
@@ -83,7 +82,8 @@ public class MariaDB {
 
     @Nullable
     public static Mapping loadMapping(String IP) {
-        try (Connection connection = DS.getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2, punishments FROM mappings WHERE something0 = ?;")) {
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2, punishments FROM mappings WHERE something0 = ?;")) {
+            statement.setString(1, IP);
             ResultSet rs = statement.executeQuery();
             if (!rs.next()) return null;
             Set<Punishment> punishmentSet = new HashSet<>();
@@ -102,8 +102,8 @@ public class MariaDB {
      */
     public static void savePlayerToDatabase(User user) {
         StringBuilder ipP = null;
-        try (Connection connection = DS.getConnection();
-             PreparedStatement statement = connection.prepareStatement("REPLACE players(uuid, chat, messages, suffix, punishments, notes, lang, inbox) VALUES(?, ?, ?, ?, ?, ?, ?, ?);")
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox) VALUES(?, ?, ?, ?, ?, ?, ?, ?);")
         ) {
             statement.setString(1, user.getUUID().toString());
             statement.setBoolean(2, user.isGlobalChatEnabled());
@@ -130,7 +130,7 @@ public class MariaDB {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not save data for " + user.getUUID());
         }
-        try (Connection connection = DS.getConnection(); PreparedStatement statement1 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // UUID, IP, Name.)
+        try (Connection connection = getConnection(); PreparedStatement statement1 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // UUID, IP, Name.)
         {
             statement1.setString(1, user.getUUID().toString());
             statement1.setString(2, user.getIp());
@@ -141,7 +141,7 @@ public class MariaDB {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not save UUID mappings for " + user.getUUID());
         }
-        try (Connection connection = DS.getConnection(); PreparedStatement statement2 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
+        try (Connection connection = getConnection(); PreparedStatement statement2 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
         {
             statement2.setString(1, user.getIp());
             statement2.setString(2, user.getName());
@@ -153,7 +153,7 @@ public class MariaDB {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not save IP mappings for " + user.getIp());
         }
-        try (Connection connection = DS.getConnection(); PreparedStatement statement3 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
+        try (Connection connection = getConnection(); PreparedStatement statement3 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
         {
             statement3.setString(1, user.getName());
             statement3.setString(2, user.getUUID().toString());
@@ -167,8 +167,8 @@ public class MariaDB {
     }
 
     public static void deletePlayerData(User user) {
-        try (Connection connection = DS.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "DELETE FROM players WHERE uuid = ?;"
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM players_core WHERE uuid = ?;"
         )) {
             statement.setString(1, user.getUUID().toString());
             statement.execute();
@@ -183,9 +183,13 @@ public class MariaDB {
         }
     }
 
+    public static Connection getConnection() throws SQLException {
+        return DS.getConnection();
+    }
+
     public static void deleteAllData(CommandSender sender) {
-        try (Connection connection = DS.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT uuid FROM players;"
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(
+                "SELECT uuid FROM players_core;"
         )) {
             ResultSet resultSet = statement.executeQuery();
             List<User> players = new ArrayList<>();
@@ -209,7 +213,8 @@ public class MariaDB {
 
     @Nullable
     public static UUID loadUUID(String aString) {
-        try (Connection connection = DS.getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2 FROM mappings WHERE something0 = ?;")) {
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2 FROM mappings WHERE something0 = ?;")) {
+            statement.setString(1, aString);
             ResultSet rs = statement.executeQuery();
             if (!rs.next()) return null;
             if (stringIsIP(aString)) {
@@ -226,7 +231,8 @@ public class MariaDB {
 
     @Nullable
     public static String loadIP(String aString) {
-        try (Connection connection = DS.getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2 FROM mappings WHERE something0 = ?;")) {
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2 FROM mappings WHERE something0 = ?;")) {
+            statement.setString(1, aString);
             ResultSet rs = statement.executeQuery();
             if (!rs.next()) return null;
             if (stringIsUUID(aString)) {
@@ -243,7 +249,8 @@ public class MariaDB {
 
     @Nullable
     public static String loadName(String aString) {
-        try (Connection connection = DS.getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2 FROM mappings WHERE something0 = ?;")) {
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something1, something2 FROM mappings WHERE something0 = ?;")) {
+            statement.setString(1, aString);
             ResultSet rs = statement.executeQuery();
             if (!rs.next()) return null;
             if (stringIsUUID(aString)) {

@@ -440,7 +440,7 @@ public class Punish implements CommandExecutor, Listener {
             return;
         }
         User user = User.get(event.getPlayer());
-        if (!user.getPunishments().isEmpty()) {
+        if (user.getPunishments() != null && !user.getPunishments().isEmpty()) {
             for (Punishment punishment : user.getPunishments()) {
                 if (!punishment.allowChat()) {
                     event.setCancelled(true);

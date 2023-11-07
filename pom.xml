@@ -76,7 +76,7 @@
             <artifactId>practice</artifactId>
             <version>2.0-RELEASE</version>
             <scope>system</scope>
-            <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-2.0-BETA.jar</systemPath>
+            <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-2.1-BETA.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>net.zylesh</groupId>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>3.2.0</version>
+            <version>LATEST</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
