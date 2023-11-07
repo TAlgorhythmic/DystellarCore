@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mariadb.jdbc.MariaDbDataSource;
-import org.mariadb.jdbc.MariaDbPoolDataSource;
 
 import javax.annotation.Nullable;
 import java.sql.Connection;

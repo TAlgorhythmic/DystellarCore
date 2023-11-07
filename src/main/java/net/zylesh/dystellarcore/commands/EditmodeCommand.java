@@ -43,13 +43,6 @@ public class EditmodeCommand implements CommandExecutor, Listener {
     }
 
     @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        event.getPlayer().setFoodLevel(20);
-        event.getPlayer().setSaturation(12.0f);
-        event.getPlayer().setHealth(20.0);
-    }
-
-    @EventHandler
     public void drag(InventoryDragEvent event) {
         if (!playersOnEditmode.contains(event.getWhoClicked().getUniqueId())) event.setCancelled(true);
     }
