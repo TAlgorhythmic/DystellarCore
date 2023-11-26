@@ -16,6 +16,7 @@ public class Warn extends Punishment {
 
     @Override
     public void onPunishment(User user) {
+        super.onPunishment(user);
         if (user == null) return;
         Player p = Bukkit.getPlayer(user.getUUID());
         if (p != null) {

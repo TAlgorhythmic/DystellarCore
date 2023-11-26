@@ -1,6 +1,8 @@
 package net.zylesh.dystellarcore.core.punishments;
 
+import net.zylesh.dystellarcore.core.PlayerPunishedEvent;
 import net.zylesh.dystellarcore.core.User;
+import org.bukkit.Bukkit;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -17,7 +19,9 @@ public abstract class Punishment implements Comparable<Punishment> {
         this.reason = reason;
     }
 
-    public abstract void onPunishment(User user);
+    public void onPunishment(User user) {
+        Bukkit.getPluginManager().callEvent(new PlayerPunishedEvent(user, this));
+    }
 
     public abstract boolean allowChat();
 

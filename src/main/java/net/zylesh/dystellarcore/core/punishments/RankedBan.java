@@ -13,7 +13,7 @@ public class RankedBan extends Punishment {
 
     @Override
     public void onPunishment(User user) {
-
+        super.onPunishment(user);
     }
 
     @Override
