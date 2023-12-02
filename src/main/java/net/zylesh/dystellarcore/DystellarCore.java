@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore;
 
 import net.zylesh.dystellarcore.commands.*;
+import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.PacketListener;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
@@ -11,8 +12,11 @@ import net.zylesh.dystellarcore.serialization.MariaDB;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -70,6 +74,13 @@ public final class DystellarCore extends JavaPlugin {
     public static String KICK_MESSAGE;
     public static int REFRESH_RATE_SCORE;
 
+    public static final ItemStack NULL_GLASS = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
+    static {
+        ItemMeta meta = NULL_GLASS.getItemMeta();
+        meta.setDisplayName(ChatColor.GRAY + " ");
+        NULL_GLASS.setItemMeta(meta);
+    }
+
     @Override
     public void onEnable() {
         INSTANCE = this;
@@ -99,6 +110,7 @@ public final class DystellarCore extends JavaPlugin {
         new BroadcastCommand();
         new JoinCommand();
         new User.UserListener();
+        new Inbox.SenderListener();
         new MSGCommand();
         new Punish();
         new ReplyCommand();

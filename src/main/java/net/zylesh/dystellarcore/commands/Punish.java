@@ -6,9 +6,8 @@ import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.*;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Utils;
-import net.zylesh.practice.practicecore.Practice;
-import net.zylesh.practice.practicecore.domain.stuff.Party;
-import net.zylesh.practice.practicecore.domain.stuff.PlayerUser;
+import net.zylesh.practice.PParty;
+import net.zylesh.practice.PUser;
 import net.zylesh.skywars.SkywarsAPI;
 import net.zylesh.skywars.common.Team;
 import org.bukkit.Bukkit;
@@ -453,11 +452,11 @@ public class Punish implements CommandExecutor, Listener {
         String playerName = event.getPlayer().getDisplayName();
         if (user != null && !user.isGlobalChatEnabled()) event.setCancelled(true);
         if (DystellarCore.PRACTICE_HOOK) {
-            PlayerUser player = Practice.getPlayerUser(event.getPlayer().getUniqueId());
+            PUser player = PUser.get(event.getPlayer());
             if (player.isInParty() && player.isPartyChatActive()) {
                 event.setCancelled(true);
-                Party party = player.getParty();
-                for (PlayerUser pl : player.getParty().getPlayers()) {
+                PParty party = player.getParty();
+                for (PUser pl : player.getParty().getPlayers()) {
                     if (party.getLeader().equals(player)) {
                         pl.getPlayer().sendMessage(ChatColor.DARK_PURPLE + player.getPlayer().getDisplayName() + ChatColor.RESET + ": " + ChatColor.AQUA + ChatColor.translateAlternateColorCodes('&', event.getMessage()));
                     } else {

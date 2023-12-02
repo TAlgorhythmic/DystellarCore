@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.serialization;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.Ban;
@@ -100,6 +101,7 @@ public class MariaDB {
      * @param user player to save
      */
     public static void savePlayerToDatabase(User user) {
+        Inbox.SenderListener.unregisterInbox(user.getUUID());
         StringBuilder ipP = null;
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox) VALUES(?, ?, ?, ?, ?, ?, ?, ?);")

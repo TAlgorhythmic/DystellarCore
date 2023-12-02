@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.core;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.serialization.Mapping;
 import net.zylesh.dystellarcore.serialization.MariaDB;
@@ -45,11 +46,15 @@ public class User {
     private final String ip;
     private final String name;
     private final Set<String> notes = new HashSet<>();
+    private final Inbox inbox;
+    public int coins;
 
     public User(UUID id, String ip, String name) {
         this.id = id;
         this.ip = ip;
         this.name = name;
+        this.inbox = new Inbox(this);
+        Inbox.SenderListener.registerInbox(this);
     }
 
     public void punish(Punishment punishment) {
@@ -63,6 +68,10 @@ public class User {
 
     public void addNote(String note) {
         notes.add(note);
+    }
+
+    public Inbox getInbox() {
+        return inbox;
     }
 
     public String getIp() {
@@ -107,7 +116,8 @@ public class User {
 
     /**
      * Do not use if you don't know what you are doing, if you want to punish a player use user.punish(punishment) instead.
-     * this method only works on offline players!
+     * this method is only for internal purposes and its ONLY called when punishing offline players. Using this method on
+     * online players will not work as expected.
      */
     public void addPunishment(Punishment punishment) {
         this.punishments.add(punishment);
@@ -148,7 +158,6 @@ public class User {
                 User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostAddress(), event.getName());
                 Mapping map = MariaDB.loadMapping(event.getAddress().getHostAddress());
                 if (user == null) user = new User(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
-
                 if (!user.getPunishments().isEmpty() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
                     LocalDateTime now = LocalDateTime.now();
                     for (Punishment punishment : user.punishments) {

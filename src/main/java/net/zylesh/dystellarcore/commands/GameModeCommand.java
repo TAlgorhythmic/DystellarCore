@@ -1,7 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
-import net.zylesh.practice.practicecore.Practice;
+import net.zylesh.practice.PUser;
 import net.zylesh.skywars.SkywarsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -46,7 +46,7 @@ public class GameModeCommand implements CommandExecutor, Listener {
                     player.setGameMode(GameMode.SURVIVAL);
                     break;
                 case 1:
-                    if ((DystellarCore.PRACTICE_HOOK && Practice.getPlayerUser(player.getUniqueId()).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) player.sendMessage(ChatColor.RED + "This command is blocked ingame.");
+                    if ((DystellarCore.PRACTICE_HOOK && PUser.get(player).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) player.sendMessage(ChatColor.RED + "This command is blocked ingame.");
                     else {
                         if (playersInSpecMode.containsKey(player.getUniqueId())) setSpectator(player);
                         player.setGameMode(GameMode.CREATIVE);
@@ -78,7 +78,7 @@ public class GameModeCommand implements CommandExecutor, Listener {
                     player.setGameMode(GameMode.SURVIVAL);
                     break;
                 case 1:
-                    if ((DystellarCore.PRACTICE_HOOK && Practice.getPlayerUser(player.getUniqueId()).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) player.sendMessage(ChatColor.RED + "This command is blocked ingame.");
+                    if ((DystellarCore.PRACTICE_HOOK && PUser.get(player).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) player.sendMessage(ChatColor.RED + "This command is blocked ingame.");
                     else {
                         if (playersInSpecMode.containsKey(player.getUniqueId())) setSpectator(player);
                         player.setGameMode(GameMode.CREATIVE);

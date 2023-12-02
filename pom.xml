@@ -79,6 +79,20 @@
             <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-2.1-BETA.jar</systemPath>
         </dependency>
         <dependency>
+            <groupId>cb</groupId>
+            <artifactId>api</artifactId>
+            <version>3.1.0</version>
+            <scope>system</scope>
+            <systemPath>/home/inti/Desktop/practice/practice/plugins/CheatBreakerAPI.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.lunarclient</groupId>
+            <artifactId>bukkitapi</artifactId>
+            <version>v1.0.1</version>
+            <scope>system</scope>
+            <systemPath>/home/inti/Desktop/practice/practice/plugins/LunarAPI.jar</systemPath>
+        </dependency>
+        <dependency>
             <groupId>net.zylesh</groupId>
             <artifactId>skywars</artifactId>
             <version>1.0-RELEASE</version>
