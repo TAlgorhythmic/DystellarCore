@@ -7,9 +7,11 @@ import net.zylesh.dystellarcore.serialization.Mapping;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -150,6 +152,11 @@ public class User {
                     }
                 }
             }, 10L, 10L, TimeUnit.MINUTES);
+        }
+
+        @EventHandler
+        public void onCraft(CraftItemEvent event) {
+            if (DystellarCore.ALLOW_SIGNS && event.getCurrentItem() != null && (event.getCurrentItem().getType().equals(Material.SIGN) || event.getCurrentItem().getType().equals(Material.SIGN_POST) || event.getCurrentItem().getType().equals(Material.WALL_SIGN))) event.setCancelled(true);
         }
 
         @EventHandler

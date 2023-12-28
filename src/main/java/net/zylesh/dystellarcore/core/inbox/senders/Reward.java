@@ -18,6 +18,10 @@ public abstract class Reward extends Message implements Claimable {
     @Override
     public abstract void initializeIcons();
 
+    public String getTitle() {
+        return title;
+    }
+
     @Override
     public ItemStack getReadIcon() {
         return readIcon;

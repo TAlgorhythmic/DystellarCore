@@ -26,7 +26,7 @@ public class PMariaDB {
      * @param user player to save
      */
     public static void savePlayerToDatabase(PUser user) {
-        try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement("REPLACE practice_players(uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+        try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement("REPLACE practice_players(uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
             statement.setString(1, user.getUuid().toString());
             statement.setString(2, user.getName());
             statement.setString(3, user.getRank());
@@ -46,6 +46,9 @@ public class PMariaDB {
             statement.setString(9, user.killEffect.name());
             statement.setInt(10, user.kills);
             statement.setInt(11, user.deaths);
+            builder = new StringBuilder();
+            for (PKillEffect effect : user.ownedEffects) builder.append(effect.name()).append(";");
+            statement.setString(12, builder.toString());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -84,7 +87,14 @@ public class PMariaDB {
                 PKillEffect effect = PKillEffect.valueOf(resultSet.getString("effect"));
                 int kills = resultSet.getInt("kills");
                 int deaths = resultSet.getInt("deaths");
-                return new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, loadInvs);
+                EnumSet<PKillEffect> effectEnumSet = EnumSet.noneOf(PKillEffect.class);
+                String[] effects = resultSet.getString("effects").split(";");
+                for (String e : effects) {
+                    try {
+                        effectEnumSet.add(PKillEffect.valueOf(e));
+                    } catch (IllegalArgumentException ignored) {}
+                }
+                return new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, loadInvs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -125,7 +135,14 @@ public class PMariaDB {
                 PKillEffect effect = PKillEffect.valueOf(resultSet.getString("effect"));
                 int kills = resultSet.getInt("kills");
                 int deaths = resultSet.getInt("deaths");
-                PUser user = new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, false);
+                EnumSet<PKillEffect> effectEnumSet = EnumSet.noneOf(PKillEffect.class);
+                String[] effects = resultSet.getString("effects").split(";");
+                for (String e : effects) {
+                    try {
+                        effectEnumSet.add(PKillEffect.valueOf(e));
+                    } catch (IllegalArgumentException ignored) {}
+                }
+                PUser user = new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, false);
                 players.add(user);
             }
         } catch (SQLException e) {

@@ -9,12 +9,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public enum PKillEffect {
 
-    NONE(10, false, false, "practice.killeffect.default"),
-    DEATH_ANIMATION(11, true, false, "practice.killeffect.deathanimation"),
-    THUNDER(12, true, true, "practice.killeffect.thunder"),
-    EXPLOSION(13, true, true, "practice.killeffect.explosion");
+    NONE(false, 10, false, false, "practice.killeffect.default"),
+    DEATH_ANIMATION(false, 11, true, false, "practice.killeffect.deathanimation"),
+    THUNDER(false, 12, true, true, "practice.killeffect.thunder"),
+    EXPLOSION(false, 13, true, true, "practice.killeffect.explosion");
 
-    PKillEffect(int slot, boolean deathPlayerEffect, boolean throwItems, String permission) {
+    PKillEffect(boolean deprecated, int slot, boolean deathPlayerEffect, boolean throwItems, String permission) {
+        this.deprecated = deprecated;
         this.displayDeath = deathPlayerEffect;
         this.throwItems = throwItems;
         this.slot = slot;
@@ -26,6 +27,7 @@ public enum PKillEffect {
     private final boolean throwItems;
     private final boolean displayDeath;
     private ItemStack icon;
+    private final boolean deprecated;
 
     public String getPermission() {
         return permission;

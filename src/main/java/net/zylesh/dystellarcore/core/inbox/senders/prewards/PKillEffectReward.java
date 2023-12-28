@@ -1,9 +1,16 @@
 package net.zylesh.dystellarcore.core.inbox.senders.prewards;
 
+import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.inbox.senders.Reward;
+import net.zylesh.practice.PKillEffect;
+import net.zylesh.practice.PUser;
+import net.zylesh.practice.serialize.PMariaDB;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -11,12 +18,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class PKillEffectReward extends Reward {
+public final class PKillEffectReward extends Reward {
 
-    private final String killEffect;
+    private final PKillEffect killEffect;
 
-    protected PKillEffectReward(Inbox inbox, String title, String from, String killEffect, String... messageLines) {
+    public PKillEffectReward(Inbox inbox, String title, String from, PKillEffect killEffect, String... messageLines) {
         super(inbox, title, from, messageLines);
         this.killEffect = killEffect;
     }
@@ -59,16 +67,42 @@ public class PKillEffectReward extends Reward {
 
     @Override
     public void onLeftClick() {
+        this.isClaimed = claim();
+        if (isClaimed) inbox.update();
+    }
 
+    public PKillEffect getKillEffect() {
+        return killEffect;
     }
 
     @Override
     public void onRightClick() {
-
+        if (isClaimed) {
+            inbox.deleteSender(this);
+            Player p = Bukkit.getPlayer(inbox.getUser().getUUID());
+            if (p != null) p.playSound(p.getLocation(), Sound.CLICK, 1.4f, 1.4f);
+            delete();
+        }
     }
 
     @Override
     public boolean claim() {
-        return false;
+        if (isClaimed) return false;
+        AtomicReference<PUser> user = new AtomicReference<>(PUser.get(inbox.getUser().getUUID()));
+        Player p = Bukkit.getPlayer(inbox.getUser().getUUID());
+        if (user.get() == null) {
+            DystellarCore.getAsyncManager().submit(() -> {
+                user.set(PMariaDB.loadPlayerFromDatabase(inbox.getUser().getUUID(), false));
+                if (user.get() == null) {
+                    user.set(new PUser(inbox.getUser().getUUID()));
+                }
+                user.get().ownedEffects.add(killEffect);
+            });
+        } else {
+            user.get().ownedEffects.add(killEffect);
+        }
+        p.sendMessage(ChatColor.GREEN + "Kill Effect claimed!");
+        p.playSound(Bukkit.getPlayer(inbox.getUser().getUUID()).getLocation(), Sound.LEVEL_UP, 1.12f, 1.12f);
+        return true;
     }
 }

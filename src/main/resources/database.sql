@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS players_core
     punishments VARCHAR(1000),
     notes VARCHAR(1000),
     lang VARCHAR(4) NOT NULL,
-    inbox VARCHAR(1000),
+    inbox VARCHAR(3000),
+    version INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (uuid)
 );
 CREATE TABLE IF NOT EXISTS mappings

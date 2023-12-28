@@ -23,20 +23,32 @@ import java.util.List;
 
 public class EloGainNotifier extends Message implements Claimable {
 
-    public static final int PRACTICE = 0;
-    public static final int SKYWARS = 1;
+    public static final byte PRACTICE = 0;
+    public static final byte SKYWARS = 1;
 
     private ItemStack readIcon;
     private boolean isClaimed = false;
     private final int elo;
-    private final int compatibilityType;
+    private final byte compatibilityType;
     private final String ladder;
 
-    public EloGainNotifier(Inbox inbox, int elo, int compatibilityType, @Nullable String ladder, String from, String... messageLines) {
+    public EloGainNotifier(Inbox inbox, int elo, byte compatibilityType, @Nullable String ladder, String from, String... messageLines) {
         super(inbox, from, messageLines);
         this.elo = elo;
         this.compatibilityType = compatibilityType;
         this.ladder = ladder;
+    }
+
+    public int getElo() {
+        return elo;
+    }
+
+    public String getLadder() {
+        return ladder;
+    }
+
+    public byte getCompatibilityType() {
+        return compatibilityType;
     }
 
     @Override

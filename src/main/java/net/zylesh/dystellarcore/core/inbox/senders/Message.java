@@ -52,6 +52,16 @@ public class Message implements InboxSender {
         icon.setItemMeta(meta);
     }
 
+    public String[] getMessage() {
+        return message;
+    }
+
+    public String getSerializedMessage() {
+        StringBuilder builder = new StringBuilder();
+        for (String s : message) builder.append(s).append(":;");
+        return builder.toString();
+    }
+
     @Override
     public ItemStack getUnreadIcon() {
         return icon;
@@ -59,6 +69,11 @@ public class Message implements InboxSender {
 
     @Override
     public void setUnreadIcon(ItemStack itemStack) {}
+
+
+    public String getFrom() {
+        return from;
+    }
 
     @Override
     public ItemStack getReadIcon() {

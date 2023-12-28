@@ -62,7 +62,7 @@ public class CoinsReward extends Reward {
     @Override
     public void onLeftClick() {
         isClaimed = claim();
-        inbox.update();
+        if (isClaimed) inbox.update();
     }
 
 
@@ -74,6 +74,10 @@ public class CoinsReward extends Reward {
             if (p != null) p.playSound(p.getLocation(), Sound.CLICK, 1.4f, 1.4f);
             delete();
         }
+    }
+
+    public int getCoins() {
+        return coins;
     }
 
     @Override

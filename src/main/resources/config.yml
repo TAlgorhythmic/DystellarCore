@@ -9,6 +9,7 @@ handle-spawn-mechanics: false
 player-msg-disabled: "&c-player has disabled private messages."
 msg-send-format: "&7(&dTo -receiver&7) &b-message"
 msg-receive-format: "&7(&dFrom -sender&7) &b-message"
+allow-signs-crafting: false
 ban-message:
   - "&4&lYou are banned"
   - "Reason: <reason>"

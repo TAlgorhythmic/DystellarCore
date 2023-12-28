@@ -27,6 +27,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -82,6 +83,7 @@ public class PUser implements Comparable<PUser>, Listener {
     public int kills = 0;
     public int deaths = 0;
     public PKillEffect killEffect;
+    public final EnumSet<PKillEffect> ownedEffects;
 
     public PUser(UUID playeruuid) {
         this.invsEdited = new HashMap<>();
@@ -92,6 +94,7 @@ public class PUser implements Comparable<PUser>, Listener {
         this.lastDuelReceived = "accept nullImbecilxdkldsj";
         this.elo = new HashMap<>();
         this.killEffect = PKillEffect.NONE;
+        this.ownedEffects = EnumSet.of(PKillEffect.NONE);
         this.globalChatActiveItem = new ItemStack(Material.PAPER);
         this.privateMessagesActiveItem = new ItemStack(Material.FLINT);
         this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
@@ -117,9 +120,9 @@ public class PUser implements Comparable<PUser>, Listener {
         settings.setItem(1, this.duelRequestsEnabledItem);
         settings.setItem(2, this.privateMessagesActiveItem);
         settings.setItem(3, this.playerVisibilityItem);
-        // for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) {
-        //     elo.put(Ladder.deserialize(lad), 1000);
-        // }
+        for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) {
+            elo.put(PApi.LADDERS.get(lad), 1000);
+        }
     }
 
     public int getGlobalElo() {
@@ -128,7 +131,7 @@ public class PUser implements Comparable<PUser>, Listener {
         return elo / this.elo.values().size();
     }
 
-    public PUser(UUID uuid, String name, String rank, PKillEffect killEffect, boolean displayRank, boolean duelRequestsEnabled, int playerVisibility, Map<Ladder, ItemStack[]> invs, Map<Ladder, Integer> elo, int kills, int deaths, boolean initInvs) {
+    public PUser(UUID uuid, String name, String rank, PKillEffect killEffect, boolean displayRank, boolean duelRequestsEnabled, int playerVisibility, Map<Ladder, ItemStack[]> invs, Map<Ladder, Integer> elo, int kills, int deaths, EnumSet<PKillEffect> ownedEffects, boolean initInvs) {
         this.name = name;
         this.uuid = uuid;
         this.player = Bukkit.getPlayer(uuid);
@@ -138,6 +141,7 @@ public class PUser implements Comparable<PUser>, Listener {
         this.duelRequestsEnabled = duelRequestsEnabled;
         this.playerVisibility = playerVisibility;
         this.invsEdited = invs;
+        this.ownedEffects = ownedEffects;
         this.elo = elo;
         if (initInvs) {
             this.globalChatActiveItem = new ItemStack(Material.PAPER);
@@ -196,6 +200,9 @@ public class PUser implements Comparable<PUser>, Listener {
         }
         this.kills = kills;
         this.deaths = deaths;
+        for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) {
+            if (!this.elo.containsKey(PApi.LADDERS.get(lad))) elo.put(PApi.LADDERS.get(lad), 1000);
+        }
     }
 
     public int getPlayerVisibility() {

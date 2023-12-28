@@ -69,7 +69,7 @@
             <artifactId>paper-api</artifactId>
             <version>1.7.10-R0.1-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>/home/inti/IdeaProjects/ZLSpigot-main/ZyLeshSpigot-Server/target/spigot.jar</systemPath>
+            <systemPath>/home/inti/IdeaProjects/ZyleshSpigot-full-master/ZyLeshSpigot-Server/target/spigot.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>net.zylesh</groupId>

@@ -29,6 +29,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 public class Punish implements CommandExecutor, Listener {
 
@@ -418,6 +419,8 @@ public class Punish implements CommandExecutor, Listener {
         inv.setItem(44, note);
     }
 
+    private static final Set<UUID> chatCooldown = Collections.synchronizedSet(new HashSet<>());
+
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         if (cache.containsKey(event.getPlayer().getUniqueId())) {
@@ -451,6 +454,16 @@ public class Punish implements CommandExecutor, Listener {
         }
         String playerName = event.getPlayer().getDisplayName();
         if (user != null && !user.isGlobalChatEnabled()) event.setCancelled(true);
+        if (!event.getPlayer().hasPermission("dystellar.plus")) {
+            if (chatCooldown.contains(event.getPlayer().getUniqueId())) {
+                event.getPlayer().sendMessage(ChatColor.RED + "You're on chat cooldown, please wait before typing again. " + ChatColor.DARK_GREEN + "(Plus rank and up bypass this!)");
+                event.setCancelled(true);
+                return;
+            } else {
+                chatCooldown.add(event.getPlayer().getUniqueId());
+                DystellarCore.getAsyncManager().schedule(() -> chatCooldown.remove(event.getPlayer().getUniqueId()), 2800L, TimeUnit.MILLISECONDS);
+            }
+        }
         if (DystellarCore.PRACTICE_HOOK) {
             PUser player = PUser.get(event.getPlayer());
             if (player.isInParty() && player.isPartyChatActive()) {

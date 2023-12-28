@@ -1,12 +1,24 @@
 package net.zylesh.dystellarcore;
 
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+import net.minecraft.server.v1_7_R4.Packet;
+import net.minecraft.server.v1_7_R4.PacketPlayInTabComplete;
 import net.zylesh.dystellarcore.commands.*;
-import net.zylesh.dystellarcore.core.inbox.Inbox;
+import net.zylesh.dystellarcore.core.IPacketListener;
 import net.zylesh.dystellarcore.core.PacketListener;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
+import net.zylesh.dystellarcore.core.inbox.Inbox;
+import net.zylesh.dystellarcore.core.inbox.InboxSender;
+import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
+import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
+import net.zylesh.dystellarcore.core.inbox.senders.Message;
+import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
+import net.zylesh.dystellarcore.serialization.InventorySerialization;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import org.bukkit.Bukkit;
@@ -15,22 +27,28 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public final class DystellarCore extends JavaPlugin {
+public final class DystellarCore extends JavaPlugin implements PluginMessageListener {
 
     private static DystellarCore INSTANCE;
 
@@ -43,6 +61,8 @@ public final class DystellarCore extends JavaPlugin {
     public static DystellarCore getInstance() {
         return INSTANCE;
     }
+
+    private static final String channel = "dyst:";
 
     private final File conf = new File(getDataFolder(), "config.yml");
     private final YamlConfiguration config = YamlConfiguration.loadConfiguration(conf);
@@ -73,6 +93,7 @@ public final class DystellarCore extends JavaPlugin {
     public static List<String> WARN_MESSAGE;
     public static String KICK_MESSAGE;
     public static int REFRESH_RATE_SCORE;
+    public static boolean ALLOW_SIGNS;
 
     public static final ItemStack NULL_GLASS = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
     static {
@@ -98,7 +119,9 @@ public final class DystellarCore extends JavaPlugin {
         }
         loadConfig();
         initialize();
+        Bukkit.getMessenger().registerOutgoingPluginChannel(this, channel);
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        Bukkit.getMessenger().registerIncomingPluginChannel(this, channel, this);
         if (HANDLE_SPAWN_MECHANICS) new SpawnMechanics();
         if (HANDLE_SPAWN_PROTECTION) new EditmodeCommand();
         if (SCOREBOARD_ENABLED) new Scoreboards();
@@ -125,6 +148,22 @@ public final class DystellarCore extends JavaPlugin {
         new PingCommand();
         new ToggleChatCommand();
         new PacketListener();
+        PacketListener.registerPacketHandler(new IPacketListener() {
+            @Override
+            public void onPacketReceive(Packet packet, Player player, AtomicBoolean cancel) {
+                if (packet instanceof PacketPlayInTabComplete) {
+                    PacketPlayInTabComplete tabComplete = (PacketPlayInTabComplete) packet;
+                    String s = tabComplete.c();
+                    if (s == null || s.length() < 3 || s.matches("[a-zA-Z\\-_]*:")) cancel.set(true);
+
+                }
+            }
+
+            @Override
+            public void onPacketSend(Packet packet, Player player, AtomicBoolean cancel) {
+
+            }
+        });
     }
 
     @Override
@@ -218,6 +257,7 @@ public final class DystellarCore extends JavaPlugin {
             WARN_MESSAGE.add(ChatColor.translateAlternateColorCodes('&', line));
         }
         KICK_MESSAGE = ChatColor.translateAlternateColorCodes('&', getConfig().getString("kick-message"));
+        ALLOW_SIGNS = getConfig().getBoolean("block-signs-crafting");
         Suffix.initialize();
     }
 
@@ -239,4 +279,95 @@ public final class DystellarCore extends JavaPlugin {
             e.printStackTrace();
         }
     }
+
+    private static final byte MESSAGE = 0;
+    private static final byte PKILL_EFFECT = 0;
+    private static final byte COINS_REWARD = 0;
+    private static final byte ELO_GAIN_NOTIFIER = 0;
+
+    public void addInboxMessage(UUID target, InboxSender sender, Player issuer /* The player that issued the command, for just in case uuid (player) introduced is not online.*/) {
+        if (User.getUsers().containsKey(target)) {
+            User.get(target).getInbox().addSender(sender);
+            return;
+        }
+        sendInbox(sender, issuer, target);
+    }
+
+    private void sendInbox(InboxSender sender, Player player, UUID target) {
+        List<Object> obj = new ArrayList<>();
+        Integer id = sender.getId();
+        String submission = sender.getSubmissionDate().format(DateTimeFormatter.ISO_DATE_TIME);
+        if (sender instanceof PKillEffectReward) {
+            PKillEffectReward reward = (PKillEffectReward) sender;
+            String effect = reward.getKillEffect().name();
+            String title = reward.getTitle();
+            String msg = reward.getSerializedMessage();
+            String from = reward.getFrom();
+            Boolean claimed = reward.isClaimed();
+            Boolean deleted = reward.isDeleted();
+            Collections.addAll(obj, target.toString(), PKILL_EFFECT, id, submission, effect, title, msg, from, claimed, deleted);
+        } else if (sender instanceof CoinsReward) {
+            CoinsReward reward = (CoinsReward) sender;
+            Integer coins = reward.getCoins();
+            String title = reward.getTitle();
+            String msg = reward.getSerializedMessage();
+            String from = reward.getFrom();
+            Boolean claimed = reward.isClaimed();
+            Boolean deleted = reward.isDeleted();
+            Collections.addAll(obj, target.toString(), COINS_REWARD, id, submission, coins, title, msg, from, claimed, deleted);
+        } else if (sender instanceof EloGainNotifier) {
+            EloGainNotifier reward = (EloGainNotifier) sender;
+            Integer elo = reward.getElo();
+            byte compatibility = reward.getCompatibilityType();
+            String ladder = reward.getLadder();
+            String msg = reward.getSerializedMessage();
+            String from = reward.getFrom();
+            Boolean claimed = reward.isClaimed();
+            Boolean deleted = reward.isDeleted();
+            if (compatibility == EloGainNotifier.PRACTICE) Collections.addAll(obj, target.toString(), ELO_GAIN_NOTIFIER, id, submission, elo, compatibility, ladder, msg, from, claimed, deleted);
+            else if (compatibility == EloGainNotifier.SKYWARS) Collections.addAll(obj, target.toString(), ELO_GAIN_NOTIFIER, id, submission, elo, compatibility, msg, from, claimed, deleted);
+        } else if (sender instanceof Message) {
+            Message reward = (Message) sender;
+            String msg = reward.getSerializedMessage();
+            String from = reward.getFrom();
+            Boolean deleted = reward.isDeleted();
+            Collections.addAll(obj, target.toString(), MESSAGE, id, submission, msg, from, deleted);
+        }
+        sendPluginMessage(player, INBOX_UPDATE_PROXYBOUND, obj.toArray(new Object[0]));
+    }
+
+    @Override
+    public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
+        if (!s.equals(channel)) return;
+        ByteArrayDataInput in = ByteStreams.newDataInput(bytes);
+        byte id = in.readByte();
+        switch (id) {
+            case REGISTER: sendPluginMessage(player, REGISTER_RECEIVED); break;
+            case INBOX_UPDATE_SPIGOTBOUND: // TODO
+        }
+    }
+
+    private void sendPluginMessage(Player player, byte typeId, Object...extraData) {
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeByte(typeId);
+        if (extraData != null) {
+            for (Object o : extraData) {
+                if (o instanceof String) out.writeUTF((String) o);
+                else if (o instanceof Byte) out.writeByte((Byte) o);
+                else if (o instanceof Integer) out.writeInt((Integer) o);
+                else if (o instanceof Float) out.writeFloat((Float) o);
+                else if (o instanceof Double) out.writeDouble((Double) o);
+                else if (o instanceof Boolean) out.writeBoolean((Boolean) o);
+                else if (o instanceof Long) out.writeLong((Long) o);
+                else if (o instanceof Character) out.writeChar((Character) o);
+                else if (o instanceof Short) out.writeShort((Short) o);
+            }
+        }
+        player.sendPluginMessage(this, channel, out.toByteArray());
+    }
+
+    private static final byte REGISTER = 0;
+    private static final byte REGISTER_RECEIVED = 1;
+    private static final byte INBOX_UPDATE_PROXYBOUND = 2;
+    private static final byte INBOX_UPDATE_SPIGOTBOUND = 3;
 }
