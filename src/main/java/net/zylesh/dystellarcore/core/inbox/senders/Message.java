@@ -15,23 +15,37 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class Message implements InboxSender {
 
+    private static final Random r = new Random();
+
     protected final String[] message;
-    protected final LocalDateTime submissionDate = LocalDateTime.now();
+    protected final LocalDateTime submissionDate;
     protected final Inbox inbox;
     protected final String from;
     protected ItemStack icon;
-    protected boolean isDeleted = false;
+    protected boolean isDeleted;
     private final int id;
 
     public Message(Inbox inbox, String from, String... messageLines) {
         this.message = messageLines;
         this.inbox = inbox;
         this.from = from;
-        this.id = (int) (Math.random() * 1000000);
+        this.submissionDate = LocalDateTime.now();
+        this.id = r.nextInt();
+        this.isDeleted = false;
         initializeIcons();
+    }
+
+    public Message(Inbox inbox, int id, String from, String[] messageLines, LocalDateTime submissionDate, boolean isDeleted) {
+        this.inbox = inbox;
+        this.id = id;
+        this.from = from;
+        this.message = messageLines;
+        this.submissionDate = submissionDate;
+        this.isDeleted = isDeleted;
     }
 
     @Override

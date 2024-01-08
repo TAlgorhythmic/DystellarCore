@@ -18,9 +18,9 @@ import net.zylesh.dystellarcore.core.inbox.senders.Message;
 import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
-import net.zylesh.dystellarcore.serialization.InventorySerialization;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
+import net.zylesh.practice.PKillEffect;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -38,6 +38,7 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -281,9 +282,9 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     }
 
     private static final byte MESSAGE = 0;
-    private static final byte PKILL_EFFECT = 0;
-    private static final byte COINS_REWARD = 0;
-    private static final byte ELO_GAIN_NOTIFIER = 0;
+    private static final byte PKILL_EFFECT = 1;
+    private static final byte COINS_REWARD = 2;
+    private static final byte ELO_GAIN_NOTIFIER = 3;
 
     public void addInboxMessage(UUID target, InboxSender sender, Player issuer /* The player that issued the command, for just in case uuid (player) introduced is not online.*/) {
         if (User.getUsers().containsKey(target)) {
@@ -333,7 +334,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             Boolean deleted = reward.isDeleted();
             Collections.addAll(obj, target.toString(), MESSAGE, id, submission, msg, from, deleted);
         }
-        sendPluginMessage(player, INBOX_UPDATE_PROXYBOUND, obj.toArray(new Object[0]));
+        sendPluginMessage(player, INBOX_UPDATE, obj.toArray(new Object[0]));
     }
 
     @Override
@@ -341,9 +342,81 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         if (!s.equals(channel)) return;
         ByteArrayDataInput in = ByteStreams.newDataInput(bytes);
         byte id = in.readByte();
+        UUID uuid = UUID.fromString(in.readUTF());
+        if (!User.getUsers().containsKey(uuid)) return;
+        User user = User.get(uuid);
         switch (id) {
             case REGISTER: sendPluginMessage(player, REGISTER_RECEIVED); break;
-            case INBOX_UPDATE_SPIGOTBOUND: // TODO
+            case INBOX_UPDATE: {
+                byte type = in.readByte();
+                switch (type) {
+                    case PKILL_EFFECT: {
+                        int iid = in.readInt();
+                        LocalDateTime submission = LocalDateTime.parse(in.readUTF(), DateTimeFormatter.ISO_DATE_TIME);
+                        PKillEffect effect = PKillEffect.valueOf(in.readUTF());
+                        String title = in.readUTF();
+                        String[] message = in.readUTF().split(":;");
+                        String from = in.readUTF();
+                        boolean claimed = in.readBoolean();
+                        boolean deleted = in.readBoolean();
+                        PKillEffectReward reward = new PKillEffectReward(user.getInbox(), iid, from, message, submission, deleted, title, claimed, effect);
+                        reward.initializeIcons();
+                        user.getInbox().addSender(reward);
+                        break;
+                    }
+                    case COINS_REWARD: {
+                        int iid = in.readInt();
+                        LocalDateTime submission = LocalDateTime.parse(in.readUTF(), DateTimeFormatter.ISO_DATE_TIME);
+                        int coins = in.readInt();
+                        String title = in.readUTF();
+                        String[] message = in.readUTF().split(":;");
+                        String from = in.readUTF();
+                        boolean claimed = in.readBoolean();
+                        boolean deleted = in.readBoolean();
+                        CoinsReward reward = new CoinsReward(user.getInbox(), iid, from, message, submission, deleted, title, claimed, coins);
+                        reward.initializeIcons();
+                        user.getInbox().addSender(reward);
+                        break;
+                    }
+                    case ELO_GAIN_NOTIFIER: {
+                        int iid = in.readInt();
+                        LocalDateTime submission = LocalDateTime.parse(in.readUTF(), DateTimeFormatter.ISO_DATE_TIME);
+                        int elo = in.readInt();
+                        byte compatibility = in.readByte();
+                        if (compatibility == EloGainNotifier.PRACTICE) {
+                            String ladder = in.readUTF();
+                            String[] message = in.readUTF().split(":;");
+                            String from = in.readUTF();
+                            boolean claimed = in.readBoolean();
+                            boolean deleted = in.readBoolean();
+                            EloGainNotifier reward = new EloGainNotifier(user.getInbox(), iid, elo, compatibility, ladder, from, message, submission, deleted, claimed);
+                            reward.initializeIcons();
+                            user.getInbox().addSender(reward);
+                        } else if (compatibility == EloGainNotifier.SKYWARS) {
+                            String[] message = in.readUTF().split(":;");
+                            String from = in.readUTF();
+                            boolean claimed = in.readBoolean();
+                            boolean deleted = in.readBoolean();
+                            EloGainNotifier reward = new EloGainNotifier(user.getInbox(), iid, elo, compatibility, null, from, message, submission, deleted, claimed);
+                            reward.initializeIcons();
+                            user.getInbox().addSender(reward);
+                        }
+
+                        break;
+                    }
+                    case MESSAGE: {
+                        int iid = in.readInt();
+                        LocalDateTime submission = LocalDateTime.parse(in.readUTF(), DateTimeFormatter.ISO_DATE_TIME);
+                        String[] message = in.readUTF().split(":;");
+                        String from = in.readUTF();
+                        boolean deleted = in.readBoolean();
+                        Message reward = new Message(user.getInbox(), iid, from, message, submission, deleted);
+                        reward.initializeIcons();
+                        user.getInbox().addSender(reward);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -368,6 +441,5 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
 
     private static final byte REGISTER = 0;
     private static final byte REGISTER_RECEIVED = 1;
-    private static final byte INBOX_UPDATE_PROXYBOUND = 2;
-    private static final byte INBOX_UPDATE_SPIGOTBOUND = 3;
+    private static final byte INBOX_UPDATE = 2;
 }

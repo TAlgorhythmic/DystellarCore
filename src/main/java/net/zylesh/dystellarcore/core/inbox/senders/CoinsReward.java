@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +21,11 @@ public class CoinsReward extends Reward {
 
     public CoinsReward(Inbox inbox, int coins, String title, String from, String... messageLines) {
         super(inbox, title, from, messageLines);
+        this.coins = coins;
+    }
+
+    public CoinsReward(Inbox inbox, int id, String from, String[] messageLines, LocalDateTime submissionDate, boolean isDeleted, String title, boolean isClaimed, int coins) {
+        super(inbox, id, from, messageLines, submissionDate, isDeleted, title, isClaimed);
         this.coins = coins;
     }
 

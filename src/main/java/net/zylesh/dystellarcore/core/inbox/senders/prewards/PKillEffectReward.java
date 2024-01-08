@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,11 @@ public final class PKillEffectReward extends Reward {
     public PKillEffectReward(Inbox inbox, String title, String from, PKillEffect killEffect, String... messageLines) {
         super(inbox, title, from, messageLines);
         this.killEffect = killEffect;
+    }
+
+    public PKillEffectReward(Inbox inbox, int id, String from, String[] messageLines, LocalDateTime submissionDate, boolean isDeleted, String title, boolean isClaimed, PKillEffect effect) {
+        super(inbox, id, from, messageLines, submissionDate, isDeleted, title, isClaimed);
+        this.killEffect = effect;
     }
 
     @Override

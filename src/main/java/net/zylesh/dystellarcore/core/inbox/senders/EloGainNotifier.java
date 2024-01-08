@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nullable;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,13 @@ public class EloGainNotifier extends Message implements Claimable {
         this.elo = elo;
         this.compatibilityType = compatibilityType;
         this.ladder = ladder;
+    }
+    public EloGainNotifier(Inbox inbox, int id, int elo, byte compatibilityType, @Nullable String ladder, String from, String[] messageLines, LocalDateTime submissionDate, boolean isDeleted, boolean claimed) {
+        super(inbox, id, from, messageLines, submissionDate, isDeleted);
+        this.elo = elo;
+        this.compatibilityType = compatibilityType;
+        this.ladder = ladder;
+        this.isClaimed = claimed;
     }
 
     public int getElo() {
