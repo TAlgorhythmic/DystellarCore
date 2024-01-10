@@ -19,6 +19,8 @@ import java.util.Random;
 
 public class Message implements InboxSender {
 
+    public static final byte ID = 0;
+
     private static final Random r = new Random();
 
     protected final String[] message;
@@ -27,7 +29,7 @@ public class Message implements InboxSender {
     protected final String from;
     protected ItemStack icon;
     protected boolean isDeleted;
-    private final int id;
+    protected final int id;
 
     public Message(Inbox inbox, String from, String... messageLines) {
         this.message = messageLines;
@@ -84,7 +86,12 @@ public class Message implements InboxSender {
     @Override
     public void setUnreadIcon(ItemStack itemStack) {}
 
+    @Override
+    public byte getSerialID() {
+        return ID;
+    }
 
+    @Override
     public String getFrom() {
         return from;
     }
@@ -129,5 +136,12 @@ public class Message implements InboxSender {
     @Override
     public int compareTo(InboxSender o) {
         return submissionDate.compareTo(o.getSubmissionDate());
+    }
+
+    /**
+     * Must override
+     */
+    public Message clone(Inbox inbox) {
+        return new Message(inbox, id, from, message, submissionDate, isDeleted);
     }
 }

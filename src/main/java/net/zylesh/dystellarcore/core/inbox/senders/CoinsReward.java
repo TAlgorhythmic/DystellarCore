@@ -17,6 +17,8 @@ import java.util.List;
 
 public class CoinsReward extends Reward {
 
+    public static final byte ID = 2;
+
     private final int coins;
 
     public CoinsReward(Inbox inbox, int coins, String title, String from, String... messageLines) {
@@ -87,10 +89,20 @@ public class CoinsReward extends Reward {
     }
 
     @Override
+    public byte getSerialID() {
+        return ID;
+    }
+
+    @Override
     public boolean claim() {
         if (isClaimed) return false;
         inbox.getUser().coins += coins;
         Bukkit.getPlayer(inbox.getUser().getUUID()).playSound(Bukkit.getPlayer(inbox.getUser().getUUID()).getLocation(), Sound.LEVEL_UP, 1.12f, 1.12f);
         return true;
+    }
+
+    @Override
+    public CoinsReward clone(Inbox inbox) {
+        return new CoinsReward(inbox, id, from, message, submissionDate, isDeleted, title, isClaimed, coins);
     }
 }

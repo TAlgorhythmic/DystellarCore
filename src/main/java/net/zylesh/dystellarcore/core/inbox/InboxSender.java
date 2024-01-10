@@ -24,5 +24,9 @@ public interface InboxSender extends Comparable<InboxSender> {
 
     boolean isDeleted();
 
+    byte getSerialID();
+
+    String getFrom();
+
     int getId();
 }

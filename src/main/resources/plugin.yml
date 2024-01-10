@@ -12,13 +12,16 @@ description: Base commands and utilities for Dystellar Network
 website: dystellar.gg
 load: STARTUP
 commands:
+  inbox:
+    description: Open or create inboxes.
+    usage: /inbox [args]
   setspawn:
     usage: /setspawn
     description: Set main spawn.
     permission: dystellar.admin
     permission-message: Unknown command.
   gamemode:
-    usage: "/gamemode <gm> <optional: player>"
+    usage: "/gamemode <gm> [player}"
     description: Change your gamemode.
     aliases:
       - gm

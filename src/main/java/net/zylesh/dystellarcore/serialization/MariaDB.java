@@ -4,9 +4,11 @@ import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
+import net.zylesh.dystellarcore.core.inbox.InboxSender;
 import net.zylesh.dystellarcore.core.punishments.Ban;
 import net.zylesh.dystellarcore.core.punishments.Blacklist;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
+import net.zylesh.dystellarcore.core.punishments.SenderContainer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -21,6 +23,8 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class MariaDB {
+
+    private static final int SERIALIZAION_VERSION = 1;
 
     public static boolean ENABLED;
     private static String HOST;
@@ -69,6 +73,13 @@ public class MariaDB {
                 if (punishments != null) for (String s : punishments) user.addPunishment(Punishments.deserialize(s));
                 if (resultSet.getString("notes") != null) user.getNotes().addAll(Punishments.deserializeNotes(resultSet.getString("notes")));
                 user.setLanguage(resultSet.getString("lang"));
+                String inbox = resultSet.getString("inbox");
+                if (inbox == null) {
+                    user.setInbox(new Inbox(user));
+                } else {
+                    user.setInbox(InboxSerialization.stringToInbox(inbox, user));
+                }
+                // int version = resultSet.getInt("version");
                 return user;
             } else {
                 return null;
@@ -104,7 +115,7 @@ public class MariaDB {
         Inbox.SenderListener.unregisterInbox(user.getUUID());
         StringBuilder ipP = null;
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox) VALUES(?, ?, ?, ?, ?, ?, ?, ?);")
+             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);")
         ) {
             statement.setString(1, user.getUUID().toString());
             statement.setBoolean(2, user.isGlobalChatEnabled());
@@ -125,13 +136,14 @@ public class MariaDB {
             if (user.getNotes().isEmpty()) statement.setString(6, null);
             else statement.setString(6, Punishments.serializeNotes(user.getNotes()));
             statement.setString(7, user.getLanguage());
-            statement.setString(8, null); // TODO inboxes system
+            statement.setString(8, InboxSerialization.inboxToString(user.getInbox()));
+            statement.setInt(9, SERIALIZAION_VERSION);
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not save data for " + user.getUUID());
         }
-        try (Connection connection = getConnection(); PreparedStatement statement1 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // UUID, IP, Name.)
+        try (Connection connection = getConnection(); PreparedStatement statement1 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?, ?);")) // UUID, IP, Name.)
         {
             statement1.setString(1, user.getUUID().toString());
             statement1.setString(2, user.getIp());
@@ -142,7 +154,7 @@ public class MariaDB {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not save UUID mappings for " + user.getUUID());
         }
-        try (Connection connection = getConnection(); PreparedStatement statement2 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
+        try (Connection connection = getConnection(); PreparedStatement statement2 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
         {
             statement2.setString(1, user.getIp());
             statement2.setString(2, user.getName());
@@ -154,7 +166,7 @@ public class MariaDB {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not save IP mappings for " + user.getIp());
         }
-        try (Connection connection = getConnection(); PreparedStatement statement3 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
+        try (Connection connection = getConnection(); PreparedStatement statement3 = connection.prepareStatement("REPLACE mappings(something0, something1, something2, punishments) VALUES(?, ?, ?, ?);")) // IP, Name, UUID. // UUID, IP, Name.)
         {
             statement3.setString(1, user.getName());
             statement3.setString(2, user.getUUID().toString());
@@ -264,6 +276,40 @@ public class MariaDB {
             Bukkit.getLogger().log(Level.SEVERE, "Could not load UUID from " + aString);
         }
         return null;
+    }
+
+    public static SenderContainer[] loadSenderContainers() {
+        Set<SenderContainer> containers = new HashSet<>();
+        try (
+                Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement("SELECT id, serialized FROM senders;")
+        ) {
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                InboxSender sender = InboxSerialization.stringToSender(rs.getString("serialized"), null);
+                containers.add(new SenderContainer(sender));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Bukkit.getLogger().log(Level.SEVERE, "Could not load sender containers.");
+        }
+        return containers.toArray(new SenderContainer[0]);
+    }
+
+    public static void saveSenderContainers(SenderContainer[] containers) {
+        for (SenderContainer container : containers) {
+            try (
+                    Connection connection = getConnection();
+                    PreparedStatement statement = connection.prepareStatement("REPLACE senders(id, serialized) VALUES(?, ?);")
+            ) {
+                statement.setInt(1, container.getSender().getId());
+                statement.setString(2, InboxSerialization.senderToString(container.getSender(), container.getSender().getSerialID()));
+                statement.execute();
+        } catch (SQLException e) {
+                e.printStackTrace();
+                Bukkit.getLogger().log(Level.SEVERE, "Could not save sender containers.");
+            }
+        }
     }
 
     private static boolean stringIsIP(String s) {

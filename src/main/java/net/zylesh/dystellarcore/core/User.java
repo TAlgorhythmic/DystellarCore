@@ -48,20 +48,26 @@ public class User {
     private final String ip;
     private final String name;
     private final Set<String> notes = new HashSet<>();
-    private final Inbox inbox;
+    private Inbox inbox;
     public int coins;
 
     public User(UUID id, String ip, String name) {
         this.id = id;
         this.ip = ip;
         this.name = name;
-        this.inbox = new Inbox(this);
-        Inbox.SenderListener.registerInbox(this);
     }
 
     public void punish(Punishment punishment) {
         this.punishments.add(punishment);
         punishment.onPunishment(this);
+    }
+
+    /**
+     * Warning! Only 1 call per instance.
+     */
+    public void setInbox(Inbox inbox) {
+        if (this.inbox != null) throw new UnsupportedOperationException("An instance already exists.");
+        this.inbox = inbox;
     }
 
     public Set<String> getNotes() {

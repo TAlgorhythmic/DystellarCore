@@ -2,6 +2,7 @@ package net.zylesh.dystellarcore.core.inbox.senders.prewards;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
+import net.zylesh.dystellarcore.core.inbox.senders.Message;
 import net.zylesh.dystellarcore.core.inbox.senders.Reward;
 import net.zylesh.practice.PKillEffect;
 import net.zylesh.practice.PUser;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class PKillEffectReward extends Reward {
+
+    public static final byte ID = 3;
 
     private final PKillEffect killEffect;
 
@@ -92,6 +95,11 @@ public final class PKillEffectReward extends Reward {
     }
 
     @Override
+    public byte getSerialID() {
+        return ID;
+    }
+
+    @Override
     public boolean claim() {
         if (isClaimed) return false;
         AtomicReference<PUser> user = new AtomicReference<>(PUser.get(inbox.getUser().getUUID()));
@@ -110,5 +118,10 @@ public final class PKillEffectReward extends Reward {
         p.sendMessage(ChatColor.GREEN + "Kill Effect claimed!");
         p.playSound(Bukkit.getPlayer(inbox.getUser().getUUID()).getLocation(), Sound.LEVEL_UP, 1.12f, 1.12f);
         return true;
+    }
+
+    @Override
+    public PKillEffectReward clone(Inbox inbox) {
+        return new PKillEffectReward(inbox, id, from, message, submissionDate, isDeleted, title, isClaimed, killEffect);
     }
 }

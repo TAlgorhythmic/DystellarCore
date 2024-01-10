@@ -36,6 +36,11 @@ public abstract class Reward extends Message implements Claimable {
     }
 
     @Override
+    public byte getSerialID() {
+        return -1;
+    }
+
+    @Override
     public abstract void onLeftClick();
 
     @Override

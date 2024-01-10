@@ -149,6 +149,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new PingCommand();
         new ToggleChatCommand();
         new PacketListener();
+        new InboxCommand();
         PacketListener.registerPacketHandler(new IPacketListener() {
             @Override
             public void onPacketReceive(Packet packet, Player player, AtomicBoolean cancel) {
@@ -183,7 +184,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             try {
                 MariaDB.loadFromConfig();
                 if (MariaDB.ENABLED) {
-
                     Bukkit.getLogger().info("Testing database configuration provided in config.yml");
                     MariaDB.dataSourceTestInit();
                     initDb();
@@ -416,6 +416,11 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                         break;
                     }
                 }
+                break;
+            }
+            case INBOX_MANAGER_UPDATE: {
+                InboxCommand.g().init();
+                break;
             }
         }
     }
@@ -442,4 +447,5 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     private static final byte REGISTER = 0;
     private static final byte REGISTER_RECEIVED = 1;
     private static final byte INBOX_UPDATE = 2;
+    private static final byte INBOX_MANAGER_UPDATE = 3;
 }

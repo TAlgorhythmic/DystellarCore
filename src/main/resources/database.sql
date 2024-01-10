@@ -19,3 +19,9 @@ CREATE TABLE IF NOT EXISTS mappings
     punishments VARCHAR(1000),
     PRIMARY KEY (something0)
 );
+CREATE TABLE IF NOT EXISTS senders
+(
+    id INTEGER NOT NULL,
+    serialized VARCHAR(600) NOT NULL,
+    PRIMARY KEY (id)
+);

@@ -24,6 +24,8 @@ import java.util.List;
 
 public class EloGainNotifier extends Message implements Claimable {
 
+    public static final byte ID = 1;
+
     public static final byte PRACTICE = 0;
     public static final byte SKYWARS = 1;
 
@@ -99,7 +101,7 @@ public class EloGainNotifier extends Message implements Claimable {
     @Override
     public void onLeftClick() {
         this.isClaimed = claim();
-        if (isClaimed) inbox.update();
+        if (this.isClaimed) inbox.update();
     }
 
     @Override
@@ -118,14 +120,15 @@ public class EloGainNotifier extends Message implements Claimable {
     }
 
     @Override
+    public byte getSerialID() {
+        return ID;
+    }
+
+    @Override
     public boolean claim() {
         if (isClaimed) return false;
         switch (this.compatibilityType) {
             case PRACTICE: {
-                if (!DystellarCore.PRACTICE_HOOK) {
-                    Bukkit.getPlayer(inbox.getUser().getUUID()).sendMessage(ChatColor.AQUA + "Join practice to claim this compensation.");
-                    return false;
-                }
                 Ladder ladder = PApi.LADDERS.get(this.ladder);
                 PUser playerUser = PUser.get(inbox.getUser().getUUID());
                 playerUser.getPlayer().playSound(playerUser.getPlayer().getLocation(), Sound.LEVEL_UP, 1.12f, 1.12f);
@@ -133,6 +136,7 @@ public class EloGainNotifier extends Message implements Claimable {
                 return true;
             }
             case SKYWARS: {
+                // TODO
                 if (!DystellarCore.SKYWARS_HOOK) {
                     Bukkit.getPlayer(inbox.getUser().getUUID()).sendMessage(ChatColor.AQUA + "Join skywars to claim this compensation.");
                     return false;
@@ -144,5 +148,10 @@ public class EloGainNotifier extends Message implements Claimable {
             }
         }
         return false;
+    }
+
+    @Override
+    public EloGainNotifier clone(Inbox inbox) {
+        return new EloGainNotifier(inbox, id, elo, compatibilityType, ladder, from, message, submissionDate, isDeleted, isClaimed);
     }
 }

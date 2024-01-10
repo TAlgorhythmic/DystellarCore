@@ -5,6 +5,7 @@ import net.zylesh.dystellarcore.core.User;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -12,6 +13,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +23,7 @@ import static net.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
 
 public class Inbox {
 
-    private static final ItemStack[] LAYOUT = new ItemStack[54];
+    public static final ItemStack[] LAYOUT = new ItemStack[54];
     static {
         for (int i = 0; i < 9; i++) {
             LAYOUT[i] = NULL_GLASS;
@@ -37,8 +39,14 @@ public class Inbox {
 
     public Inbox(User user) {
         this.user = user;
-        this.inbox = Bukkit.createInventory(Bukkit.getPlayer(user.getUUID()), 54, ChatColor.DARK_AQUA + "Inbox");
+        this.inbox = Bukkit.createInventory(null, 54, ChatColor.DARK_AQUA + "Inbox");
         this.inbox.setContents(LAYOUT);
+        user.setInbox(this);
+        Inbox.SenderListener.registerInbox(user);
+    }
+
+    public Set<InboxSender> getSenders() {
+        return senders;
     }
 
     public User getUser() {
@@ -64,6 +72,12 @@ public class Inbox {
         }
     }
 
+    public void open() {
+        Player p = Bukkit.getPlayer(user.getUUID());
+        if (p == null) return;
+        p.openInventory(inbox);
+    }
+
     public static class SenderListener implements Listener {
 
         private static final ConcurrentMap<UUID, Inventory> inboxes = new ConcurrentHashMap<>();
@@ -72,7 +86,7 @@ public class Inbox {
             Bukkit.getPluginManager().registerEvents(this, DystellarCore.getInstance());
         }
 
-        public static void registerInbox(User user) {
+        public static synchronized void registerInbox(User user) {
             inboxes.put(user.getUUID(), user.getInbox().inbox);
         }
 
