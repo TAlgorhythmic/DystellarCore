@@ -296,19 +296,30 @@ public class MariaDB {
         return containers.toArray(new SenderContainer[0]);
     }
 
-    public static void saveSenderContainers(SenderContainer[] containers) {
-        for (SenderContainer container : containers) {
-            try (
-                    Connection connection = getConnection();
-                    PreparedStatement statement = connection.prepareStatement("REPLACE senders(id, serialized) VALUES(?, ?);")
-            ) {
-                statement.setInt(1, container.getSender().getId());
-                statement.setString(2, InboxSerialization.senderToString(container.getSender(), container.getSender().getSerialID()));
-                statement.execute();
+    public static void saveSenderContainer(SenderContainer container) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement("REPLACE senders(id, serialized) VALUES(?, ?);")
+        ) {
+            statement.setInt(1, container.getSender().getId());
+            statement.setString(2, InboxSerialization.senderToString(container.getSender(), container.getSender().getSerialID()));
+            statement.execute();
         } catch (SQLException e) {
-                e.printStackTrace();
-                Bukkit.getLogger().log(Level.SEVERE, "Could not save sender containers.");
-            }
+            e.printStackTrace();
+            Bukkit.getLogger().log(Level.SEVERE, "Could not save sender container.");
+        }
+    }
+
+    public static void deleteSenderContainer(int id) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement("DELETE FROM senders WHERE id = ?;;")
+        ) {
+            statement.setInt(1, id);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Bukkit.getLogger().log(Level.SEVERE, "Could not delete sender container.");
         }
     }
 

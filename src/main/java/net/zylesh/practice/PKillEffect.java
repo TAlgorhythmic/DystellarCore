@@ -41,6 +41,10 @@ public enum PKillEffect {
         return icon;
     }
 
+    public boolean isDeprecated() {
+        return deprecated;
+    }
+
     public boolean isDisplayDeath() {
         return displayDeath;
     }
@@ -51,6 +55,11 @@ public enum PKillEffect {
 
     public void playAnimation(CraftPlayer player, boolean throwItems) {
         Animations.Practice.playDeathAnimation(this, player, throwItems);
+    }
+
+    @Override
+    public String toString() {
+        return name();
     }
 
     public static void initialize() {

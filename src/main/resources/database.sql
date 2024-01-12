@@ -22,6 +22,6 @@ CREATE TABLE IF NOT EXISTS mappings
 CREATE TABLE IF NOT EXISTS senders
 (
     id INTEGER NOT NULL,
-    serialized VARCHAR(600) NOT NULL,
+    serialized VARCHAR(4000) NOT NULL,
     PRIMARY KEY (id)
 );

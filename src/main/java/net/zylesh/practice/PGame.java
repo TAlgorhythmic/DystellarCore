@@ -44,7 +44,7 @@ public abstract class PGame {
     protected LocalDateTime date;
     protected final boolean isDuel;
     protected boolean isEnded = false;
-    protected boolean isStarted = false;
+    protected final boolean isStarted = false;
     public final TimeCounter time;
     public final Map<PUser, List<Block>> blocksPlaced = new HashMap<>();
     public final Map<PUser, List<Block>> blocksBroken = new HashMap<>();

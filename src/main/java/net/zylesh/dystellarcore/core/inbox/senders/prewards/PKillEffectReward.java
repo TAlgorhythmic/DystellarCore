@@ -2,7 +2,6 @@ package net.zylesh.dystellarcore.core.inbox.senders.prewards;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
-import net.zylesh.dystellarcore.core.inbox.senders.Message;
 import net.zylesh.dystellarcore.core.inbox.senders.Reward;
 import net.zylesh.practice.PKillEffect;
 import net.zylesh.practice.PUser;

@@ -82,7 +82,7 @@ public class PUser implements Comparable<PUser>, Listener {
     public final Map<Ladder, Integer> elo;
     public int kills = 0;
     public int deaths = 0;
-    public PKillEffect killEffect;
+    public final PKillEffect killEffect;
     public final EnumSet<PKillEffect> ownedEffects;
 
     public PUser(UUID playeruuid) {

@@ -10,11 +10,7 @@ public interface InboxSender extends Comparable<InboxSender> {
 
     ItemStack getUnreadIcon();
 
-    void setUnreadIcon(ItemStack itemStack);
-
     ItemStack getReadIcon();
-
-    void setReadIcon(ItemStack itemStack);
 
     void onLeftClick();
 

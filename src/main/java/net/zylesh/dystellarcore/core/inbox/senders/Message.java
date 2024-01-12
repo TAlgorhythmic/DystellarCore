@@ -84,9 +84,6 @@ public class Message implements InboxSender {
     }
 
     @Override
-    public void setUnreadIcon(ItemStack itemStack) {}
-
-    @Override
     public byte getSerialID() {
         return ID;
     }
@@ -100,9 +97,6 @@ public class Message implements InboxSender {
     public ItemStack getReadIcon() {
         return icon;
     }
-
-    @Override
-    public void setReadIcon(ItemStack itemStack) {}
 
     @Override
     public void onLeftClick() {}
@@ -142,6 +136,6 @@ public class Message implements InboxSender {
      * Must override
      */
     public Message clone(Inbox inbox) {
-        return new Message(inbox, id, from, message, submissionDate, isDeleted);
+        return new Message(inbox, id, from, message, LocalDateTime.now(), isDeleted);
     }
 }
