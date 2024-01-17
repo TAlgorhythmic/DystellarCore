@@ -38,7 +38,7 @@ import static net.zylesh.practice.practicecore.util.Msg.PLAYER_SPECTATE_BROADCAS
 
 public class PUser implements Comparable<PUser>, Listener {
 
-    protected static final Map<UUID, PUser> users = new ConcurrentHashMap<>();
+    protected static final Map<UUID, PUser> users = new ConcurrentHashMap<>(Bukkit.getMaxPlayers());
 
     public static PUser get(Player p) {
         return users.get(p.getUniqueId());

@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class User {
 
-    protected static final Map<UUID, User> users = new ConcurrentHashMap<>();
+    protected static final Map<UUID, User> users = new ConcurrentHashMap<>(Bukkit.getMaxPlayers());
 
     public static User get(Player p) {
         return users.get(p.getUniqueId());
