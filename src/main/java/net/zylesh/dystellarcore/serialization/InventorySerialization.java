@@ -27,7 +27,7 @@ public class InventorySerialization {
             String[] serializedBlock = serializedBlocks[i].split("#");
             ItemStack is = stringToItem(serializedBlock[1]);
 
-            deserializedInventory[i] = is;
+            deserializedInventory[i - 1] = is;
         }
 
         return deserializedInventory;
