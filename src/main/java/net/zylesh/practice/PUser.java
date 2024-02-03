@@ -82,7 +82,7 @@ public class PUser implements Comparable<PUser>, Listener {
     public final Map<Ladder, Integer> elo;
     public int kills = 0;
     public int deaths = 0;
-    public final PKillEffect killEffect;
+    public PKillEffect killEffect;
     public final EnumSet<PKillEffect> ownedEffects;
 
     public PUser(UUID playeruuid) {
@@ -120,9 +120,7 @@ public class PUser implements Comparable<PUser>, Listener {
         settings.setItem(1, this.duelRequestsEnabledItem);
         settings.setItem(2, this.privateMessagesActiveItem);
         settings.setItem(3, this.playerVisibilityItem);
-        for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) {
-            elo.put(PApi.LADDERS.get(lad), 1000);
-        }
+        for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) elo.put(PApi.LADDERS.get(lad), 1000);
     }
 
     public int getGlobalElo() {
@@ -200,9 +198,7 @@ public class PUser implements Comparable<PUser>, Listener {
         }
         this.kills = kills;
         this.deaths = deaths;
-        for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) {
-            if (!this.elo.containsKey(PApi.LADDERS.get(lad))) elo.put(PApi.LADDERS.get(lad), 1000);
-        }
+        for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) if (!this.elo.containsKey(PApi.LADDERS.get(lad))) elo.put(PApi.LADDERS.get(lad), 1000);
     }
 
     public int getPlayerVisibility() {
@@ -308,6 +304,7 @@ public class PUser implements Comparable<PUser>, Listener {
                 if (!player.canSee(playerUser.player)) player.showPlayer(playerUser.player);
             });
         }
+
         game.getSpectators().forEach(playerUser -> {
             if (!this.equals(playerUser)) {
                 playerUser.player.showPlayer(player);
@@ -384,8 +381,7 @@ public class PUser implements Comparable<PUser>, Listener {
                     }
                 });
             }
-            if (!inGame)
-                Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
+            if (!inGame) Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
             this.isSpectating = false;
             player.setAllowFlight(false);
         }
@@ -457,6 +453,7 @@ public class PUser implements Comparable<PUser>, Listener {
                     }
                 });
             }
+
             player.updateInventory();
             Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
         }
@@ -667,7 +664,5 @@ public class PUser implements Comparable<PUser>, Listener {
                 event.setCancelled(true);
             }
         }
-
-
     }
 }

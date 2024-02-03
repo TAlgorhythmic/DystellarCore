@@ -371,6 +371,7 @@ public class Ladder {
         section.set("boxing", boxing);
         section.set("disapearing-blocks", disapearingBlocks);
         section.set("active", active);
+
         plugin.save("ladder");
     }
 

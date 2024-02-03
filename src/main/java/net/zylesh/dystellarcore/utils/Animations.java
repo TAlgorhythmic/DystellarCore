@@ -21,7 +21,7 @@ public class Animations {
     public static class Practice {
         public static void playDeathAnimation(PKillEffect killEffect, CraftPlayer player, boolean throwItems) {
             PlayerInventory playerInventory = player.getInventory();
-            PUser playerUser = null/*Practice.getPlayerUser(player.getUniqueId())*/;
+            PUser playerUser = PUser.get(player);
             World w = player.getWorld();
             if (throwItems && killEffect.isThrowItems()) {
                 List<ItemStack> items = new ArrayList<>();
@@ -189,6 +189,7 @@ public class Animations {
                             pla.playEffect(player.getLocation(), Effect.EXPLOSION_HUGE, 2);
                         }
                     }
+
                     break;
                 }
             }

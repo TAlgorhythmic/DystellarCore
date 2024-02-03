@@ -33,7 +33,7 @@ public final class PApi {
         DystellarCore.getAsyncManager().submit(() -> {
             PUser playerUser = PMariaDB.loadPlayerFromDatabase(player, true);
             if (playerUser == null) {
-                Bukkit.getScheduler().scheduleSyncDelayedTask(/*Main.INSTANCE*/DystellarCore.getInstance(), () -> Bukkit.getPlayer(player).kickPlayer(ChatColor.RED + "Could not fetch data, kicked out for security."), 20L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(Main.INSTANCE, () -> Bukkit.getPlayer(player).kickPlayer(ChatColor.RED + "Could not fetch data, kicked out for security."), 20L);
                 return;
             }
             PUser.getUsers().put(player, playerUser);

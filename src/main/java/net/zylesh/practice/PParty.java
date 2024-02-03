@@ -98,7 +98,7 @@ public class PParty implements Comparable<PParty>, Serializable {
             playerUser.getPlayer().getInventory().clear();
             getLeader().getPlayer().getInventory().clear();
             playerUser.getPlayer().getInventory().setContents(Practice.PARTY_INV.getContents());
-            getLeader().getPlayer().getInventory().setContents(Practice.PARTY3_INV.getContents());
+            //getLeader().getPlayer().getInventory().setContents(Practice.PARTY3_INV.getContents());
         } else {
             playerUser.getPlayer().getInventory().clear();
             getLeader().getPlayer().getInventory().clear();
