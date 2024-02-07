@@ -63,7 +63,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         return INSTANCE;
     }
 
-    private static final String channel = "dyst:";
+    private static final String channel = "dyst:msg";
 
     private final File conf = new File(getDataFolder(), "config.yml");
     private final YamlConfiguration config = YamlConfiguration.loadConfiguration(conf);

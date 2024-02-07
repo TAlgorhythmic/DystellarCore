@@ -49,6 +49,7 @@ public class User {
     private final String name;
     private final Set<String> notes = new HashSet<>();
     private Inbox inbox;
+    private boolean globalTabComplete = false;
     public int coins;
 
     public User(UUID id, String ip, String name) {
@@ -100,6 +101,14 @@ public class User {
 
     public void setSuffix(Suffix suffix) {
         this.suffix = suffix;
+    }
+
+    public boolean isGlobalTabComplete() {
+        return globalTabComplete;
+    }
+
+    public void setGlobalTabComplete(boolean globalTabComplete) {
+        this.globalTabComplete = globalTabComplete;
     }
 
     public void setGlobalChatEnabled(boolean globalChatEnabled) {
