@@ -59,7 +59,7 @@ public class MariaDB {
     @Nullable
     public static User loadPlayerFromDatabase(UUID uuid, String IP, String name) {
         try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT chat, messages, suffix, punishments, notes, lang, inbox FROM players_core WHERE uuid = ?;"
+                "SELECT chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion FROM players_core WHERE uuid = ?;"
         )) {
             statement.setString(1, uuid.toString());
             ResultSet resultSet = statement.executeQuery();
@@ -79,7 +79,9 @@ public class MariaDB {
                 } else {
                     user.setInbox(InboxSerialization.stringToInbox(inbox, user));
                 }
-                // int version = resultSet.getInt("version");
+                int version = resultSet.getInt("version");
+                user.setVersion(version);
+                user.setGlobalTabComplete(resultSet.getBoolean("tabcompletion"));
                 return user;
             } else {
                 return null;
@@ -115,7 +117,7 @@ public class MariaDB {
         Inbox.SenderListener.unregisterInbox(user.getUUID());
         StringBuilder ipP = null;
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);")
+             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
         ) {
             statement.setString(1, user.getUUID().toString());
             statement.setBoolean(2, user.isGlobalChatEnabled());
@@ -138,6 +140,7 @@ public class MariaDB {
             statement.setString(7, user.getLanguage());
             statement.setString(8, InboxSerialization.inboxToString(user.getInbox()));
             statement.setInt(9, SERIALIZAION_VERSION);
+            statement.setBoolean(10, user.isGlobalTabComplete());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();

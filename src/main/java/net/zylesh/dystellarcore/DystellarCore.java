@@ -425,7 +425,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         }
     }
 
-    private void sendPluginMessage(Player player, byte typeId, Object...extraData) {
+    public void sendPluginMessage(Player player, byte typeId, Object...extraData) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeByte(typeId);
         if (extraData != null) {
@@ -448,4 +448,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     private static final byte REGISTER_RECEIVED = 1;
     private static final byte INBOX_UPDATE = 2;
     private static final byte INBOX_MANAGER_UPDATE = 3;
+    public static final byte GLOBAL_TAB_REGISTER = 4;
+    public static final byte GLOBAL_TAB_UNREGISTER = 5;
 }

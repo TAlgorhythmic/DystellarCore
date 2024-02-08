@@ -51,6 +51,7 @@ public class User {
     private Inbox inbox;
     private boolean globalTabComplete = false;
     public int coins;
+    private int version;
 
     public User(UUID id, String ip, String name) {
         this.id = id;
@@ -156,6 +157,14 @@ public class User {
         this.privateMessagesActive = privateMessagesActive;
     }
 
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
     public static class UserListener implements Listener {
 
         public UserListener() {
@@ -207,6 +216,7 @@ public class User {
             event.getPlayer().setFoodLevel(20);
             event.getPlayer().setSaturation(12.0f);
             event.getPlayer().setHealth(20.0);
+            if (User.get(event.getPlayer()).globalTabComplete) DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.GLOBAL_TAB_REGISTER);
         }
 
         @EventHandler

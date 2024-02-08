@@ -12,6 +12,12 @@ description: Base commands and utilities for Dystellar Network
 website: dystellar.gg
 load: STARTUP
 commands:
+  toggleglobaltabcomplete:
+    aliases:
+      - tgtc
+      - toggletabcomplete
+    description: Toggle global tab complete.
+    usage: /toggleglobaltabcomplete
   inbox:
     description: Open or create inboxes.
     usage: /inbox [args]
