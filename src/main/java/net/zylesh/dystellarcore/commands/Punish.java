@@ -77,7 +77,7 @@ public class Punish implements CommandExecutor, Listener {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (!commandSender.hasPermission("dystellar.staff") || !(commandSender instanceof Player) || !MariaDB.ENABLED) return true;
+        if (!commandSender.hasPermission("dystellar.staff") || !(commandSender instanceof Player)) return true;
         Player p = (Player) commandSender;
         p.openInventory(inv);
         return true;

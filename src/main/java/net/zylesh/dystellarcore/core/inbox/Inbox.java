@@ -41,7 +41,7 @@ public class Inbox {
         this.user = user;
         this.inbox = Bukkit.createInventory(null, 54, ChatColor.DARK_AQUA + "Inbox");
         this.inbox.setContents(LAYOUT);
-        user.setInbox(this);
+        user.assignInbox(this);
         Inbox.SenderListener.registerInbox(user);
     }
 

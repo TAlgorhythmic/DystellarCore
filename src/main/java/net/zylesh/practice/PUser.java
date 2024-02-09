@@ -1,7 +1,5 @@
 package net.zylesh.practice;
 
-import net.zylesh.dystellarcore.core.User;
-import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.practicecore.Practice;
 import net.zylesh.practice.practicecore.core.GameFFA;
@@ -52,8 +50,6 @@ public class PUser implements Comparable<PUser>, Listener {
         return users;
     }
 
-    public  ItemStack globalChatActiveItem;
-    public ItemStack privateMessagesActiveItem;
     public ItemStack duelRequestsEnabledItem;
     private final Player player;
     private final String name;
@@ -95,31 +91,21 @@ public class PUser implements Comparable<PUser>, Listener {
         this.elo = new HashMap<>();
         this.killEffect = PKillEffect.NONE;
         this.ownedEffects = EnumSet.of(PKillEffect.NONE);
-        this.globalChatActiveItem = new ItemStack(Material.PAPER);
-        this.privateMessagesActiveItem = new ItemStack(Material.FLINT);
         this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
         this.playerVisibilityItem = new ItemStack(Material.INK_SACK, 1, (short) 8);
         ItemMeta playervisibility = this.playerVisibilityItem.getItemMeta();
         playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.RED + "disabled");
         ItemMeta duelrequests = this.duelRequestsEnabledItem.getItemMeta();
         duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests: " + ChatColor.GREEN + "enabled");
-        ItemMeta globalchatactive = globalChatActiveItem.getItemMeta();
-        ItemMeta privatemessagesactive = privateMessagesActiveItem.getItemMeta();
-        privatemessagesactive.setDisplayName(ChatColor.AQUA + "Private Messages: " + ChatColor.GREEN + "enabled");
-        globalchatactive.setDisplayName(ChatColor.AQUA + "Global Chat: " + ChatColor.GREEN + "enabled");
-        this.globalChatActiveItem.setItemMeta(globalchatactive);
         this.duelRequestsEnabledItem.setItemMeta(duelrequests);
-        this.privateMessagesActiveItem.setItemMeta(privatemessagesactive);
         this.playerVisibilityItem.setItemMeta(playervisibility);
         ItemStack nullGlass = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
         ItemMeta nullglass = nullGlass.getItemMeta();
         nullglass.setDisplayName(ChatColor.DARK_GRAY + " ");
         nullGlass.setItemMeta(nullglass);
         this.settings = Bukkit.createInventory(player, 9, ChatColor.RED + "Settings");
-        settings.setItem(0, this.globalChatActiveItem);
-        settings.setItem(1, this.duelRequestsEnabledItem);
-        settings.setItem(2, this.privateMessagesActiveItem);
-        settings.setItem(3, this.playerVisibilityItem);
+        settings.setItem(0, this.duelRequestsEnabledItem);
+        settings.setItem(1, this.playerVisibilityItem);
         for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) elo.put(PApi.LADDERS.get(lad), 1000);
     }
 
@@ -142,22 +128,20 @@ public class PUser implements Comparable<PUser>, Listener {
         this.ownedEffects = ownedEffects;
         this.elo = elo;
         if (initInvs) {
-            this.globalChatActiveItem = new ItemStack(Material.PAPER);
-            this.privateMessagesActiveItem = new ItemStack(Material.FLINT);
             this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
             this.playerVisibilityItem = new ItemStack(Material.INK_SACK);
             ItemMeta playervisibility = this.playerVisibilityItem.getItemMeta();
             switch (this.playerVisibility) {
                 case 0:
-                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.RED + "disabled");
+                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.RED + "Disabled");
                     this.playerVisibilityItem.setDurability((short) 8);
                     break;
                 case 1:
-                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.YELLOW + "ranks only");
+                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.YELLOW + "Ranks Only");
                     this.playerVisibilityItem.setDurability((short) 9);
                     break;
                 case 2:
-                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.GREEN + "enabled");
+                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.GREEN + "Enabled");
                     this.playerVisibilityItem.setDurability((short) 10);
                     break;
             }
@@ -167,34 +151,15 @@ public class PUser implements Comparable<PUser>, Listener {
             } else {
                 duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests: " + ChatColor.RED + "disabled");
             }
-            ItemMeta globalchatactive = globalChatActiveItem.getItemMeta();
-            ItemMeta privatemessagesactive = privateMessagesActiveItem.getItemMeta();
-            if (MariaDB.ENABLED) {
-                User user = User.get(uuid);
-                if (user.isPrivateMessagesActive()) {
-                    privatemessagesactive.setDisplayName(ChatColor.AQUA + "Private Messages: " + ChatColor.GREEN + "enabled");
-                } else {
-                    privatemessagesactive.setDisplayName(ChatColor.AQUA + "Private Messages: " + ChatColor.RED + "disabled");
-                }
-                if (user.isGlobalChatEnabled()) {
-                    globalchatactive.setDisplayName(ChatColor.AQUA + "Global Chat: " + ChatColor.GREEN + "enabled");
-                } else {
-                    globalchatactive.setDisplayName(ChatColor.AQUA + "Global Chat: " + ChatColor.RED + "disabled");
-                }
-            }
-            this.globalChatActiveItem.setItemMeta(globalchatactive);
             this.duelRequestsEnabledItem.setItemMeta(duelrequests);
-            this.privateMessagesActiveItem.setItemMeta(privatemessagesactive);
             this.playerVisibilityItem.setItemMeta(playervisibility);
             ItemStack nullGlass = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
             ItemMeta nullglass = nullGlass.getItemMeta();
             nullglass.setDisplayName(ChatColor.DARK_GRAY + " ");
             nullGlass.setItemMeta(nullglass);
             this.settings = Bukkit.createInventory(this.player, 9, ChatColor.RED + "Settings");
-            settings.setItem(0, this.globalChatActiveItem);
-            settings.setItem(1, this.duelRequestsEnabledItem);
-            settings.setItem(2, this.privateMessagesActiveItem);
-            settings.setItem(3, this.playerVisibilityItem);
+            settings.setItem(0, this.duelRequestsEnabledItem);
+            settings.setItem(1, this.playerVisibilityItem);
         }
         this.kills = kills;
         this.deaths = deaths;

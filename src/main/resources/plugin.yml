@@ -128,3 +128,4 @@ commands:
     aliases:
       - togglemessages
       - tpm
+      - pms

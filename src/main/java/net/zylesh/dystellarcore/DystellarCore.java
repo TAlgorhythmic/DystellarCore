@@ -183,12 +183,10 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             Bukkit.getConsoleSender().sendMessage("[Dystellar] Configuration loaded successfully");
             try {
                 MariaDB.loadFromConfig();
-                if (MariaDB.ENABLED) {
-                    Bukkit.getLogger().info("Testing database configuration provided in config.yml");
-                    MariaDB.dataSourceTestInit();
-                    initDb();
-                    Bukkit.getLogger().info("Your configuration looks great!");
-                }
+                Bukkit.getLogger().info("Testing database configuration provided in config.yml");
+                MariaDB.dataSourceTestInit();
+                initDb();
+                Bukkit.getLogger().info("Your configuration looks great!");
             } catch (Exception e) {
                 e.printStackTrace();
                 Bukkit.getLogger().severe("Failed to initialize database, check your configuration. Server will now shutdown.");
@@ -289,9 +287,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public void addInboxMessage(UUID target, InboxSender sender, Player issuer /* The player that issued the command, for just in case uuid (player) introduced is not online.*/) {
         if (User.getUsers().containsKey(target)) {
             User.get(target).getInbox().addSender(sender);
-            return;
-        }
-        sendInbox(sender, issuer, target);
+        } else sendInbox(sender, issuer, target);
     }
 
     private void sendInbox(InboxSender sender, Player player, UUID target) {

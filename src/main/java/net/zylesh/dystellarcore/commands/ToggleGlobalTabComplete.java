@@ -21,9 +21,8 @@ public class ToggleGlobalTabComplete implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) return true;
         Player p = (Player) commandSender;
-        p.sendMessage(ChatColor.GREEN + "Processing request...");
         User user = User.get(p);
-        user.setGlobalTabComplete(!user.isGlobalTabComplete());
+        user.toggleGlobalTabComplete();
         if (user.isGlobalTabComplete()) {
             DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.GLOBAL_TAB_REGISTER);
             p.sendMessage(ChatColor.GREEN + "Global tab complete enabled.");

@@ -26,7 +26,6 @@ public class MariaDB {
 
     private static final int SERIALIZAION_VERSION = 1;
 
-    public static boolean ENABLED;
     private static String HOST;
     private static int PORT;
     private static String DATABASE;
@@ -35,7 +34,6 @@ public class MariaDB {
     private static MariaDbDataSource DS;
 
     public static void loadFromConfig() {
-        ENABLED = DystellarCore.getInstance().getConfig().getBoolean("mariadb.enabled");
         HOST = DystellarCore.getInstance().getConfig().getString("mariadb.host");
         PORT = DystellarCore.getInstance().getConfig().getInt("mariadb.port");
         DATABASE = DystellarCore.getInstance().getConfig().getString("mariadb.database");
@@ -59,7 +57,7 @@ public class MariaDB {
     @Nullable
     public static User loadPlayerFromDatabase(UUID uuid, String IP, String name) {
         try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion FROM players_core WHERE uuid = ?;"
+                "SELECT chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard FROM players_core WHERE uuid = ?;"
         )) {
             statement.setString(1, uuid.toString());
             ResultSet resultSet = statement.executeQuery();
@@ -67,7 +65,7 @@ public class MariaDB {
             if (resultSet.next()) {
                 user = new User(uuid, IP, name);
                 user.setGlobalChatEnabled(resultSet.getBoolean("chat"));
-                user.setPrivateMessagesActive(resultSet.getBoolean("messages"));
+                user.setPrivateMessagesMode((byte) resultSet.getInt("messages"));
                 user.setSuffix(Suffix.valueOf(resultSet.getString("suffix")));
                 String[] punishments = resultSet.getString("punishments") != null ? resultSet.getString("punishments").split(":") : null;
                 if (punishments != null) for (String s : punishments) user.addPunishment(Punishments.deserialize(s));
@@ -75,13 +73,14 @@ public class MariaDB {
                 user.setLanguage(resultSet.getString("lang"));
                 String inbox = resultSet.getString("inbox");
                 if (inbox == null) {
-                    user.setInbox(new Inbox(user));
+                    user.assignInbox(new Inbox(user));
                 } else {
-                    user.setInbox(InboxSerialization.stringToInbox(inbox, user));
+                    user.assignInbox(InboxSerialization.stringToInbox(inbox, user));
                 }
                 int version = resultSet.getInt("version");
                 user.setVersion(version);
                 user.setGlobalTabComplete(resultSet.getBoolean("tabcompletion"));
+                user.setScoreboardEnabled(resultSet.getBoolean("scoreboard"));
                 return user;
             } else {
                 return null;
@@ -117,11 +116,11 @@ public class MariaDB {
         Inbox.SenderListener.unregisterInbox(user.getUUID());
         StringBuilder ipP = null;
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
+             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
         ) {
             statement.setString(1, user.getUUID().toString());
             statement.setBoolean(2, user.isGlobalChatEnabled());
-            statement.setBoolean(3, user.isPrivateMessagesActive());
+            statement.setInt(3, user.getPrivateMessagesMode());
             statement.setString(4, user.getSuffix().name());
             if (user.getPunishments().isEmpty()) statement.setString(5, null);
             else {
@@ -141,6 +140,7 @@ public class MariaDB {
             statement.setString(8, InboxSerialization.inboxToString(user.getInbox()));
             statement.setInt(9, SERIALIZAION_VERSION);
             statement.setBoolean(10, user.isGlobalTabComplete());
+            statement.setBoolean(11, user.isScoreboardEnabled());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();

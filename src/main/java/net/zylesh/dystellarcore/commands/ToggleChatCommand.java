@@ -21,11 +21,11 @@ public class ToggleChatCommand implements CommandExecutor {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
             User playerUser = User.get(player);
-            playerUser.setGlobalChatEnabled(!playerUser.isGlobalChatEnabled());
+            playerUser.toggleGlobalChat();
             if (playerUser.isGlobalChatEnabled()) {
-                player.sendMessage(ChatColor.GREEN + "You enabled global chat.");
+                player.sendMessage(ChatColor.GREEN + "You've enabled global chat.");
             } else {
-                player.sendMessage(ChatColor.YELLOW + "You disabled global chat.");
+                player.sendMessage(ChatColor.YELLOW + "You've disabled global chat.");
             }
         } else {
             commandSender.sendMessage(ChatColor.RED + "You must be a player in order to execute this command.");

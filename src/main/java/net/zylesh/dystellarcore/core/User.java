@@ -7,15 +7,22 @@ import net.zylesh.dystellarcore.serialization.Mapping;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -38,9 +45,14 @@ public class User {
         return users;
     }
 
+    public static final byte PMS_ENABLED = 0;
+    public static final byte PMS_ENABLED_WITH_IGNORELIST = 1;
+    public static final byte PMS_ENABLED_FRIENDS_ONLY = 2;
+    public static final byte PMS_DISABLED = 3;
+
     private final UUID id;
     private boolean globalChatEnabled;
-    private boolean privateMessagesActive = true;
+    private byte privateMessagesMode = PMS_ENABLED_WITH_IGNORELIST;
     private Suffix suffix = Suffix.NONE;
     private final TreeSet<Punishment> punishments = new TreeSet<>();
     private String language = "en";
@@ -50,6 +62,7 @@ public class User {
     private final Set<String> notes = new HashSet<>();
     private Inbox inbox;
     private boolean globalTabComplete = false;
+    private boolean scoreboardEnabled = true;
     public int coins;
     private int version;
 
@@ -67,9 +80,155 @@ public class User {
     /**
      * Warning! Only 1 call per instance.
      */
-    public void setInbox(Inbox inbox) {
+    public void assignInbox(Inbox inbox) {
         if (this.inbox != null) throw new UnsupportedOperationException("An instance already exists.");
         this.inbox = inbox;
+    }
+
+    private Inventory configManager;
+
+    private ItemStack globalChatItem;
+    private ItemStack pmsItem;
+    private ItemStack globalTabCompleteItem;
+    private ItemStack scoreboardEnabledItem;
+
+    public void initializeSettingsPanel(Player p) {
+        configManager = Bukkit.createInventory(p, 18, ChatColor.DARK_AQUA + "Settings");
+
+        this.globalChatItem = new ItemStack(Material.PAPER);
+        this.pmsItem = new ItemStack(Material.BOOK);
+        this.globalTabCompleteItem = new ItemStack(Material.COMMAND);
+        this.scoreboardEnabledItem = new ItemStack(Material.CLAY);
+
+        updateGlobalChatItem();
+        updatePmsItem();
+        updateGlobalTabCompleteItem();
+        updateScoreboardItem();
+    }
+
+    private void updateScoreboardItem() {
+        ItemMeta meta = scoreboardEnabledItem.getItemMeta();
+        meta.setDisplayName(ChatColor.DARK_AQUA + "Scoreboard");
+        List<String> metaList = List.of(
+                " ",
+                scoreboardEnabled ? ChatColor.GREEN + "➢ On" : ChatColor.GRAY + " On",
+                !scoreboardEnabled ? ChatColor.RED + "➢ Off" : ChatColor.GRAY + " Off",
+                " ",
+                ChatColor.YELLOW + "Click to toggle."
+        );
+        meta.setLore(metaList);
+        scoreboardEnabledItem.setItemMeta(meta);
+    }
+
+    public void toggleScoreboard() {
+        setScoreboardEnabled(!scoreboardEnabled);
+        updateScoreboardItem();
+    }
+
+    private void updateGlobalTabCompleteItem() {
+        ItemMeta gtci = globalTabCompleteItem.getItemMeta();
+        gtci.setDisplayName(ChatColor.DARK_AQUA + "Global Tab Completion" + ChatColor.WHITE + ":");
+        List<String> gciList = List.of(
+                " ",
+                globalTabComplete ? ChatColor.GREEN + "➢ On" : ChatColor.GRAY + " On",
+                !globalTabComplete ? ChatColor.RED + "➢ Off" : ChatColor.GRAY + " Off",
+                " ",
+                ChatColor.YELLOW + "Click to toggle."
+        );
+        gtci.setLore(gciList);
+        globalTabCompleteItem.setItemMeta(gtci);
+    }
+
+    public void toggleGlobalTabComplete() {
+        setGlobalTabComplete(!globalTabComplete);
+        updateGlobalTabCompleteItem();
+    }
+
+    private void updateGlobalChatItem() {
+        ItemMeta gci = globalChatItem.getItemMeta();
+        gci.setDisplayName(ChatColor.DARK_AQUA + "Global Chat" + ChatColor.WHITE + ":");
+        List<String> gciList = List.of(
+                " ",
+                globalChatEnabled ? ChatColor.GREEN + "➢ On" : ChatColor.GRAY + " On",
+                !globalChatEnabled ? ChatColor.RED + "➢ Off" : ChatColor.GRAY + " Off",
+                " ",
+                ChatColor.YELLOW + "Click to toggle."
+        );
+        gci.setLore(gciList);
+        globalChatItem.setItemMeta(gci);
+    }
+
+    public void toggleGlobalChat() {
+        setGlobalChatEnabled(!globalChatEnabled);
+        updateGlobalChatItem();
+    }
+
+    private void updatePmsItem() {
+        ItemMeta pmsi = pmsItem.getItemMeta();
+        pmsi.setDisplayName(ChatColor.DARK_AQUA + "Private Messages" + ChatColor.WHITE + ":");
+        List<String> pmsiList = null;
+        switch (privateMessagesMode) {
+            case PMS_ENABLED:
+                pmsiList = List.of(
+                        " ",
+                        ChatColor.GREEN + "➢ On",
+                        ChatColor.GRAY + " On (with Ignore List)",
+                        ChatColor.GRAY + " On (Friends Only)",
+                        ChatColor.GRAY + "Off",
+                        " ",
+                        ChatColor.YELLOW + "Click to change."
+                );
+                break;
+            case PMS_ENABLED_WITH_IGNORELIST:
+                pmsiList = List.of(
+                        " ",
+                        ChatColor.GRAY + " On",
+                        ChatColor.YELLOW + "➢ On (with Ignore List)",
+                        ChatColor.GRAY + " On (Friends Only)",
+                        ChatColor.GRAY + "Off",
+                        " ",
+                        ChatColor.YELLOW + "Click to change."
+                );
+                break;
+            case PMS_ENABLED_FRIENDS_ONLY:
+                pmsiList = List.of(
+                        " ",
+                        ChatColor.GRAY + " On",
+                        ChatColor.GRAY + " On (with Ignore List)",
+                        ChatColor.GOLD + "➢ On (Friends Only)",
+                        ChatColor.GRAY + "Off",
+                        " ",
+                        ChatColor.YELLOW + "Click to change."
+                );
+                break;
+            case PMS_DISABLED:
+                pmsiList = List.of(
+                        " ",
+                        ChatColor.GRAY + " On",
+                        ChatColor.GRAY + " On (with Ignore List)",
+                        ChatColor.GRAY + " On (Friends Only)",
+                        ChatColor.RED + "➢ Off",
+                        " ",
+                        ChatColor.YELLOW + "Click to change."
+                );
+                break;
+        }
+        pmsi.setLore(pmsiList);
+        pmsItem.setItemMeta(pmsi);
+    }
+
+    public void togglePms() {
+        switch (privateMessagesMode) {
+            case PMS_ENABLED:
+            case PMS_ENABLED_WITH_IGNORELIST:
+            case PMS_ENABLED_FRIENDS_ONLY:
+                privateMessagesMode++;
+                break;
+            case PMS_DISABLED:
+                privateMessagesMode = PMS_ENABLED;
+                break;
+        }
+        updatePmsItem();
     }
 
     public Set<String> getNotes() {
@@ -98,6 +257,14 @@ public class User {
 
     public Suffix getSuffix() {
         return suffix;
+    }
+
+    public boolean isScoreboardEnabled() {
+        return scoreboardEnabled;
+    }
+
+    public void setScoreboardEnabled(boolean scoreboardEnabled) {
+        this.scoreboardEnabled = scoreboardEnabled;
     }
 
     public void setSuffix(Suffix suffix) {
@@ -149,12 +316,12 @@ public class User {
         this.lastMessagedPlayer = lastMessagedPlayer;
     }
 
-    public boolean isPrivateMessagesActive() {
-        return privateMessagesActive;
+    public byte getPrivateMessagesMode() {
+        return privateMessagesMode;
     }
 
-    public void setPrivateMessagesActive(boolean privateMessagesActive) {
-        this.privateMessagesActive = privateMessagesActive;
+    public void setPrivateMessagesMode(byte privateMessagesActive) {
+        this.privateMessagesMode = privateMessagesActive;
     }
 
     public void setVersion(int version) {
@@ -185,30 +352,27 @@ public class User {
 
         @EventHandler
         public void onJoin(AsyncPlayerPreLoginEvent event) {
-            if (MariaDB.ENABLED) {
-                User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostAddress(), event.getName());
-                Mapping map = MariaDB.loadMapping(event.getAddress().getHostAddress());
-                if (user == null) user = new User(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
-                if (!user.getPunishments().isEmpty() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
-                    LocalDateTime now = LocalDateTime.now();
-                    for (Punishment punishment : user.punishments) {
-                        if (punishment.getExpirationDate().isBefore(now) && !punishment.allowJoinMinigames()) {
-                            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage().replaceAll("<reason>", punishment.getReason()).replaceAll("<time>", Utils.getTimeFormat(punishment.getExpirationDate())));
-                            return;
-                        }
+            User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostAddress(), event.getName());
+            Mapping map = MariaDB.loadMapping(event.getAddress().getHostAddress());
+            if (user == null) user = new User(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
+            if (!user.getPunishments().isEmpty() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
+                LocalDateTime now = LocalDateTime.now();
+                for (Punishment punishment : user.punishments) {
+                    if (punishment.getExpirationDate().isBefore(now) && !punishment.allowJoinMinigames()) {
+                        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage().replaceAll("<reason>", punishment.getReason()).replaceAll("<time>", Utils.getTimeFormat(punishment.getExpirationDate())));
+                        return;
                     }
                 }
-                if (map != null && map.getPunishments() != null && !map.getPunishments().isEmpty()) {
-                    LocalDateTime now = LocalDateTime.now();
-                    for (Punishment punishment : map.getPunishments()) {
-                        if (punishment.getExpirationDate().isBefore(now)) {
-                            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage().replaceAll("<reason>", punishment.getReason()).replaceAll("<time>", Utils.getTimeFormat(punishment.getExpirationDate())));
-                        }
-                    }
-                }
-
-                users.put(event.getUniqueId(), user);
             }
+            if (map != null && map.getPunishments() != null && !map.getPunishments().isEmpty()) {
+                LocalDateTime now = LocalDateTime.now();
+                for (Punishment punishment : map.getPunishments()) {
+                    if (punishment.getExpirationDate().isBefore(now)) {
+                        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, punishment.getMessage().replaceAll("<reason>", punishment.getReason()).replaceAll("<time>", Utils.getTimeFormat(punishment.getExpirationDate())));
+                    }
+                }
+            }
+            users.put(event.getUniqueId(), user);
         }
 
         @EventHandler
@@ -217,20 +381,40 @@ public class User {
             event.getPlayer().setSaturation(12.0f);
             event.getPlayer().setHealth(20.0);
             if (User.get(event.getPlayer()).globalTabComplete) DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.GLOBAL_TAB_REGISTER);
+            User user = User.get(event.getPlayer());
+            user.initializeSettingsPanel(event.getPlayer());
+        }
+
+        @EventHandler
+        public void clicked(InventoryClickEvent event) {
+            User u = User.get(event.getWhoClicked().getUniqueId());
+            if (event.getClickedInventory().equals(u.configManager)) {
+                event.setCancelled(true);
+                ItemStack i = event.getCurrentItem();
+                if (i == null || i.getType() == Material.AIR) return;
+                if (i.equals(u.globalChatItem)) u.toggleGlobalChat();
+                else if (i.equals(u.pmsItem)) u.togglePms();
+                else if (i.equals(u.globalTabCompleteItem)) u.toggleGlobalTabComplete();
+                else if (i.equals(u.scoreboardEnabledItem)) u.toggleScoreboard();
+                Player p = (Player) event.getWhoClicked();
+                p.playSound(p.getLocation(), Sound.CLICK, 1.8f, 1.8f);
+            }
+        }
+
+        @EventHandler
+        public void drag(InventoryDragEvent event) {
+            User u = User.get(event.getWhoClicked().getUniqueId());
+            if (event.getInventory().equals(u.configManager)) event.setCancelled(true);
         }
 
         @EventHandler
         public void onLeave(PlayerQuitEvent event) {
-            if (MariaDB.ENABLED) {
-                DystellarCore.getAsyncManager().submit(() -> MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId())));
-            }
+            DystellarCore.getAsyncManager().submit(() -> MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId())));
         }
 
         @EventHandler
         public void onKick(PlayerKickEvent event) {
-            if (MariaDB.ENABLED) {
-                DystellarCore.getAsyncManager().submit(() -> MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId())));
-            }
+            DystellarCore.getAsyncManager().submit(() -> MariaDB.savePlayerToDatabase(users.get(event.getPlayer().getUniqueId())));
         }
     }
 }

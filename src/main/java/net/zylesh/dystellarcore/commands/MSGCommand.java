@@ -9,6 +9,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static net.zylesh.dystellarcore.core.User.*;
+
 public class MSGCommand implements CommandExecutor {
 
     public MSGCommand() {
@@ -21,8 +23,8 @@ public class MSGCommand implements CommandExecutor {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
             User playerUser = User.get(player);
-            if (!playerUser.isPrivateMessagesActive()) {
-                player.sendMessage(ChatColor.RED + "You can't send messages while having private messages disabled. Enable them with " + ChatColor.YELLOW + "/tpm");
+            if (playerUser.getPrivateMessagesMode() == PMS_DISABLED) {
+                player.sendMessage(ChatColor.RED + "You can't send messages while blocking all private messages. Enable them with " + ChatColor.YELLOW + "/pms");
                 return true;
             }
             if (strings.length - 1 >= 1) {
@@ -32,24 +34,33 @@ public class MSGCommand implements CommandExecutor {
                 } else {
                     if (playerInt.isOnline()) {
                         User playerUserInt = User.get(playerInt);
-                        if (playerUserInt.isPrivateMessagesActive()) {
-                            playerUser.setLastMessagedPlayer(playerUserInt);
-                            playerUserInt.setLastMessagedPlayer(playerUser);
-                            StringBuilder message = new StringBuilder();
-                            for (int i = 1; i < strings.length; i++) {
-                                message.append(strings[i]).append(" ");
-                            }
-                            player.sendMessage(DystellarCore.MSG_SEND_FORMAT
-                                    .replaceAll("-sender", player.getPlayerListName())
-                                    .replaceAll("-receiver", playerInt.getPlayerListName())
-                                    .replaceAll("-message", message.toString()));
-                            playerInt.sendMessage(DystellarCore.MSG_RECEIVE_FORMAT
-                                    .replaceAll("-sender", player.getPlayerListName())
-                                    .replaceAll("-receiver", playerInt.getPlayerListName())
-                                    .replaceAll("-message", message.toString()));
-                        } else {
-                            player.sendMessage(DystellarCore.PLAYER_MSG_DISABLED.replaceAll("-player", strings[0]));
+                        switch (playerUserInt.getPrivateMessagesMode()) {
+                            case PMS_ENABLED:
+                                break;
+                            case PMS_ENABLED_WITH_IGNORELIST:
+                                // TODO
+                                break;
+                            case PMS_ENABLED_FRIENDS_ONLY:
+                                // TODO
+                                break;
+                            case PMS_DISABLED:
+                                player.sendMessage(DystellarCore.PLAYER_MSG_DISABLED.replaceAll("-player", strings[0]));
+                                return true;
                         }
+                        playerUser.setLastMessagedPlayer(playerUserInt);
+                        playerUserInt.setLastMessagedPlayer(playerUser);
+                        StringBuilder message = new StringBuilder();
+                        for (int i = 1; i < strings.length; i++) {
+                            message.append(strings[i]).append(" ");
+                        }
+                        player.sendMessage(DystellarCore.MSG_SEND_FORMAT
+                                .replaceAll("-sender", player.getPlayerListName())
+                                .replaceAll("-receiver", playerInt.getPlayerListName())
+                                .replaceAll("-message", message.toString()));
+                        playerInt.sendMessage(DystellarCore.MSG_RECEIVE_FORMAT
+                                .replaceAll("-sender", player.getPlayerListName())
+                                .replaceAll("-receiver", playerInt.getPlayerListName())
+                                .replaceAll("-message", message.toString()));
                     } else {
                         player.sendMessage(ChatColor.RED + strings[0] + " is not online.");
                     }

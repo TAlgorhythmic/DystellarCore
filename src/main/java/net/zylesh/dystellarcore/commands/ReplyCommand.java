@@ -21,10 +21,11 @@ public class ReplyCommand implements CommandExecutor {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
             User playerUser = User.get(player);
-            if (!playerUser.isPrivateMessagesActive()) {
+            if (playerUser.getPrivateMessagesMode() == User.PMS_DISABLED) {
                 player.sendMessage(ChatColor.RED + "You can't send messages while having private messages disabled. Enable them with " + ChatColor.YELLOW + "/tpm");
                 return true;
             }
+            // TODO Ignore list
             if (strings.length - 1 >= 0) {
                 if (playerUser.getLastMessagedPlayer() != null) {
                     Player lastMessaged = Bukkit.getPlayer(playerUser.getUUID());
