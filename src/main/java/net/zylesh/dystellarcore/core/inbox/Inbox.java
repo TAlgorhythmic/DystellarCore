@@ -13,9 +13,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -35,7 +33,7 @@ public class Inbox {
 
     private final User user;
     private final Inventory inbox;
-    protected final TreeSet<InboxSender> senders = new TreeSet<>();
+    protected final SortedSet<InboxSender> senders = Collections.synchronizedSortedSet(new TreeSet<>());
 
     public Inbox(User user) {
         this.user = user;

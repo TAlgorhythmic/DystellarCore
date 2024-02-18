@@ -16,6 +16,7 @@ import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
 import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
 import net.zylesh.dystellarcore.core.inbox.senders.Message;
 import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
+import net.zylesh.dystellarcore.listeners.PluginMessageScheduler;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
@@ -149,6 +150,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new PingCommand();
         new ToggleChatCommand();
         new PacketListener();
+        new PluginMessageScheduler();
         new InboxCommand();
         PacketListener.registerPacketHandler(new IPacketListener() {
             @Override
