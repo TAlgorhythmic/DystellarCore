@@ -49,4 +49,31 @@ public class Utils {
         }
         return false;
     }
+
+    public static <T> boolean replaceFirstNull(T[] array, T item) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == null) {
+                array[i] = item;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static <T> boolean remove(T[] array, T item) {
+        for (int i = 0; i < array.length; i++) {
+            if (Objects.equals(array[i], item)) {
+                array[i] = null;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static <T> boolean nullExists(T[] array) {
+        for (T t : array) {
+            if (t == null) return true;
+        }
+        return false;
+    }
 }
