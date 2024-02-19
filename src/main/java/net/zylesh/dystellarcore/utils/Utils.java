@@ -11,6 +11,7 @@ import org.spigotmc.ProtocolInjector;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class Utils {
 
@@ -40,5 +41,12 @@ public class Utils {
             player.sendPacket(titlePacket);
             player.sendPacket(subtitlePacket);
         }
+    }
+
+    public static <T> boolean contains(T[] array, T item) {
+        for (T t : array) {
+            if (Objects.equals(t, item)) return true;
+        }
+        return false;
     }
 }
