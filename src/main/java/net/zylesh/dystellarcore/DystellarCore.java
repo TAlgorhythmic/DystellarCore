@@ -151,6 +151,8 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new ToggleChatCommand();
         new PacketListener();
         new PluginMessageScheduler();
+        new IgnoreCommand();
+        new IgnoreListCommand();
         new InboxCommand();
         PacketListener.registerPacketHandler(new IPacketListener() {
             @Override

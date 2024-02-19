@@ -22,14 +22,17 @@ public class ReplyCommand implements CommandExecutor {
             Player player = (Player) commandSender;
             User playerUser = User.get(player);
             if (playerUser.getPrivateMessagesMode() == User.PMS_DISABLED) {
-                player.sendMessage(ChatColor.RED + "You can't send messages while having private messages disabled. Enable them with " + ChatColor.YELLOW + "/tpm");
+                player.sendMessage(ChatColor.RED + "You can't send messages while having private messages disabled. Enable them with " + ChatColor.YELLOW + "/pms");
                 return true;
             }
-            // TODO Ignore list
             if (strings.length - 1 >= 0) {
                 if (playerUser.getLastMessagedPlayer() != null) {
                     Player lastMessaged = Bukkit.getPlayer(playerUser.getUUID());
                     if (lastMessaged != null) {
+                        if (playerUser.getLastMessagedPlayer().getIgnoreList().contains(player.getUniqueId())) {
+                            player.sendMessage(ChatColor.RED + "This player is ignoring you.");
+                            return true;
+                        }
                         StringBuilder message = new StringBuilder();
                         for (String string : strings) {
                             message.append(string).append(" ");

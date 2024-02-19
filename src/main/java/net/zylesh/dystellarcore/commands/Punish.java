@@ -4,7 +4,6 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.*;
-import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Utils;
 import net.zylesh.practice.PParty;
 import net.zylesh.practice.PUser;
@@ -30,6 +29,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
+import static net.zylesh.practice.PUser.*;
 
 public class Punish implements CommandExecutor, Listener {
 
@@ -456,7 +457,7 @@ public class Punish implements CommandExecutor, Listener {
         if (user != null && !user.isGlobalChatEnabled()) event.setCancelled(true);
         if (!event.getPlayer().hasPermission("dystellar.plus")) {
             if (chatCooldown.contains(event.getPlayer().getUniqueId())) {
-                event.getPlayer().sendMessage(ChatColor.RED + "You're on chat cooldown, please wait before typing again. " + ChatColor.DARK_GREEN + "(Plus rank and up bypass this!)");
+                event.getPlayer().sendMessage(ChatColor.RED + "You're on chat cooldown, please wait before typing again. " + ChatColor.DARK_GREEN + "(Plus ranks and up bypass this!)");
                 event.setCancelled(true);
                 return;
             } else {
@@ -474,6 +475,25 @@ public class Punish implements CommandExecutor, Listener {
                         pl.getPlayer().sendMessage(ChatColor.DARK_PURPLE + player.getPlayer().getDisplayName() + ChatColor.RESET + ": " + ChatColor.AQUA + ChatColor.translateAlternateColorCodes('&', event.getMessage()));
                     } else {
                         pl.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + player.getPlayer().getDisplayName() + ChatColor.RESET + ": " + ChatColor.AQUA + event.getMessage());
+                    }
+                }
+            } else if (player.isInGame() && player.getLastGame().isRanked()) {
+                switch (player.getDoNotDisturbMode()) {
+                    case ENABLED_CHAT_ONLY:
+                    case ENABLED:
+                        event.setCancelled(true);
+                        event.getPlayer().sendMessage(ChatColor.RED + "You have do not disturb mode enabled.");
+                        break;
+                }
+            } else {
+                for (PUser users : PUser.getUsers().values()) {
+                    if (users.isInGame() && users.getLastGame().isRanked()) {
+                        switch (users.getDoNotDisturbMode()) {
+                            case ENABLED_CHAT_ONLY:
+                            case ENABLED:
+                                event.getRecipients().remove(users.getPlayer());
+                                break;
+                        }
                     }
                 }
             }

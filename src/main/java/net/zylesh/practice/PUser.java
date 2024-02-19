@@ -36,6 +36,16 @@ import static net.zylesh.practice.practicecore.util.Msg.PLAYER_SPECTATE_BROADCAS
 
 public class PUser implements Comparable<PUser>, Listener {
 
+    // TODO Do not disturb item configs
+
+    /**
+     * Do Not Disturb Modes
+     */
+    public static final byte DISABLED = 0;
+    public static final byte ENABLED_CHAT_ONLY = 1;
+    public static final byte ENABLED_PMS_ONLY = 2;
+    public static final byte ENABLED = 3;
+
     protected static final Map<UUID, PUser> users = new ConcurrentHashMap<>(Bukkit.getMaxPlayers());
 
     public static PUser get(Player p) {
@@ -80,6 +90,7 @@ public class PUser implements Comparable<PUser>, Listener {
     public int deaths = 0;
     public PKillEffect killEffect;
     public final EnumSet<PKillEffect> ownedEffects;
+    private byte doNotDisturbMode = DISABLED;
 
     public PUser(UUID playeruuid) {
         this.invsEdited = new HashMap<>();
@@ -115,7 +126,7 @@ public class PUser implements Comparable<PUser>, Listener {
         return elo / this.elo.values().size();
     }
 
-    public PUser(UUID uuid, String name, String rank, PKillEffect killEffect, boolean displayRank, boolean duelRequestsEnabled, int playerVisibility, Map<Ladder, ItemStack[]> invs, Map<Ladder, Integer> elo, int kills, int deaths, EnumSet<PKillEffect> ownedEffects, boolean initInvs) {
+    public PUser(UUID uuid, String name, String rank, PKillEffect killEffect, boolean displayRank, boolean duelRequestsEnabled, int playerVisibility, Map<Ladder, ItemStack[]> invs, Map<Ladder, Integer> elo, int kills, int deaths, EnumSet<PKillEffect> ownedEffects, boolean initInvs, byte doNotDisturb) {
         this.name = name;
         this.uuid = uuid;
         this.player = Bukkit.getPlayer(uuid);
@@ -127,6 +138,7 @@ public class PUser implements Comparable<PUser>, Listener {
         this.invsEdited = invs;
         this.ownedEffects = ownedEffects;
         this.elo = elo;
+        this.doNotDisturbMode = doNotDisturb;
         if (initInvs) {
             this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
             this.playerVisibilityItem = new ItemStack(Material.INK_SACK);
@@ -180,6 +192,14 @@ public class PUser implements Comparable<PUser>, Listener {
 
     public Map<Ladder, ItemStack[]> getInvsEdited() {
         return invsEdited;
+    }
+
+    public byte getDoNotDisturbMode() {
+        return doNotDisturbMode;
+    }
+
+    public void setDoNotDisturbMode(byte doNotDisturbMode) {
+        this.doNotDisturbMode = doNotDisturbMode;
     }
 
     public Inventory getSettings() {

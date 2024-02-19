@@ -62,11 +62,6 @@ public final class PApi {
         PKillEffect.initialize();
     }
 
-    public void onBanPunishment(Punishment punishment, UUID uuid) {
-        if (!(punishment instanceof Ban) && !(punishment instanceof RankedBan)) return;
-
-    }
-
     public static int getParsedNumber(String s) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {

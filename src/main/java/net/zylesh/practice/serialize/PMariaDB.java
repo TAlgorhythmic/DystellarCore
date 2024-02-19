@@ -26,7 +26,7 @@ public class PMariaDB {
      * @param user player to save
      */
     public static void savePlayerToDatabase(PUser user) {
-        try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement("REPLACE practice_players(uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+        try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement("REPLACE practice_players(uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects, dnd) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
             statement.setString(1, user.getUuid().toString());
             statement.setString(2, user.getName());
             statement.setString(3, user.getRank());
@@ -58,7 +58,7 @@ public class PMariaDB {
 
     public static PUser loadPlayerFromDatabase(UUID uuid, boolean loadInvs) {
         try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths FROM practice_players WHERE uuid = ?;"
+                "SELECT name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects, dnd FROM practice_players WHERE uuid = ?;"
         )) {
             statement.setString(1, uuid.toString());
             ResultSet resultSet = statement.executeQuery();
@@ -94,7 +94,8 @@ public class PMariaDB {
                         effectEnumSet.add(PKillEffect.valueOf(e));
                     } catch (IllegalArgumentException ignored) {}
                 }
-                return new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, loadInvs);
+                byte doNotDisturb = (byte) resultSet.getInt("dnd");
+                return new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, loadInvs, doNotDisturb);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -106,7 +107,7 @@ public class PMariaDB {
     public static Set<PUser> getAllPlayers() {
         Set<PUser> players = new HashSet<>();
         try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths FROM practice_players;"
+                "SELECT uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects, dnd FROM practice_players;"
         )) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -142,7 +143,8 @@ public class PMariaDB {
                         effectEnumSet.add(PKillEffect.valueOf(e));
                     } catch (IllegalArgumentException ignored) {}
                 }
-                PUser user = new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, false);
+                byte doNotDisturb = (byte) resultSet.getInt("dnd");
+                PUser user = new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, false, doNotDisturb);
                 players.add(user);
             }
         } catch (SQLException e) {

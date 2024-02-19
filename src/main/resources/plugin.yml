@@ -33,6 +33,14 @@ commands:
       - gm
     permission: dystellar.mod
     permission-message: Unknown command.
+  ignorelist:
+    description: IgnoreList management command.
+    usage: /ignorelist <args>
+  ignore:
+    usage: /ignore <player>
+    description: Stop receiving messages from a player.
+    aliases:
+      - block
   heal:
     permission: dystellar.mod
     permission-message: Unknown command.
@@ -76,6 +84,7 @@ commands:
   message:
     aliases:
       - msg
+      - tell
     usage: /message <player> <message>
     description: Send a message to a player.
   reply:

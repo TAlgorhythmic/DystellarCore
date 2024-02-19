@@ -57,7 +57,7 @@ public class MariaDB {
     @Nullable
     public static User loadPlayerFromDatabase(UUID uuid, String IP, String name) {
         try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard FROM players_core WHERE uuid = ?;"
+                "SELECT chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard, ignoreList FROM players_core WHERE uuid = ?;"
         )) {
             statement.setString(1, uuid.toString());
             ResultSet resultSet = statement.executeQuery();
@@ -81,6 +81,8 @@ public class MariaDB {
                 user.setVersion(version);
                 user.setGlobalTabComplete(resultSet.getBoolean("tabcompletion"));
                 user.setScoreboardEnabled(resultSet.getBoolean("scoreboard"));
+                for (String uuids : resultSet.getString("ignoreList").split(";"))
+                    user.getIgnoreList().add(UUID.fromString(uuids));
                 return user;
             } else {
                 return null;
@@ -116,7 +118,7 @@ public class MariaDB {
         Inbox.SenderListener.unregisterInbox(user.getUUID());
         StringBuilder ipP = null;
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
+             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard, ignoreList) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
         ) {
             statement.setString(1, user.getUUID().toString());
             statement.setBoolean(2, user.isGlobalChatEnabled());
@@ -141,6 +143,9 @@ public class MariaDB {
             statement.setInt(9, SERIALIZAION_VERSION);
             statement.setBoolean(10, user.isGlobalTabComplete());
             statement.setBoolean(11, user.isScoreboardEnabled());
+            StringBuilder builder = new StringBuilder();
+            for (UUID uuid : user.getIgnoreList()) builder.append(uuid).append(";");
+            statement.setString(12, builder.toString());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -219,6 +224,49 @@ public class MariaDB {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not delete data.");
         }
+    }
+
+    public static Set<Mapping> getUUIDMappings(UUID... uuids) {
+        Set<Mapping> uuidMappings = new HashSet<>();
+        Set<UUID> uuids1 = new HashSet<>(Arrays.asList(uuids));
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT something0, something1, something2, punishments FROM mappings;")) {
+            ResultSet rs = statement.executeQuery();
+            if (uuids1.isEmpty()) {
+                while (rs.next()) {
+                    String uuid = rs.getString("something0");
+                    if (!stringIsUUID(uuid)) continue;
+                    String ip = rs.getString("something1");
+                    String name = rs.getString("something2");
+                    Set<Punishment> punishmentSet = null;
+                    String punishments = rs.getString("punishments");
+                    if (punishments != null) {
+                        punishmentSet = new HashSet<>();
+                        for (String s : punishments.split(":"))
+                            punishmentSet.add(Punishments.deserialize(s));
+                    }
+                    uuidMappings.add(new Mapping(UUID.fromString(uuid), ip, name, punishmentSet));
+                }
+            } else {
+                while (rs.next()) {
+                    String uuid = rs.getString("something0");
+                    UUID realUUID = UUID.fromString(uuid);
+                    if (!stringIsUUID(uuid) || !uuids1.contains(realUUID)) continue;
+                    String ip = rs.getString("something1");
+                    String name = rs.getString("something2");
+                    Set<Punishment> punishmentSet = null;
+                    String punishments = rs.getString("punishments");
+                    if (punishments != null) {
+                        punishmentSet = new HashSet<>();
+                        for (String s : punishments.split(":"))
+                            punishmentSet.add(Punishments.deserialize(s));
+                    }
+                    uuidMappings.add(new Mapping(UUID.fromString(uuid), ip, name, punishmentSet));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return uuidMappings;
     }
 
     /*

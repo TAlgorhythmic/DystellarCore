@@ -65,6 +65,7 @@ public class User {
     private boolean scoreboardEnabled = true;
     public int coins;
     private int version;
+    private final Set<UUID> ignoreList = Collections.synchronizedSet(new HashSet<>());
 
     public User(UUID id, String ip, String name) {
         this.id = id;
@@ -123,6 +124,10 @@ public class User {
     public void toggleScoreboard() {
         setScoreboardEnabled(!scoreboardEnabled);
         updateScoreboardItem();
+    }
+
+    public Set<UUID> getIgnoreList() {
+        return ignoreList;
     }
 
     private void updateGlobalTabCompleteItem() {
