@@ -9,6 +9,7 @@ import com.lunarclient.bukkitapi.title.TitleType;
 import org.bukkit.entity.Player;
 import org.spigotmc.ProtocolInjector;
 
+import java.lang.reflect.Array;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -75,5 +76,42 @@ public class Utils {
             if (t == null) return true;
         }
         return false;
+    }
+
+    /**
+     * Expects arrays length to be the same!
+     * prioritizes array1, if it has null values then replace them with values in array2
+     * @param array1 first array
+     * @param array2 second array
+     * @param <T> whatever object type
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] mergeArraysCopy(Class<T> clazz, T[] array1, T[] array2) {
+        T[] arrayCopy = (T[]) Array.newInstance(clazz, array1.length);
+        System.arraycopy(array1, 0, arrayCopy, 0, array1.length);
+        for (int i = 0; i < arrayCopy.length; i++) {
+            if (arrayCopy[i] == null) arrayCopy[i] = array2[i];
+        }
+        return arrayCopy;
+    }
+
+    public static <T> boolean switchArrayPos(T[] array1, T[] array2, T item) {
+        for (int i = 0; i < array1.length; i++) {
+            if (Objects.equals(array1[i], item)) {
+                array1[i] = null;
+                array2[i] = item;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static <T> void returnItemsToArray1(T[] array1, T[] array2) {
+        for (int i = 0; i < array1.length; i++) {
+            if (array1[i] == null) {
+                array1[i] = array2[i];
+                array2[i] = null;
+            }
+        }
     }
 }

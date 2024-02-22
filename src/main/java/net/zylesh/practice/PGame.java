@@ -38,9 +38,9 @@ public abstract class PGame {
     public final Map<Player, Integer> hits = new HashMap<>();
     public final Map<Player, Integer> combo = new HashMap<>();
     protected final Map<UUID, Inventory> invs = new LinkedHashMap<>();
-    protected final List<PUser> spectators = new ArrayList<>();
-    protected List<PUser> winners;
-    protected List<PUser> losers;
+    protected final Set<PUser> spectators = new HashSet<>();
+    protected PUser[] winners;
+    protected PUser[] losers;
     protected LocalDateTime date;
     protected final boolean isDuel;
     protected boolean isEnded = false;
@@ -76,7 +76,7 @@ public abstract class PGame {
         return invs;
     }
 
-    public List<PUser> getSpectators() {
+    public Set<PUser> getSpectators() {
         return this.spectators;
     }
 
@@ -120,11 +120,11 @@ public abstract class PGame {
         spectators.remove(player);
     }
 
-    public List<PUser> getWinners() {
+    public PUser[] getWinners() {
         return winners;
     }
 
-    public List<PUser> getLosers() {
+    public PUser[] getLosers() {
         return losers;
     }
 
@@ -157,7 +157,7 @@ public abstract class PGame {
 
     protected abstract void giveItems();
 
-    public abstract void nextRound(@Nullable List<PUser> winners);
+    public abstract void nextRound(@Nullable PUser[] winners);
 
     public void resetArena() {
         for (List<Block> blocks : blocksPlaced.values()) {
@@ -206,7 +206,7 @@ public abstract class PGame {
 
     public abstract void endUnexpectedly(String message);
 
-    public void end(List<PUser> winner, List<PUser> loser) {
+    public void end(PUser[] winner, PUser[] loser) {
         this.winners = winner;
         this.losers = loser;
         this.date = LocalDateTime.now();
@@ -220,26 +220,26 @@ public abstract class PGame {
                 player.deaths++;
             }
         }
-        Bukkit.getPluginManager().callEvent(new FightEndEvent(winner, loser, ladder, arena, this, hits));
-        if (winner.size() == 1 && loser.size() == 1) {
+        Bukkit.getPluginManager().callEvent(new FightEndEvent(Arrays.asList(winner), Arrays.asList(loser), ladder, arena, this, hits));
+        if (winner.length == 1 && loser.length == 1) {
             IChatBaseComponent component = ChatSerializer.a("[\"\",{\"text\":\"Match Results:\",\"bold\":true,\"color\":\"yellow\"},{\"text\":\" (Click to see inventories)\",\"color\":\"aqua\"}]");
             IChatBaseComponent component1 = ChatSerializer.a("{\"text\":\"---------------------------------\",\"strikethrough\":true,\"color\":\"yellow\"}");
-            IChatBaseComponent component2 = ChatSerializer.a("[\"\",{\"text\":\" \"},{\"text\":\" - Winner\",\"color\":\"green\"},{\"text\":\": \"},{\"text\":\"" + winner.get(0).getName() + "\",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv " + winner.get(0).getName() + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}},{\"text\":\" \"},{\"text\":\"- Loser\",\"color\":\"red\"},{\"text\":\": \"},{\"text\":\"" + loser.get(0).getName() + "\",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv " + loser.get(0).getName() + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}}]");
+            IChatBaseComponent component2 = ChatSerializer.a("[\"\",{\"text\":\" \"},{\"text\":\" - Winner\",\"color\":\"green\"},{\"text\":\": \"},{\"text\":\"" + winner[0].getName() + "\",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv " + winner[0].getName() + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}},{\"text\":\" \"},{\"text\":\"- Loser\",\"color\":\"red\"},{\"text\":\": \"},{\"text\":\"" + loser[0].getName() + "\",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv " + loser[0].getName() + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}}]");
             IChatBaseComponent component3 = ChatSerializer.a("{\"text\":\"---------------------------------\",\"strikethrough\":true,\"color\":\"yellow\"}");
             PacketPlayOutChat chat = new PacketPlayOutChat(component);
             PacketPlayOutChat chat1 = new PacketPlayOutChat(component1);
             PacketPlayOutChat chat2 = new PacketPlayOutChat(component2);
             PacketPlayOutChat chat3 = new PacketPlayOutChat(component3);
-            winner.get(0).getPlayer().sendMessage(" ");
-            ((CraftPlayer) winner.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat);
-            ((CraftPlayer) winner.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat1);
-            ((CraftPlayer) winner.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat2);
-            ((CraftPlayer) winner.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat3);
-            loser.get(0).getPlayer().sendMessage(" ");
-            ((CraftPlayer) loser.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat);
-            ((CraftPlayer) loser.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat1);
-            ((CraftPlayer) loser.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat2);
-            ((CraftPlayer) loser.get(0).getPlayer()).getHandle().playerConnection.sendPacket(chat3);
+            winner[0].getPlayer().sendMessage(" ");
+            ((CraftPlayer) winner[0].getPlayer()).getHandle().playerConnection.sendPacket(chat);
+            ((CraftPlayer) winner[0].getPlayer()).getHandle().playerConnection.sendPacket(chat1);
+            ((CraftPlayer) winner[0].getPlayer()).getHandle().playerConnection.sendPacket(chat2);
+            ((CraftPlayer) winner[0].getPlayer()).getHandle().playerConnection.sendPacket(chat3);
+            loser[0].getPlayer().sendMessage(" ");
+            ((CraftPlayer) loser[0].getPlayer()).getHandle().playerConnection.sendPacket(chat);
+            ((CraftPlayer) loser[0].getPlayer()).getHandle().playerConnection.sendPacket(chat1);
+            ((CraftPlayer) loser[0].getPlayer()).getHandle().playerConnection.sendPacket(chat2);
+            ((CraftPlayer) loser[0].getPlayer()).getHandle().playerConnection.sendPacket(chat3);
             for (PUser spec : spectators) {
                 spec.getPlayer().sendMessage(" ");
                 ((CraftPlayer) spec.getPlayer()).getHandle().playerConnection.sendPacket(chat);
@@ -251,14 +251,14 @@ public abstract class PGame {
             StringBuilder builder1 = new StringBuilder();
             StringBuilder builder2 = new StringBuilder();
             for (PUser p : winner) {
-                if (winner.get(0).equals(p)) {
+                if (winner[0].equals(p)) {
                     builder1.append("{\"text\":\"").append(p.getName()).append("\",\"color\":\"white\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv ").append(p.getName()).append("\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}}");
                 } else {
                     builder1.append(",{\"text\":\",\",\"color\":\"white\"},").append("{\"text\":\"").append(p.getName()).append("\",\"color\":\"white\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv ").append(p.getName()).append("\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}}");
                 }
             }
             for (PUser p : loser) {
-                if (loser.get(0).equals(p)) {
+                if (loser[0].equals(p)) {
                     builder2.append("{\"text\":\"").append(p.getName()).append("\",\"color\":\"white\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv ").append(p.getName()).append("\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}}");
                 } else {
                     builder2.append(",{\"text\":\",\",\"color\":\"white\"},").append("{\"text\":\"").append(p.getName()).append("\",\"color\":\"white\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/lastinv ").append(p.getName()).append("\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§a(Click to see inventory)\"}}");
@@ -326,8 +326,8 @@ public abstract class PGame {
             for (PUser los : loser) {
                 elol += los.elo.get(ladder);
             }
-            elo /= winner.size();
-            elol /= loser.size();
+            elo /= winner.length;
+            elol /= loser.length;
             if (elo == elol) {
                 for (PUser win : winner) {
                     int newElo = win.elo.get(ladder) + 16;
@@ -369,9 +369,9 @@ public abstract class PGame {
                 }
                 this.eloChange = eloChange;
             }
-            if (winner.size() == 1 && loser.size() == 1) {
+            if (winner.length == 1 && loser.length == 1) {
                 broadcastToGame(ChatColor.BLUE + "Elo Updates:");
-                broadcastToGame(ChatColor.GREEN + winner.get(0).getName() + " - " + winner.get(0).elo.get(ladder) + ChatColor.GOLD + " (+" + this.eloChange + ") " + ChatColor.WHITE + "| " + ChatColor.RED + loser.get(0).getName() + " - " + loser.get(0).elo.get(ladder) + ChatColor.GRAY + " (-" + eloChange + ")");
+                broadcastToGame(ChatColor.GREEN + winner[0].getName() + " - " + winner[0].elo.get(ladder) + ChatColor.GOLD + " (+" + this.eloChange + ") " + ChatColor.WHITE + "| " + ChatColor.RED + loser[0].getName() + " - " + loser[0].elo.get(ladder) + ChatColor.GRAY + " (-" + eloChange + ")");
             } else {
                 StringBuilder winners = new StringBuilder();
                 StringBuilder losers = new StringBuilder();

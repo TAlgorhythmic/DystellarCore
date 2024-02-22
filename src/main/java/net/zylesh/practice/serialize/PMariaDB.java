@@ -2,6 +2,7 @@ package net.zylesh.practice.serialize;
 
 import net.zylesh.dystellarcore.serialization.InventorySerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
+import net.zylesh.dystellarcore.utils.Utils;
 import net.zylesh.practice.Ladder;
 import net.zylesh.practice.PApi;
 import net.zylesh.practice.PKillEffect;
@@ -178,9 +179,9 @@ public class PMariaDB {
             data.getPlayers().forEach(uuid -> sb.append(uuid).append(";"));
             statement.setString(3, sb.toString());
             StringBuilder sb1 = new StringBuilder();
-            data.getWinners().forEach(uuid -> sb1.append(uuid).append(","));
+            for (UUID uuid : data.getWinners()) sb1.append(uuid).append(",");
             sb1.append(";");
-            data.getLosers().forEach(uuid -> sb1.append(uuid).append(","));
+            for (UUID uuid : data.getLosers()) sb1.append(uuid).append(",");
             statement.setString(4, sb1.toString());
             statement.setInt(5, data.getEloChange()); // eloChange
             StringBuilder sb2 = new StringBuilder();
@@ -207,34 +208,44 @@ public class PMariaDB {
         Set<GameData> data = new HashSet<>();
         try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT arena, ladder, players, results, eloChange, invs, hits, combos, gameDate, seconds FROM practice_rankeds;")) {
             ResultSet resultSet = statement.executeQuery();
-            String arena = resultSet.getString("arena");
-            String ladder = resultSet.getString("ladder");
-            List<UUID> players = new ArrayList<>();
-            for (String uuid : resultSet.getString("players").split(";")) players.add(UUID.fromString(uuid));
-            String[] results = resultSet.getString("results").split(";");
-            List<UUID> winners = new ArrayList<>();
-            for (String uuid : results[0].split(",")) winners.add(UUID.fromString(uuid));
-            List<UUID> losers = new ArrayList<>();
-            for (String uuid : results[1].split(",")) losers.add(UUID.fromString(uuid));
-            int eloChange = resultSet.getInt("eloChange");
-            Map<UUID, String> invs = new HashMap<>();
-            for (String s : resultSet.getString("invs").split(";")) {
-                String[] entry = s.split("=");
-                invs.put(UUID.fromString(entry[0]), entry[1]);
+            while (resultSet.next()) {
+                String arena = resultSet.getString("arena");
+                String ladder = resultSet.getString("ladder");
+
+                String[] uuids = resultSet.getString("players").split(";");
+                UUID[] players = new UUID[uuids.length];
+                for (int i = 0; i < players.length; i++) players[i] = UUID.fromString(uuids[i]);
+
+                String[] results = resultSet.getString("results").split(";");
+
+                String[] results0 = results[0].split(",");
+                UUID[] winners = new UUID[results0.length];
+                for (int i = 0; i < winners.length; i++) winners[i] = UUID.fromString(results[i]);
+
+                String[] results1 = results[1].split(",");
+                UUID[] losers = new UUID[results1.length];
+                for (int i = 0; i < losers.length; i++) losers[i] = UUID.fromString(results1[i]);
+
+                int eloChange = resultSet.getInt("eloChange");
+                Map<UUID, String> invs = new HashMap<>();
+                for (String s : resultSet.getString("invs").split(";")) {
+                    String[] entry = s.split("=");
+                    invs.put(UUID.fromString(entry[0]), entry[1]);
+                }
+                Map<UUID, Integer> hits = new HashMap<>();
+                for (String s : resultSet.getString("hits").split(";")) {
+                    String[] entry = s.split("=");
+                    hits.put(UUID.fromString(entry[0]), Integer.parseInt(entry[2]));
+                }
+                Map<UUID, Integer> combos = new HashMap<>();
+                for (String s : resultSet.getString("combos").split(";")) {
+                    String[] entry = s.split("=");
+                    combos.put(UUID.fromString(entry[0]), Integer.parseInt(entry[2]));
+                }
+                LocalDateTime date = LocalDateTime.parse(resultSet.getString("gameDate"), DateTimeFormatter.ISO_DATE_TIME);
+                int time = resultSet.getInt("seconds");
+                data.add(new GameData(arena, players, ladder, eloChange, hits, combos, invs, winners, losers, date, time));
             }
-            Map<UUID, Integer> hits = new HashMap<>();
-            for (String s : resultSet.getString("hits").split(";")) {
-                String[] entry = s.split("=");
-                hits.put(UUID.fromString(entry[0]), Integer.parseInt(entry[2]));
-            }
-            Map<UUID, Integer> combos = new HashMap<>();
-            for (String s : resultSet.getString("combos").split(";")) {
-                String[] entry = s.split("=");
-                combos.put(UUID.fromString(entry[0]), Integer.parseInt(entry[2]));
-            }
-            LocalDateTime date = LocalDateTime.parse(resultSet.getString("gameDate"), DateTimeFormatter.ISO_DATE_TIME);
-            int time = resultSet.getInt("seconds");
-            data.add(new GameData(arena, players, ladder, eloChange, hits, combos, invs, winners, losers, date, time));
         } catch (SQLException e) {
             e.printStackTrace();
             Bukkit.getLogger().severe("Could not fetch rankeds data.");
@@ -250,7 +261,7 @@ public class PMariaDB {
 
     public static Set<GameData> getPlayerRankedWinsData(UUID uuid) {
         return loadRankedsFromDatabase().stream()
-                .filter(data1 -> data1.getPlayers().contains(uuid) && data1.getWinners().contains(uuid))
+                .filter(data1 -> data1.getPlayers().contains(uuid) && Utils.contains(data1.getWinners(), uuid))
                 .collect(Collectors.toSet());
     }
 }

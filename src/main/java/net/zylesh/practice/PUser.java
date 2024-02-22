@@ -371,77 +371,73 @@ public class PUser implements Comparable<PUser>, Listener {
             player.setAllowFlight(false);
         }
         Scoreboards.INSTANCE.putLobby(uuid);
-        if (inGame) {
-            setInGame(false);
-            this.player.getInventory().setHelmet(null);
-            this.player.getInventory().setChestplate(null);
-            this.player.getInventory().setLeggings(null);
-            this.player.getInventory().setBoots(null);
-            this.player.setFireTicks(0);
-            if (lastGame instanceof GameVersus) {
-                ((GameVersus) lastGame).getTeam1().forEach(playerUser -> {
-                    switch (this.getPlayerVisibility()) {
-                        case 0: {
-                            player.hidePlayer(playerUser.getPlayer());
-                            break;
-                        }
-                        case 1: {
-                            if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
-                                player.showPlayer(playerUser.getPlayer());
-                            else
-                                player.hidePlayer(playerUser.getPlayer());
-                            break;
-                        }
-                        case 2: {
-                            player.showPlayer(playerUser.getPlayer());
-                            break;
-                        }
+        this.player.getInventory().setHelmet(null);
+        this.player.getInventory().setChestplate(null);
+        this.player.getInventory().setLeggings(null);
+        this.player.getInventory().setBoots(null);
+        this.player.setFireTicks(0);
+        if (lastGame instanceof GameVersus) {
+            ((GameVersus) lastGame).getTeam1().forEach(playerUser -> {
+                switch (this.getPlayerVisibility()) {
+                    case 0: {
+                        player.hidePlayer(playerUser.getPlayer());
+                        break;
                     }
-                });
-                ((GameVersus) lastGame).getTeam2().forEach(playerUser -> {
-                    switch (this.getPlayerVisibility()) {
-                        case 0: {
-                            player.hidePlayer(playerUser.getPlayer());
-                            break;
-                        }
-                        case 1: {
-                            if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
-                                player.showPlayer(playerUser.getPlayer());
-                            else
-                                player.hidePlayer(playerUser.getPlayer());
-                            break;
-                        }
-                        case 2: {
+                    case 1: {
+                        if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
                             player.showPlayer(playerUser.getPlayer());
-                            break;
-                        }
-                    }
-                });
-            } else {
-                ((GameFFA) lastGame).getPlayers().forEach(playerUser -> {
-                    switch (this.getPlayerVisibility()) {
-                        case 0: {
+                        else
                             player.hidePlayer(playerUser.getPlayer());
-                            break;
-                        }
-                        case 1: {
-                            if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
-                                player.showPlayer(playerUser.getPlayer());
-                            else
-                                player.hidePlayer(playerUser.getPlayer());
-                            break;
-                        }
-                        case 2: {
-                            player.showPlayer(playerUser.getPlayer());
-                            break;
-                        }
+                        break;
                     }
-                });
-            }
-
-            player.updateInventory();
-            Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
+                    case 2: {
+                        player.showPlayer(playerUser.getPlayer());
+                        break;
+                    }
+                }
+            });
+            ((GameVersus) lastGame).getTeam2().forEach(playerUser -> {
+                switch (this.getPlayerVisibility()) {
+                    case 0: {
+                        player.hidePlayer(playerUser.getPlayer());
+                        break;
+                    }
+                    case 1: {
+                        if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
+                            player.showPlayer(playerUser.getPlayer());
+                        else
+                            player.hidePlayer(playerUser.getPlayer());
+                        break;
+                    }
+                    case 2: {
+                        player.showPlayer(playerUser.getPlayer());
+                        break;
+                    }
+                }
+            });
+        } else {
+            ((GameFFA) lastGame).getPlayers().forEach(playerUser -> {
+                switch (this.getPlayerVisibility()) {
+                    case 0: {
+                        player.hidePlayer(playerUser.getPlayer());
+                        break;
+                    }
+                    case 1: {
+                        if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
+                            player.showPlayer(playerUser.getPlayer());
+                        else
+                            player.hidePlayer(playerUser.getPlayer());
+                        break;
+                    }
+                    case 2: {
+                        player.showPlayer(playerUser.getPlayer());
+                        break;
+                    }
+                }
+            });
         }
+        player.updateInventory();
+        Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
         if (isEditing) {
             this.isEditing = false;
             Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
@@ -467,7 +463,7 @@ public class PUser implements Comparable<PUser>, Listener {
     }
 
     public boolean isInGame() {
-        return inGame;
+        return lastGame != null && !lastGame.isEnded;
     }
 
     public PParty getParty() {
@@ -480,15 +476,6 @@ public class PUser implements Comparable<PUser>, Listener {
 
     public void setLastGame(PGame game) {
         this.lastGame = game;
-    }
-
-    public void setInGame(boolean b) {
-        this.inGame = b;
-        if (b) {
-            Practice.getPlayersFighting().add(this);
-        } else {
-            Practice.getPlayersFighting().remove(this);
-        }
     }
 
     public boolean isInParty() {
