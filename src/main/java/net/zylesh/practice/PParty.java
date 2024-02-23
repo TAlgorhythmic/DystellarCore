@@ -4,33 +4,31 @@ import net.zylesh.practice.practicecore.Practice;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static net.zylesh.practice.practicecore.util.Msg.ERROR_PARTY_FULL;
 import static net.zylesh.practice.practicecore.util.Msg.PARTY_DISBAND_BROADCAST;
 
 public class PParty implements Comparable<PParty>, Serializable {
 
-    private final List<PUser> players;
+    private final Set<PUser> players;
     private PUser leader;
     private boolean isOpen;
     private final short size;
     private final int hashCode;
-    public final List<PUser> awaitingPlayers;
+    public final Queue<PUser> awaitingPlayers;
 
     public PParty(PUser leader, short size) {
         this.leader = leader;
         this.size = size;
-        players = new ArrayList<>();
-        awaitingPlayers = new ArrayList<>();
+        players = new HashSet<>();
+        awaitingPlayers = new ArrayDeque<>();
         leader.joinParty(this);
         Random random = new Random();
         this.hashCode = random.nextInt();
     }
 
-    public List<PUser> getPlayers() {
+    public Set<PUser> getPlayers() {
         return players;
     }
 

@@ -1,5 +1,6 @@
 package net.zylesh.practice;
 
+import net.zylesh.dystellarcore.utils.Utils;
 import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.practicecore.Practice;
 import net.zylesh.practice.practicecore.core.GameFFA;
@@ -25,10 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static net.zylesh.practice.practicecore.util.Msg.PARTY_JOIN_BROADCAST;
@@ -61,8 +59,8 @@ public class PUser implements Comparable<PUser>, Listener {
     }
 
     public ItemStack duelRequestsEnabledItem;
-    private final Player player;
-    private final String name;
+    private Player player;
+    private String name;
     private final UUID uuid;
     private boolean inGame;
     private boolean inParty;
@@ -95,28 +93,12 @@ public class PUser implements Comparable<PUser>, Listener {
     public PUser(UUID playeruuid) {
         this.invsEdited = new HashMap<>();
         this.isSpectating = false;
-        this.player = Bukkit.getPlayer(playeruuid);
-        this.name = player.getDisplayName();
         this.uuid = playeruuid;
         this.lastDuelReceived = "accept nullImbecilxdkldsj";
         this.elo = new HashMap<>();
         this.killEffect = PKillEffect.NONE;
         this.ownedEffects = EnumSet.of(PKillEffect.NONE);
-        this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
-        this.playerVisibilityItem = new ItemStack(Material.INK_SACK, 1, (short) 8);
-        ItemMeta playervisibility = this.playerVisibilityItem.getItemMeta();
-        playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.RED + "disabled");
-        ItemMeta duelrequests = this.duelRequestsEnabledItem.getItemMeta();
-        duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests: " + ChatColor.GREEN + "enabled");
-        this.duelRequestsEnabledItem.setItemMeta(duelrequests);
-        this.playerVisibilityItem.setItemMeta(playervisibility);
-        ItemStack nullGlass = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
-        ItemMeta nullglass = nullGlass.getItemMeta();
-        nullglass.setDisplayName(ChatColor.DARK_GRAY + " ");
-        nullGlass.setItemMeta(nullglass);
-        this.settings = Bukkit.createInventory(player, 9, ChatColor.RED + "Settings");
-        settings.setItem(0, this.duelRequestsEnabledItem);
-        settings.setItem(1, this.playerVisibilityItem);
+        initItems();
         for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) elo.put(PApi.LADDERS.get(lad), 1000);
     }
 
@@ -129,7 +111,6 @@ public class PUser implements Comparable<PUser>, Listener {
     public PUser(UUID uuid, String name, String rank, PKillEffect killEffect, boolean displayRank, boolean duelRequestsEnabled, int playerVisibility, Map<Ladder, ItemStack[]> invs, Map<Ladder, Integer> elo, int kills, int deaths, EnumSet<PKillEffect> ownedEffects, boolean initInvs, byte doNotDisturb) {
         this.name = name;
         this.uuid = uuid;
-        this.player = Bukkit.getPlayer(uuid);
         this.rank = rank;
         this.killEffect = killEffect;
         this.displayRank = displayRank;
@@ -139,43 +120,84 @@ public class PUser implements Comparable<PUser>, Listener {
         this.ownedEffects = ownedEffects;
         this.elo = elo;
         this.doNotDisturbMode = doNotDisturb;
-        if (initInvs) {
-            this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
-            this.playerVisibilityItem = new ItemStack(Material.INK_SACK);
-            ItemMeta playervisibility = this.playerVisibilityItem.getItemMeta();
-            switch (this.playerVisibility) {
-                case 0:
-                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.RED + "Disabled");
-                    this.playerVisibilityItem.setDurability((short) 8);
-                    break;
-                case 1:
-                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.YELLOW + "Ranks Only");
-                    this.playerVisibilityItem.setDurability((short) 9);
-                    break;
-                case 2:
-                    playervisibility.setDisplayName(ChatColor.AQUA + "Player Visibility: " + ChatColor.GREEN + "Enabled");
-                    this.playerVisibilityItem.setDurability((short) 10);
-                    break;
-            }
-            ItemMeta duelrequests = this.duelRequestsEnabledItem.getItemMeta();
-            if (this.duelRequestsEnabled) {
-                duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests: " + ChatColor.GREEN + "enabled");
-            } else {
-                duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests: " + ChatColor.RED + "disabled");
-            }
-            this.duelRequestsEnabledItem.setItemMeta(duelrequests);
-            this.playerVisibilityItem.setItemMeta(playervisibility);
-            ItemStack nullGlass = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
-            ItemMeta nullglass = nullGlass.getItemMeta();
-            nullglass.setDisplayName(ChatColor.DARK_GRAY + " ");
-            nullGlass.setItemMeta(nullglass);
-            this.settings = Bukkit.createInventory(this.player, 9, ChatColor.RED + "Settings");
-            settings.setItem(0, this.duelRequestsEnabledItem);
-            settings.setItem(1, this.playerVisibilityItem);
-        }
+        if (initInvs) initItems();
         this.kills = kills;
         this.deaths = deaths;
         for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) if (!this.elo.containsKey(PApi.LADDERS.get(lad))) elo.put(PApi.LADDERS.get(lad), 1000);
+    }
+
+    private void initItems() {
+        this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
+        this.playerVisibilityItem = new ItemStack(Material.INK_SACK);
+        ItemMeta playervisibility = this.playerVisibilityItem.getItemMeta();
+        playervisibility.setDisplayName(ChatColor.DARK_AQUA + "Player Visibility:");
+        switch (this.playerVisibility) {
+            case 0: {
+                List<String> lore = List.of(
+                        " ",
+                        ChatColor.RED + "➢ Off",
+                        ChatColor.GRAY + " Ranks Only",
+                        ChatColor.GRAY + " On",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle."
+                );
+                playervisibility.setLore(lore);
+                this.playerVisibilityItem.setDurability((short) 8);
+                break;
+            }
+            case 1: {
+                List<String> lore = List.of(
+                        " ",
+                        ChatColor.GRAY + " Off",
+                        ChatColor.YELLOW + "➢ Ranks Only",
+                        ChatColor.GRAY + " On",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle."
+                );
+                playervisibility.setLore(lore);
+                this.playerVisibilityItem.setDurability((short) 9);
+                break;
+            }
+            case 2: {
+                List<String> lore = List.of(
+                        " ",
+                        ChatColor.GRAY + " Off",
+                        ChatColor.GRAY + " Ranks Only",
+                        ChatColor.GREEN + "➢ On",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle."
+                );
+                playervisibility.setLore(lore);
+                this.playerVisibilityItem.setDurability((short) 10);
+                break;
+            }
+        }
+
+        ItemMeta duelrequests = this.duelRequestsEnabledItem.getItemMeta();
+        duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests:");
+        List<String> requestsLore = List.of(
+                " ",
+                this.duelRequestsEnabled ? ChatColor.GRAY + " Off" : ChatColor.RED + "➢ Off",
+                this.duelRequestsEnabled ? ChatColor.GREEN + "➢ On" : ChatColor.GRAY + " On",
+                " ",
+                ChatColor.YELLOW + "Click to toggle"
+        );
+        duelrequests.setLore(requestsLore);
+
+        this.duelRequestsEnabledItem.setItemMeta(duelrequests);
+        this.playerVisibilityItem.setItemMeta(playervisibility);
+        ItemStack nullGlass = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
+        ItemMeta nullglass = nullGlass.getItemMeta();
+        nullglass.setDisplayName(ChatColor.DARK_GRAY + " ");
+        nullGlass.setItemMeta(nullglass);
+    }
+
+    public void postInitialize(Player p) {
+        this.player = p;
+        this.name = p.getName();
+        this.settings = Bukkit.createInventory(this.player, 9, ChatColor.RED + "Settings");
+        settings.setItem(0, this.duelRequestsEnabledItem);
+        settings.setItem(1, this.playerVisibilityItem);
     }
 
     public int getPlayerVisibility() {
@@ -186,6 +208,7 @@ public class PUser implements Comparable<PUser>, Listener {
         this.forceQueued = playerUser;
     }
 
+    @Nullable
     public PUser getForceQueued() {
         return forceQueued;
     }
@@ -278,16 +301,10 @@ public class PUser implements Comparable<PUser>, Listener {
             game.broadcastToGame(PLAYER_SPECTATE_BROADCAST.replaceAll("-player", player.getName()));
         }
         if (game instanceof GameVersus) {
-            ((GameVersus) game).getTeam1().forEach(playerUser -> {
-                if (!player.canSee(playerUser.player)) player.showPlayer(playerUser.player);
-            });
-            ((GameVersus) game).getTeam2().forEach(playerUser -> {
-                if (!player.canSee(playerUser.player)) player.showPlayer(playerUser.player);
-            });
-        } else {
-            ((GameFFA) game).getPlayers().forEach(playerUser -> {
-                if (!player.canSee(playerUser.player)) player.showPlayer(playerUser.player);
-            });
+            for (PUser p : ((GameVersus) game).getTeam1()) if (!player.canSee(p.player)) player.showPlayer(p.player);
+            for (PUser p : ((GameVersus) game).getTeam2()) if (!player.canSee(p.player)) player.showPlayer(p.player);
+        } else if (game instanceof GameFFA) {
+            for (PUser p : ((GameFFA) game).getPlayers()) if (!player.canSee(p.player)) player.showPlayer(p.player);
         }
 
         game.getSpectators().forEach(playerUser -> {
@@ -368,73 +385,69 @@ public class PUser implements Comparable<PUser>, Listener {
             }
             if (!inGame) Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
             this.isSpectating = false;
-            player.setAllowFlight(false);
         }
         Scoreboards.INSTANCE.putLobby(uuid);
-        this.player.getInventory().setHelmet(null);
-        this.player.getInventory().setChestplate(null);
-        this.player.getInventory().setLeggings(null);
-        this.player.getInventory().setBoots(null);
-        this.player.setFireTicks(0);
+        Utils.resetEffects(this.player);
+        Utils.removeArmor(this.player);
         if (lastGame instanceof GameVersus) {
-            ((GameVersus) lastGame).getTeam1().forEach(playerUser -> {
+            for (PUser p : ((GameVersus) lastGame).getTeam1()) {
                 switch (this.getPlayerVisibility()) {
                     case 0: {
-                        player.hidePlayer(playerUser.getPlayer());
+                        player.hidePlayer(p.getPlayer());
                         break;
                     }
                     case 1: {
-                        if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
-                            player.showPlayer(playerUser.getPlayer());
+                        if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
+                            player.showPlayer(p.getPlayer());
                         else
-                            player.hidePlayer(playerUser.getPlayer());
+                            player.hidePlayer(p.getPlayer());
                         break;
                     }
                     case 2: {
-                        player.showPlayer(playerUser.getPlayer());
+                        player.showPlayer(p.getPlayer());
                         break;
                     }
                 }
-            });
-            ((GameVersus) lastGame).getTeam2().forEach(playerUser -> {
+            }
+            for (PUser p : ((GameVersus) lastGame).getTeam2()) {
                 switch (this.getPlayerVisibility()) {
                     case 0: {
-                        player.hidePlayer(playerUser.getPlayer());
+                        player.hidePlayer(p.getPlayer());
                         break;
                     }
                     case 1: {
-                        if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
-                            player.showPlayer(playerUser.getPlayer());
+                        if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
+                            player.showPlayer(p.getPlayer());
                         else
-                            player.hidePlayer(playerUser.getPlayer());
+                            player.hidePlayer(p.getPlayer());
                         break;
                     }
                     case 2: {
-                        player.showPlayer(playerUser.getPlayer());
+                        player.showPlayer(p.getPlayer());
                         break;
                     }
                 }
-            });
+            }
         } else {
-            ((GameFFA) lastGame).getPlayers().forEach(playerUser -> {
+            for (PUser p : ((GameFFA) lastGame).getPlayers()) {
                 switch (this.getPlayerVisibility()) {
                     case 0: {
-                        player.hidePlayer(playerUser.getPlayer());
+                        player.hidePlayer(p.getPlayer());
                         break;
                     }
                     case 1: {
-                        if (playerUser.player.hasPermission("practice.rank") && !playerUser.player.hasPermission("practice.rankbypass"))
-                            player.showPlayer(playerUser.getPlayer());
+                        if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
+                            player.showPlayer(p.getPlayer());
                         else
-                            player.hidePlayer(playerUser.getPlayer());
+                            player.hidePlayer(p.getPlayer());
                         break;
                     }
                     case 2: {
-                        player.showPlayer(playerUser.getPlayer());
+                        player.showPlayer(p.getPlayer());
                         break;
                     }
                 }
-            });
+            }
         }
         player.updateInventory();
         Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
@@ -443,11 +456,8 @@ public class PUser implements Comparable<PUser>, Listener {
             Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
         }
         Location location = PApi.SPAWN_LOCATION;
-        player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
         player.teleport(location);
-        player.setHealth(20.0);
-        player.setFoodLevel(20);
-        player.setSaturation(12.0f);
+
     }
 
     public boolean isEditing() {

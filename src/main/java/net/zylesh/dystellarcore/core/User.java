@@ -179,7 +179,7 @@ public class User {
                         ChatColor.GREEN + "➢ On",
                         ChatColor.GRAY + " On (with Ignore List)",
                         ChatColor.GRAY + " On (Friends Only)",
-                        ChatColor.GRAY + "Off",
+                        ChatColor.GRAY + " Off",
                         " ",
                         ChatColor.YELLOW + "Click to change."
                 );
@@ -190,7 +190,7 @@ public class User {
                         ChatColor.GRAY + " On",
                         ChatColor.YELLOW + "➢ On (with Ignore List)",
                         ChatColor.GRAY + " On (Friends Only)",
-                        ChatColor.GRAY + "Off",
+                        ChatColor.GRAY + " Off",
                         " ",
                         ChatColor.YELLOW + "Click to change."
                 );
@@ -201,7 +201,7 @@ public class User {
                         ChatColor.GRAY + " On",
                         ChatColor.GRAY + " On (with Ignore List)",
                         ChatColor.GOLD + "➢ On (Friends Only)",
-                        ChatColor.GRAY + "Off",
+                        ChatColor.GRAY + " Off",
                         " ",
                         ChatColor.YELLOW + "Click to change."
                 );

@@ -114,4 +114,19 @@ public class Utils {
             }
         }
     }
+
+    public static void resetEffects(Player p) {
+        p.setFireTicks(0);
+        p.setHealth(20.0);
+        p.setFoodLevel(20);
+        p.setSaturation(12.0f);
+        p.getActivePotionEffects().forEach(potionEffect -> p.removePotionEffect(potionEffect.getType()));
+    }
+
+    public static void removeArmor(Player p) {
+        p.getInventory().setHelmet(null);
+        p.getInventory().setChestplate(null);
+        p.getInventory().setLeggings(null);
+        p.getInventory().setBoots(null);
+    }
 }

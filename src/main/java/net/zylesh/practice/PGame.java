@@ -35,8 +35,8 @@ public abstract class PGame {
     protected final boolean ranked;
     protected final boolean competitionEvent;
     protected Location specLocation;
-    public final Map<Player, Integer> hits = new HashMap<>();
-    public final Map<Player, Integer> combo = new HashMap<>();
+    public final Map<UUID, Integer> hits = new HashMap<>();
+    public final Map<UUID, Integer> combo = new HashMap<>();
     protected final Map<UUID, Inventory> invs = new LinkedHashMap<>();
     protected final Set<PUser> spectators = new HashSet<>();
     protected PUser[] winners;
@@ -171,11 +171,11 @@ public abstract class PGame {
         return competitionEvent;
     }
 
-    public Map<Player, Integer> getHits() {
+    public Map<UUID, Integer> getHits() {
         return hits;
     }
 
-    public Map<Player, Integer> getCombo() {
+    public Map<UUID, Integer> getCombo() {
         return combo;
     }
 
@@ -220,7 +220,7 @@ public abstract class PGame {
                 player.deaths++;
             }
         }
-        Bukkit.getPluginManager().callEvent(new FightEndEvent(Arrays.asList(winner), Arrays.asList(loser), ladder, arena, this, hits));
+        Bukkit.getPluginManager().callEvent(new FightEndEvent(winner, loser, ladder, arena, this, hits));
         if (winner.length == 1 && loser.length == 1) {
             IChatBaseComponent component = ChatSerializer.a("[\"\",{\"text\":\"Match Results:\",\"bold\":true,\"color\":\"yellow\"},{\"text\":\" (Click to see inventories)\",\"color\":\"aqua\"}]");
             IChatBaseComponent component1 = ChatSerializer.a("{\"text\":\"---------------------------------\",\"strikethrough\":true,\"color\":\"yellow\"}");

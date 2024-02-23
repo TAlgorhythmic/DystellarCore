@@ -50,6 +50,7 @@ public class PMariaDB {
             builder = new StringBuilder();
             for (PKillEffect effect : user.ownedEffects) builder.append(effect.name()).append(";");
             statement.setString(12, builder.toString());
+            statement.setInt(13, user.getDoNotDisturbMode());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -101,8 +102,10 @@ public class PMariaDB {
         } catch (SQLException e) {
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "Could not load data for " + uuid.toString());
+            return null;
         }
-        return null;
+        Bukkit.getLogger().info("Data for " + uuid + " not found, creating new data.");
+        return new PUser(uuid);
     }
 
     public static Set<PUser> getAllPlayers() {
