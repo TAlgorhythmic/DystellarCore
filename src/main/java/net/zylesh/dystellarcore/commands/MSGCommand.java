@@ -2,6 +2,7 @@ package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.User;
+import net.zylesh.dystellarcore.utils.Validate;
 import net.zylesh.practice.PUser;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -67,6 +68,11 @@ public class MSGCommand implements CommandExecutor {
                         }
                         playerUser.setLastMessagedPlayer(playerUserInt);
                         playerUserInt.setLastMessagedPlayer(playerUser);
+                        if (!Validate.validateString(strings)) {
+                            player.sendMessage(ChatColor.RED + "Looks like you are using uncommon type of characters. (Contact staff if you think this is an error)");
+                            Bukkit.getLogger().warning(player.getName() + " tried to use invalid characters.");
+                            return true;
+                        }
                         StringBuilder message = new StringBuilder();
                         for (int i = 1; i < strings.length; i++) {
                             message.append(strings[i]).append(" ");

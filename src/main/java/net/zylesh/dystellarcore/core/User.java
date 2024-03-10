@@ -6,6 +6,7 @@ import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.serialization.Mapping;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Utils;
+import net.zylesh.dystellarcore.utils.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -357,6 +358,11 @@ public class User {
 
         @EventHandler
         public void onJoin(AsyncPlayerPreLoginEvent event) {
+            if (!Validate.validateName(event.getName())) {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "Your nickname is invalid. (Contact us if you think this is an error)");
+                Bukkit.getLogger().warning(event.getUniqueId() + " tried to join with an invalid nickname.");
+                return;
+            }
             User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostAddress(), event.getName());
             Mapping map = MariaDB.loadMapping(event.getAddress().getHostAddress());
             if (user == null) user = new User(event.getUniqueId(), event.getAddress().getHostName(), event.getName());

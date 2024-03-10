@@ -5,6 +5,7 @@ import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.*;
 import net.zylesh.dystellarcore.utils.Utils;
+import net.zylesh.dystellarcore.utils.Validate;
 import net.zylesh.practice.PParty;
 import net.zylesh.practice.PUser;
 import net.zylesh.skywars.SkywarsAPI;
@@ -452,6 +453,11 @@ public class Punish implements CommandExecutor, Listener {
                     return;
                 }
             }
+        }
+        if (!Validate.validateString(event.getMessage())) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.RED + "Looks like you are using uncommon type of characters. (Contact staff if you think this is an error)");
+            return;
         }
         String playerName = event.getPlayer().getDisplayName();
         if (user != null && !user.isGlobalChatEnabled()) event.setCancelled(true);

@@ -3,8 +3,7 @@ package net.zylesh.dystellarcore;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import net.minecraft.server.v1_7_R4.Packet;
-import net.minecraft.server.v1_7_R4.PacketPlayInTabComplete;
+import net.minecraft.server.v1_7_R4.*;
 import net.zylesh.dystellarcore.commands.*;
 import net.zylesh.dystellarcore.core.IPacketListener;
 import net.zylesh.dystellarcore.core.PacketListener;
@@ -16,11 +15,13 @@ import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
 import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
 import net.zylesh.dystellarcore.core.inbox.senders.Message;
 import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
+import net.zylesh.dystellarcore.listeners.GeneralListeners;
 import net.zylesh.dystellarcore.listeners.PluginMessageScheduler;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
+import net.zylesh.dystellarcore.utils.Validate;
 import net.zylesh.practice.PKillEffect;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -41,13 +42,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public final class DystellarCore extends JavaPlugin implements PluginMessageListener {
@@ -70,6 +70,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     private final YamlConfiguration config = YamlConfiguration.loadConfiguration(conf);
     private final File si = new File(getDataFolder(), "spawnitems.yml");
     private final YamlConfiguration spawnitems = YamlConfiguration.loadConfiguration(si);
+    private final File am = new File(getDataFolder(), "automated-messages.txt");
 
     public static boolean SKYWARS_HOOK = false;
     public static boolean PRACTICE_HOOK = false;
@@ -96,6 +97,10 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static String KICK_MESSAGE;
     public static int REFRESH_RATE_SCORE;
     public static boolean ALLOW_SIGNS;
+    public static boolean AUTOMATED_MESSAGES_ENABLED = true;
+    public static int AUTOMATED_MESSAGES_RATE = 360;
+    public static List<String> AUTOMATED_MESSAGES = new ArrayList<>();
+    private static final AtomicInteger i = new AtomicInteger();
 
     public static final ItemStack NULL_GLASS = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
     static {
@@ -121,6 +126,16 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         }
         loadConfig();
         initialize();
+        if (AUTOMATED_MESSAGES_ENABLED && !AUTOMATED_MESSAGES.isEmpty()) {
+            asyncManager.scheduleAtFixedRate(() -> {
+                PacketPlayOutChat chat = new PacketPlayOutChat(ChatSerializer.a(AUTOMATED_MESSAGES.get(i.get())));
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.sendPacket(chat);
+                }
+                i.incrementAndGet();
+                if (i.get() >= AUTOMATED_MESSAGES.size()) i.set(0);
+            }, AUTOMATED_MESSAGES_RATE, AUTOMATED_MESSAGES_RATE, TimeUnit.SECONDS);
+        }
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, channel);
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         Bukkit.getMessenger().registerIncomingPluginChannel(this, channel, this);
@@ -154,14 +169,24 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new IgnoreCommand();
         new IgnoreListCommand();
         new InboxCommand();
+        new GeneralListeners();
+        // Some exploits fix.
         PacketListener.registerPacketHandler(new IPacketListener() {
             @Override
             public void onPacketReceive(Packet packet, Player player, AtomicBoolean cancel) {
                 if (packet instanceof PacketPlayInTabComplete) {
+                    if (player.hasPermission("dystellar.bypassall")) return;
                     PacketPlayInTabComplete tabComplete = (PacketPlayInTabComplete) packet;
                     String s = tabComplete.c();
                     if (s == null || s.length() < 3 || s.matches("[a-zA-Z\\-_]*:")) cancel.set(true);
-
+                } else if (packet instanceof PacketPlayInUpdateSign) {
+                    PacketPlayInUpdateSign update = (PacketPlayInUpdateSign) packet;
+                    for (String s : update.f()) {
+                        if (!Validate.validateString(s)) {
+                            cancel.set(true);
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -170,6 +195,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
 
             }
         });
+
     }
 
     @Override
@@ -184,6 +210,11 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             if (!si.exists()) saveResource("spawnitems.yml", true);
             config.load(conf);
             spawnitems.load(si);
+            if (am.createNewFile()) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClassLoader().getResourceAsStream("automated-messages.txt")))); PrintWriter writer = new PrintWriter(am)) {
+                    reader.lines().forEach(writer::println);
+                }
+            }
             Bukkit.getConsoleSender().sendMessage("[Dystellar] Configuration loaded successfully");
             try {
                 MariaDB.loadFromConfig();
@@ -261,6 +292,17 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         }
         KICK_MESSAGE = ChatColor.translateAlternateColorCodes('&', getConfig().getString("kick-message"));
         ALLOW_SIGNS = getConfig().getBoolean("block-signs-crafting");
+        AUTOMATED_MESSAGES_ENABLED = getConfig().getBoolean("automated-messages-enabled");
+        AUTOMATED_MESSAGES_RATE = getConfig().getInt("automated-messages-rate");
+        try (BufferedReader reader = new BufferedReader(new FileReader(am))) {
+            reader.lines().forEach(s -> {
+                if (s.startsWith("-=")) {
+                    AUTOMATED_MESSAGES.add(s.substring(2));
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Suffix.initialize();
     }
 

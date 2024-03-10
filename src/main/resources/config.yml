@@ -50,6 +50,8 @@ freeze-message:
   - "&cYou have been frozen!"
   - "--------------------------------"
 unfreeze-message: "&aYou have been unfreezed. Sorry and thanks for your time!"
+automated-messages-enabled: true
+automated-messages-rate: 360 # in seconds.
 mariadb:
   enabled: false
   host: "localhost"
