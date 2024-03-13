@@ -30,6 +30,8 @@ import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -101,6 +103,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static int AUTOMATED_MESSAGES_RATE = 360;
     public static List<String> AUTOMATED_MESSAGES = new ArrayList<>();
     private static final AtomicInteger i = new AtomicInteger();
+    public static boolean PREVENT_WEATHER = true;
 
     public static final ItemStack NULL_GLASS = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
     static {
@@ -294,6 +297,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         ALLOW_SIGNS = getConfig().getBoolean("block-signs-crafting");
         AUTOMATED_MESSAGES_ENABLED = getConfig().getBoolean("automated-messages-enabled");
         AUTOMATED_MESSAGES_RATE = getConfig().getInt("automated-messages-rate");
+        PREVENT_WEATHER = getConfig().getBoolean("prevent-weather-changing");
         try (BufferedReader reader = new BufferedReader(new FileReader(am))) {
             reader.lines().forEach(s -> {
                 if (s.startsWith("-=")) {
@@ -379,6 +383,20 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         sendPluginMessage(player, INBOX_UPDATE, obj.toArray(new Object[0]));
     }
 
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        awaitingPlayers.add(event.getPlayer().getUniqueId());
+        sendPluginMessage(event.getPlayer(), REGISTER);
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            if (awaitingPlayers.contains(event.getPlayer().getUniqueId())) {
+                event.getPlayer().kickPlayer(ChatColor.RED + "You are not allowed to join this server. (Contact us if you think this is an error)");
+                awaitingPlayers.remove(event.getPlayer().getUniqueId());
+            }
+        }, 18L);
+    }
+
+    private final Set<UUID> awaitingPlayers = new HashSet<>();
+
     @Override
     public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
         if (!s.equals(channel)) return;
@@ -388,7 +406,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         if (!User.getUsers().containsKey(uuid)) return;
         User user = User.get(uuid);
         switch (id) {
-            case REGISTER: sendPluginMessage(player, REGISTER_RECEIVED); break;
+            case REGISTER_RECEIVED: awaitingPlayers.remove(player.getUniqueId()); break;
             case INBOX_UPDATE: {
                 byte type = in.readByte();
                 switch (type) {

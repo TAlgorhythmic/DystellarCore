@@ -27,7 +27,7 @@ warn-message:
   - "&cYou have been warned!"
   - "Reason: <reason>"
   - " "
-  - "&4Be careful, getting multiple warnings will result in getting banned!"
+  - "&4Be careful, getting multiple warnings will get you banned!"
   - " "
   - "&7&m----------------------------------"
 broadcast-format: "[&cBroadcast&f] &e<message>"
@@ -52,6 +52,7 @@ freeze-message:
 unfreeze-message: "&aYou have been unfreezed. Sorry and thanks for your time!"
 automated-messages-enabled: true
 automated-messages-rate: 360 # in seconds.
+prevent-weather-changing: true
 mariadb:
   enabled: false
   host: "localhost"

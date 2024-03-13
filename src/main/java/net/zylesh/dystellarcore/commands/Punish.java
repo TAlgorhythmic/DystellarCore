@@ -444,7 +444,11 @@ public class Punish implements CommandExecutor, Listener {
             return;
         }
         User user = User.get(event.getPlayer().getUniqueId());
-        if (user != null && user.getPunishments() != null && !user.getPunishments().isEmpty()) {
+        if (user == null) {
+            event.setCancelled(true);
+            return;
+        }
+        if (user.getPunishments() != null && !user.getPunishments().isEmpty()) {
             for (Punishment punishment : user.getPunishments()) {
                 if (!punishment.allowChat()) {
                     event.setCancelled(true);
@@ -454,13 +458,16 @@ public class Punish implements CommandExecutor, Listener {
                 }
             }
         }
+        if (!user.isGlobalChatEnabled()) {
+            event.setCancelled(true);
+            return;
+        }
         if (!Validate.validateString(event.getMessage())) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED + "Looks like you are using uncommon type of characters. (Contact staff if you think this is an error)");
             return;
         }
         String playerName = event.getPlayer().getDisplayName();
-        if (user != null && !user.isGlobalChatEnabled()) event.setCancelled(true);
         if (!event.getPlayer().hasPermission("dystellar.plus")) {
             if (chatCooldown.contains(event.getPlayer().getUniqueId())) {
                 event.getPlayer().sendMessage(ChatColor.RED + "You're on chat cooldown, please wait before typing again. " + ChatColor.DARK_GREEN + "(Plus ranks and up bypass this!)");

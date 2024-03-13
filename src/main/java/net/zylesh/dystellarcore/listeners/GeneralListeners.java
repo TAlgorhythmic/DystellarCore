@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.server.ServerCommandEvent;
+import org.bukkit.event.weather.WeatherChangeEvent;
 
 public class GeneralListeners implements Listener {
 
@@ -33,5 +34,10 @@ public class GeneralListeners implements Listener {
         if (event.getCommand().startsWith("op")) {
             event.setCommand("whatever");
         }
+    }
+
+    @EventHandler
+    public void weatherChange(WeatherChangeEvent event) {
+        if (DystellarCore.PREVENT_WEATHER && event.toWeatherState()) event.setCancelled(true);
     }
 }
