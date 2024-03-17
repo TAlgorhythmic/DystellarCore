@@ -3,6 +3,7 @@ package net.zylesh.dystellarcore.core;
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
+import net.zylesh.dystellarcore.serialization.Consts;
 import net.zylesh.dystellarcore.serialization.Mapping;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Utils;
@@ -66,7 +67,10 @@ public class User {
     private boolean scoreboardEnabled = true;
     public int coins;
     private int version;
+    public final Set<UUID> friends = new HashSet<>();
+    public byte[] tipsSent;
     private final Set<UUID> ignoreList = Collections.synchronizedSet(new HashSet<>());
+    public byte[] extraOptions;
 
     public User(UUID id, String ip, String name) {
         this.id = id;
@@ -85,6 +89,16 @@ public class User {
     public void assignInbox(Inbox inbox) {
         if (this.inbox != null) throw new UnsupportedOperationException("An instance already exists.");
         this.inbox = inbox;
+    }
+
+    public void assignTips(byte[] tips) {
+        if (this.tipsSent != null) throw new UnsupportedOperationException("An instance already exists.");
+        this.tipsSent = tips;
+    }
+
+    public void assignExtraOptions(byte[] tips) {
+        if (this.tipsSent != null) throw new UnsupportedOperationException("An instance already exists.");
+        this.extraOptions = tips;
     }
 
     private Inventory configManager;
@@ -167,6 +181,14 @@ public class User {
     public void toggleGlobalChat() {
         setGlobalChatEnabled(!globalChatEnabled);
         updateGlobalChatItem();
+    }
+
+    /**
+     * Tip: the class Consts contains all bytes entries for all the tips.
+     */
+    public boolean checkIsTipSent(byte entry) {
+        if ((entry + 1) > tipsSent.length) return false;
+        return tipsSent[entry] == Consts.BYTE_TRUE;
     }
 
     private void updatePmsItem() {
@@ -365,7 +387,10 @@ public class User {
             }
             User user = MariaDB.loadPlayerFromDatabase(event.getUniqueId(), event.getAddress().getHostAddress(), event.getName());
             Mapping map = MariaDB.loadMapping(event.getAddress().getHostAddress());
-            if (user == null) user = new User(event.getUniqueId(), event.getAddress().getHostName(), event.getName());
+            if (user == null) {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "Could not fetch your data.");
+                return;
+            }
             if (!user.getPunishments().isEmpty() && !DystellarCore.ALLOW_BANNED_PLAYERS) {
                 LocalDateTime now = LocalDateTime.now();
                 for (Punishment punishment : user.punishments) {
@@ -388,9 +413,6 @@ public class User {
 
         @EventHandler
         public void onJoin(PlayerJoinEvent event) {
-            event.getPlayer().setFoodLevel(20);
-            event.getPlayer().setSaturation(12.0f);
-            event.getPlayer().setHealth(20.0);
             if (User.get(event.getPlayer()).globalTabComplete) DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.GLOBAL_TAB_REGISTER);
             User user = User.get(event.getPlayer());
             user.initializeSettingsPanel(event.getPlayer());
@@ -399,6 +421,10 @@ public class User {
         @EventHandler
         public void clicked(InventoryClickEvent event) {
             User u = User.get(event.getWhoClicked().getUniqueId());
+            if (u == null) {
+                event.setCancelled(true);
+                return;
+            }
             if (event.getClickedInventory().equals(u.configManager)) {
                 event.setCancelled(true);
                 ItemStack i = event.getCurrentItem();

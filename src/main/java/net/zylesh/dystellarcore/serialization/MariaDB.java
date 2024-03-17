@@ -9,6 +9,7 @@ import net.zylesh.dystellarcore.core.punishments.Ban;
 import net.zylesh.dystellarcore.core.punishments.Blacklist;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.core.punishments.SenderContainer;
+import net.zylesh.dystellarcore.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -24,7 +25,7 @@ import java.util.logging.Level;
 
 public class MariaDB {
 
-    private static final int SERIALIZAION_VERSION = 1;
+    private static final int SERIALIZAION_VERSION = 0;
 
     private static String HOST;
     private static int PORT;
@@ -57,7 +58,7 @@ public class MariaDB {
     @Nullable
     public static User loadPlayerFromDatabase(UUID uuid, String IP, String name) {
         try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard, ignoreList FROM players_core WHERE uuid = ?;"
+                "SELECT chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard, ignoreList, friends, otherConfigs, tips FROM players_core WHERE uuid = ?;"
         )) {
             statement.setString(1, uuid.toString());
             ResultSet resultSet = statement.executeQuery();
@@ -83,9 +84,26 @@ public class MariaDB {
                 user.setScoreboardEnabled(resultSet.getBoolean("scoreboard"));
                 for (String uuids : resultSet.getString("ignoreList").split(";"))
                     user.getIgnoreList().add(UUID.fromString(uuids));
+                user.assignTips(Utils.hexStringToBytes(resultSet.getString("tips")));
+
+                user.assignExtraOptions(Utils.hexStringToBytes(resultSet.getString("otherConfigs")));
                 return user;
             } else {
-                return null;
+                // TODO When more tips and configs are added, add them here too.
+                user = new User(uuid, IP, name);
+
+                byte[] tips = new byte[50];
+
+                tips[Consts.FIRST_FRIEND_TIP_POS] = Consts.BYTE_FALSE;
+
+                user.assignTips(tips);
+
+                byte[] otherConfigs = new byte[50];
+
+                otherConfigs[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] = Consts.BYTE_TRUE;
+
+                user.assignExtraOptions(otherConfigs);
+                return user;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -118,7 +136,7 @@ public class MariaDB {
         Inbox.SenderListener.unregisterInbox(user.getUUID());
         StringBuilder ipP = null;
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard, ignoreList) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
+             PreparedStatement statement = connection.prepareStatement("REPLACE players_core(uuid, chat, messages, suffix, punishments, notes, lang, inbox, version, tabcompletion, scoreboard, ignoreList, friends, otherConfigs, tips) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
         ) {
             statement.setString(1, user.getUUID().toString());
             statement.setBoolean(2, user.isGlobalChatEnabled());
@@ -146,6 +164,15 @@ public class MariaDB {
             StringBuilder builder = new StringBuilder();
             for (UUID uuid : user.getIgnoreList()) builder.append(uuid).append(";");
             statement.setString(12, builder.toString());
+            builder = new StringBuilder();
+            for (UUID uuid : user.friends) builder.append(uuid).append(";");
+            statement.setString(13, builder.toString());
+
+            // TODO update on bungee
+
+            statement.setString(14, Utils.bytesToHexString(user.extraOptions));
+
+            statement.setString(15, Utils.bytesToHexString(user.tipsSent));
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -374,11 +401,11 @@ public class MariaDB {
         }
     }
 
-    private static boolean stringIsIP(String s) {
+    public static boolean stringIsIP(String s) {
         return s.split("\\.").length == 4 && s.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+");
     }
 
-    private static boolean stringIsUUID(String s) {
+    public static boolean stringIsUUID(String s) {
         return s.length() == 36;
     }
 }

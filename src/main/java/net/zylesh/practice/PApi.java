@@ -5,7 +5,6 @@ import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.serialize.PMariaDB;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 

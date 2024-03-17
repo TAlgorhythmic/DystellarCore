@@ -446,6 +446,7 @@ public class Punish implements CommandExecutor, Listener {
         User user = User.get(event.getPlayer().getUniqueId());
         if (user == null) {
             event.setCancelled(true);
+            Bukkit.getLogger().severe("User is null.");
             return;
         }
         if (user.getPunishments() != null && !user.getPunishments().isEmpty()) {
@@ -523,11 +524,10 @@ public class Punish implements CommandExecutor, Listener {
 
             }
         }
-        if (user == null) Bukkit.getLogger().severe("User is null.");
         if (event.getPlayer().hasPermission("dystellar.plus")) {
-            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + (user != null ? user.getSuffix() : "") + ChatColor.WHITE + ": " + event.getMessage())));
+            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": " + event.getMessage())));
         } else {
-            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + (user != null ? user.getSuffix() : "") + ChatColor.WHITE + ": ")) + event.getMessage());
+            event.setFormat(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(event.getPlayer(), "%luckperms_prefix%" + playerName + " " + user.getSuffix() + ChatColor.WHITE + ": ")) + event.getMessage());
         }
     }
 }

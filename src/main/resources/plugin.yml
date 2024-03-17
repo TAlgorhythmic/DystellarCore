@@ -12,6 +12,11 @@ description: Base commands and utilities for Dystellar Network
 website: dystellar.gg
 load: STARTUP
 commands:
+  friend:
+    aliases:
+      - f
+    description: Friends management command.
+    usage: /friend <args>
   toggleglobaltabcomplete:
     aliases:
       - tgtc

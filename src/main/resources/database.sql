@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS players_core
     tabcompletion BOOLEAN NOT NULL DEFAULT FALSE,
     scoreboard BOOLEAN NOT NULL DEFAULT TRUE,
     ignoreList VARCHAR(4000) NOT NULL,
+    friends VARCHAR(2000),
+    otherConfigs VARCHAR(4000)),
+    tips VARCHAR(50) NOT NULL,
     PRIMARY KEY (uuid)
 );
 CREATE TABLE IF NOT EXISTS mappings

@@ -19,6 +19,7 @@ import net.zylesh.dystellarcore.listeners.GeneralListeners;
 import net.zylesh.dystellarcore.listeners.PluginMessageScheduler;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
+import net.zylesh.dystellarcore.serialization.Consts;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Validate;
@@ -31,6 +32,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -45,6 +47,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public final class DystellarCore extends JavaPlugin implements PluginMessageListener {
+public final class DystellarCore extends JavaPlugin implements PluginMessageListener, Listener {
 
     private static DystellarCore INSTANCE;
 
@@ -101,7 +104,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static boolean ALLOW_SIGNS;
     public static boolean AUTOMATED_MESSAGES_ENABLED = true;
     public static int AUTOMATED_MESSAGES_RATE = 360;
-    public static List<String> AUTOMATED_MESSAGES = new ArrayList<>();
+    public static final List<String> AUTOMATED_MESSAGES = new ArrayList<>();
     private static final AtomicInteger i = new AtomicInteger();
     public static boolean PREVENT_WEATHER = true;
 
@@ -142,6 +145,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, channel);
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         Bukkit.getMessenger().registerIncomingPluginChannel(this, channel, this);
+        Bukkit.getPluginManager().registerEvents(this, this);
         if (HANDLE_SPAWN_MECHANICS) new SpawnMechanics();
         if (HANDLE_SPAWN_PROTECTION) new EditmodeCommand();
         if (SCOREBOARD_ENABLED) new Scoreboards();
@@ -173,6 +177,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new IgnoreListCommand();
         new InboxCommand();
         new GeneralListeners();
+        new FriendCommand();
         // Some exploits fix.
         PacketListener.registerPacketHandler(new IPacketListener() {
             @Override
@@ -402,12 +407,12 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         if (!s.equals(channel)) return;
         ByteArrayDataInput in = ByteStreams.newDataInput(bytes);
         byte id = in.readByte();
-        UUID uuid = UUID.fromString(in.readUTF());
-        if (!User.getUsers().containsKey(uuid)) return;
-        User user = User.get(uuid);
         switch (id) {
             case REGISTER_RECEIVED: awaitingPlayers.remove(player.getUniqueId()); break;
             case INBOX_UPDATE: {
+                UUID uuid = UUID.fromString(in.readUTF());
+                if (!User.getUsers().containsKey(uuid)) return;
+                User user = User.get(uuid);
                 byte type = in.readByte();
                 switch (type) {
                     case PKILL_EFFECT: {
@@ -461,7 +466,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                             reward.initializeIcons();
                             user.getInbox().addSender(reward);
                         }
-
                         break;
                     }
                     case MESSAGE: {
@@ -482,7 +486,103 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 InboxCommand.g().init();
                 break;
             }
+            case FRIEND_ADD_REQUEST_APPROVE: {
+                if (FriendCommand.requestsCache.contains(player.getUniqueId())) {
+                    player.sendMessage(ChatColor.GREEN + "Friend request sent!");
+                } else {
+                    Bukkit.getLogger().warning("Friend request approve operation for " + player.getName() + " received, but this player didn't send any friend request. Ignoring packet...");
+                }
+                break;
+            }
+            case FRIEND_ADD_REQUEST_DENY: {
+                if (FriendCommand.requestsCache.remove(player.getUniqueId())) {
+                    player.sendMessage(ChatColor.GREEN + "This player is not online.");
+                } else {
+                    Bukkit.getLogger().warning("Friend request deny operation for " + player.getName() + " received, but this player didn't send any friend request. Ignoring packet...");
+                }
+                break;
+            }
+            case FRIEND_ADD_REQUEST_DISABLED: {
+                if (FriendCommand.requestsCache.remove(player.getUniqueId())) {
+                    player.sendMessage(ChatColor.GREEN + "This player is not accepting friend requests.");
+                } else {
+                    Bukkit.getLogger().warning("Friend request deny operation for " + player.getName() + " received, but this player didn't send any friend request. Ignoring packet...");
+                }
+                break;
+            }
+            case FRIEND_ADD_REQUEST: {
+                UUID uuid = UUID.fromString(in.readUTF());
+                String name = in.readUTF();
+                requests.put(player.getUniqueId(), uuid);
+                PacketPlayOutChat chat = new PacketPlayOutChat(ChatSerializer.a("[\"\",{\"text\":\"You've received a friend request from \",\"color\":\"dark_aqua\"},{\"text\":\"" + name + "\",\"color\":\"light_purple\"},{\"text\":\"!\",\"color\":\"dark_aqua\"},{\"text\":\" \",\"bold\":true,\"color\":\"green\"},{\"text\":\"[Accept]\",\"bold\":true,\"color\":\"green\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/f accept\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§aClick to accept!\"}},{\"text\":\" \",\"bold\":true,\"color\":\"red\"},{\"text\":\"[Reject]\",\"bold\":true,\"color\":\"red\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/f reject\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"§cClick to reject!\"}}]"));
+                player.sendPacket(chat);
+                Bukkit.getScheduler().runTaskLater(this, () -> requests.remove(player.getUniqueId()), 800L);
+                break;
+            }
+            case DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS: {
+                User u = User.get(player);
+                if (u == null) return;
+                boolean response;
+                response = u.extraOptions[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] == Consts.BYTE_TRUE;
+                sendPluginMessage(player, DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS_RESPONSE, response);
+            }
+            case DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK_RESPONSE: {
+                String p = in.readUTF();
+                if (runnables.containsKey(p)) {
+                    if (in.readBoolean())
+                        runnables.get(p).getKey().run();
+                    else
+                        runnables.get(p).getValue().run();
+                }
+                break;
+            }
+            case REMOVE_FRIEND: {
+                UUID uuid = UUID.fromString(in.readUTF());
+                User u = User.get(player);
+                if (u == null) {
+                    Bukkit.getLogger().warning(player.getName() + " is supposed to delete a player from its friends list as stated by the packet received, but he is not online...");
+                    return;
+                }
+                u.friends.remove(uuid);
+                asyncManager.submit(() -> {
+                    String name = MariaDB.loadName(uuid.toString());
+                    if (name != null) {
+                        player.sendMessage(ChatColor.RED + name + " has removed been removed from your friends list. (He removed you)");
+                    }
+                });
+                break;
+            }
+            case DEMAND_FIND_PLAYER_RESPONSE: {
+                String pla = in.readUTF();
+                String srv = in.readUTF();
+                player.sendMessage(ChatColor.DARK_AQUA + pla + ChatColor.WHITE + " is currently playing at " + ChatColor.YELLOW + srv + ChatColor.WHITE + ".");
+                break;
+            }
+            case DEMAND_FIND_PLAYER_NOT_ONLINE: {
+                player.sendMessage(ChatColor.RED + "This player is not online.");
+                break;
+            }
+            case FRIEND_ADD_REQUEST_ACCEPT: {
+                UUID uuid = UUID.fromString(in.readUTF());
+                String name = in.readUTF();
+                FriendCommand.requestAccepted(player, uuid, name);
+                break;
+            }
+            case FRIEND_ADD_REQUEST_REJECT: {
+                String name = in.readUTF();
+                FriendCommand.requestRejected(player, name);
+                break;
+            }
         }
+    }
+
+    public final Map<UUID, UUID> requests = new HashMap<>();
+
+    private final Map<String, Map.Entry<Runnable, Runnable>> runnables = new ConcurrentHashMap<>();
+
+    public void executeIfOnline(Player p, String s, Runnable ifTrue, Runnable ifFalse) {
+        runnables.put(s, new AbstractMap.SimpleImmutableEntry<>(ifTrue, ifFalse));
+        sendPluginMessage(p, DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK, s);
     }
 
     public void sendPluginMessage(Player player, byte typeId, Object...extraData) {
@@ -491,14 +591,14 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         if (extraData != null) {
             for (Object o : extraData) {
                 if (o instanceof String) out.writeUTF((String) o);
-                else if (o instanceof Byte) out.writeByte((Byte) o);
-                else if (o instanceof Integer) out.writeInt((Integer) o);
-                else if (o instanceof Float) out.writeFloat((Float) o);
-                else if (o instanceof Double) out.writeDouble((Double) o);
-                else if (o instanceof Boolean) out.writeBoolean((Boolean) o);
-                else if (o instanceof Long) out.writeLong((Long) o);
-                else if (o instanceof Character) out.writeChar((Character) o);
-                else if (o instanceof Short) out.writeShort((Short) o);
+                else if (o instanceof Byte) out.writeByte((byte) o);
+                else if (o instanceof Integer) out.writeInt((int) o);
+                else if (o instanceof Float) out.writeFloat((float) o);
+                else if (o instanceof Double) out.writeDouble((double) o);
+                else if (o instanceof Boolean) out.writeBoolean((boolean) o);
+                else if (o instanceof Long) out.writeLong((long) o);
+                else if (o instanceof Character) out.writeChar((char) o);
+                else if (o instanceof Short) out.writeShort((short) o);
             }
         }
         player.sendPluginMessage(this, channel, out.toByteArray());
@@ -510,4 +610,18 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     private static final byte INBOX_MANAGER_UPDATE = 3;
     public static final byte GLOBAL_TAB_REGISTER = 4;
     public static final byte GLOBAL_TAB_UNREGISTER = 5;
+    public static final byte FRIEND_ADD_REQUEST = 6;
+    public static final byte FRIEND_ADD_REQUEST_APPROVE = 7;
+    public static final byte FRIEND_ADD_REQUEST_DENY = 8;
+    public static final byte FRIEND_ADD_REQUEST_DISABLED = 9;
+    public static final byte FRIEND_ADD_REQUEST_ACCEPT = 18;
+    public static final byte FRIEND_ADD_REQUEST_REJECT = 19;
+    private static final byte DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS = 10;
+    private static final byte DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS_RESPONSE = 11;
+    public static final byte DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK = 12;
+    public static final byte DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK_RESPONSE = 13;
+    public static final byte REMOVE_FRIEND = 14;
+    public static final byte DEMAND_FIND_PLAYER = 15;
+    public static final byte DEMAND_FIND_PLAYER_RESPONSE = 16;
+    public static final byte DEMAND_FIND_PLAYER_NOT_ONLINE = 17;
 }

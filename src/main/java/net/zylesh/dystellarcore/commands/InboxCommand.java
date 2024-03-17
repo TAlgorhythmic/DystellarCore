@@ -94,6 +94,8 @@ public class InboxCommand implements CommandExecutor, Listener {
         return true;
     }
 
+    // TODO Unfinished
+
     @EventHandler
     public void onInv(InventoryClickEvent e) {
         if (e.getClickedInventory().equals(inv)) {
