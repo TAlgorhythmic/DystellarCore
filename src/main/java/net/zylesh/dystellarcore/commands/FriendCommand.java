@@ -198,6 +198,15 @@ public class FriendCommand implements CommandExecutor, Listener {
                 break;
             }
             case "togglerequests": {
+                User u = User.get(p);
+                byte setting = u.extraOptions[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS];
+                if (setting == Consts.BYTE_FALSE) {
+                    u.extraOptions[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] = Consts.BYTE_TRUE;
+                    p.sendMessage(ChatColor.DARK_AQUA + "You are able to receive friend requests.");
+                } else {
+                    u.extraOptions[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] = Consts.BYTE_FALSE;
+                    p.sendMessage(ChatColor.RED + "You are no longer able to receive friend requests.");
+                }
                 break;
             }
         }
