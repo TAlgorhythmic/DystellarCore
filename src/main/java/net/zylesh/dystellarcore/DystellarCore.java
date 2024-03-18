@@ -555,7 +555,11 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             case DEMAND_FIND_PLAYER_RESPONSE: {
                 String pla = in.readUTF();
                 String srv = in.readUTF();
-                player.sendMessage(ChatColor.DARK_AQUA + pla + ChatColor.WHITE + " is currently playing at " + ChatColor.YELLOW + srv + ChatColor.WHITE + ".");
+                if (srv.equals("null")) {
+                    player.sendMessage(ChatColor.DARK_AQUA + "This player is joining the server right now!" + ChatColor.GRAY + " (Login screen)");
+                } else {
+                    player.sendMessage(ChatColor.DARK_AQUA + pla + ChatColor.WHITE + " is currently playing at " + ChatColor.YELLOW + srv + ChatColor.WHITE + ".");
+                }
                 break;
             }
             case DEMAND_FIND_PLAYER_NOT_ONLINE: {

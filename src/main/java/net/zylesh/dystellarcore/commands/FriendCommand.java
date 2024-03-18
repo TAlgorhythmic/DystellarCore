@@ -137,7 +137,7 @@ public class FriendCommand implements CommandExecutor, Listener {
                     p.sendMessage(ChatColor.GREEN + pInt.getName() + " is in your exact same server!");
                     return true;
                 } else {
-                    DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.DEMAND_FIND_PLAYER);
+                    DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.DEMAND_FIND_PLAYER, strings[1]);
                 }
                 break;
             }
