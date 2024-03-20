@@ -38,6 +38,10 @@ public class IgnoreListCommand implements CommandExecutor {
             case "list": {
                 DystellarCore.getAsyncManager().submit(() -> {
                     Set<Mapping> mappings = MariaDB.getUUIDMappings(user.getIgnoreList().toArray(new UUID[]{}));
+                    if (mappings.isEmpty()) {
+                        p.sendMessage(ChatColor.DARK_AQUA + "Your ignore list is empty. You have no enemies \uD83D\uDE0E");
+                        return;
+                    }
                     String[] message = new String[mappings.size() + 3];
                     message[0] = ChatColor.DARK_AQUA + "People that you are currently ignoring:";
                     message[1] = ChatColor.WHITE.toString() + ChatColor.STRIKETHROUGH + "----------------------------------";

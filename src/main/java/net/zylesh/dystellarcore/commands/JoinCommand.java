@@ -30,6 +30,11 @@ public class JoinCommand implements CommandExecutor {
         out.writeUTF(strings[0]);
         p.sendMessage(ChatColor.GREEN + "Connecting...");
         p.sendPluginMessage(DystellarCore.getInstance(), "BungeeCord", out.toByteArray());
+        Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
+            if (p.isOnline()) {
+                p.sendMessage(ChatColor.RED + "Error trying to connect to server.");
+            }
+        }, 30L);
         return true;
     }
 }
