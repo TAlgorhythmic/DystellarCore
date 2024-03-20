@@ -28,7 +28,7 @@ public class ReplyCommand implements CommandExecutor {
             }
             if (strings.length - 1 >= 0) {
                 if (playerUser.getLastMessagedPlayer() != null) {
-                    Player lastMessaged = Bukkit.getPlayer(playerUser.getUUID());
+                    Player lastMessaged = Bukkit.getPlayer(playerUser.getLastMessagedPlayer().getUUID());
                     if (lastMessaged != null) {
                         if (playerUser.getLastMessagedPlayer().getIgnoreList().contains(player.getUniqueId())) {
                             player.sendMessage(ChatColor.RED + "This player is ignoring you.");
