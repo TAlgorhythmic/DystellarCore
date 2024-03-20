@@ -29,6 +29,10 @@ public class FreezeCommand implements CommandExecutor, Listener {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+        if (strings.length < 1) {
+            commandSender.sendMessage(ChatColor.RED + "Usage: /ss <player>");
+            return true;
+        }
         Player player = Bukkit.getPlayer(strings[0]);
         if (player == null) {
             commandSender.sendMessage(ChatColor.RED + "This player does not exist or is not online.");
