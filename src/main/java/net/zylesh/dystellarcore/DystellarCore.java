@@ -32,6 +32,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -69,7 +70,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         return INSTANCE;
     }
 
-    private static final String channel = "dyst:msg";
+    private static final String channel = "dyst:ellar";
 
     private final File conf = new File(getDataFolder(), "config.yml");
     private final YamlConfiguration config = YamlConfiguration.loadConfiguration(conf);
@@ -143,8 +144,8 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             }, AUTOMATED_MESSAGES_RATE, AUTOMATED_MESSAGES_RATE, TimeUnit.SECONDS);
         }
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, channel);
-        Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         Bukkit.getMessenger().registerIncomingPluginChannel(this, channel, this);
+        Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         Bukkit.getPluginManager().registerEvents(this, this);
         if (HANDLE_SPAWN_MECHANICS) new SpawnMechanics();
         if (HANDLE_SPAWN_PROTECTION) new EditmodeCommand();
@@ -209,6 +210,9 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     @Override
     public void onDisable() {
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
+        Bukkit.getMessenger().unregisterIncomingPluginChannel(this, "BungeeCord");
+        Bukkit.getMessenger().unregisterOutgoingPluginChannel(this, channel);
+        Bukkit.getMessenger().unregisterIncomingPluginChannel(this, channel);
     }
 
     private void loadConfig() {
@@ -388,27 +392,35 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         sendPluginMessage(player, INBOX_UPDATE, obj.toArray(new Object[0]));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onJoin(PlayerJoinEvent event) {
         awaitingPlayers.add(event.getPlayer().getUniqueId());
-        sendPluginMessage(event.getPlayer(), REGISTER);
+        Bukkit.getScheduler().runTaskLater(this, () -> sendPluginMessage(event.getPlayer(), REGISTER), 15L);
         Bukkit.getScheduler().runTaskLater(this, () -> {
             if (awaitingPlayers.contains(event.getPlayer().getUniqueId())) {
                 event.getPlayer().kickPlayer(ChatColor.RED + "You are not allowed to join this server. (Contact us if you think this is an error)");
                 awaitingPlayers.remove(event.getPlayer().getUniqueId());
             }
-        }, 18L);
+        }, 50L);
     }
 
     private final Set<UUID> awaitingPlayers = new HashSet<>();
 
     @Override
-    public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
-        if (!s.equals(channel)) return;
+    public void onPluginMessageReceived(String s, Player p, byte[] bytes) {
+        if (!s.equalsIgnoreCase(channel)) return;
         ByteArrayDataInput in = ByteStreams.newDataInput(bytes);
         byte id = in.readByte();
         switch (id) {
-            case REGISTER_RECEIVED: awaitingPlayers.remove(player.getUniqueId()); break;
+            case REGISTER_RECEIVED: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
+                awaitingPlayers.remove(player.getUniqueId());
+            } break;
             case INBOX_UPDATE: {
                 UUID uuid = UUID.fromString(in.readUTF());
                 if (!User.getUsers().containsKey(uuid)) return;
@@ -487,6 +499,12 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 break;
             }
             case FRIEND_ADD_REQUEST_APPROVE: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 if (FriendCommand.requestsCache.contains(player.getUniqueId())) {
                     player.sendMessage(ChatColor.GREEN + "Friend request sent!");
                 } else {
@@ -495,6 +513,12 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 break;
             }
             case FRIEND_ADD_REQUEST_DENY: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 if (FriendCommand.requestsCache.remove(player.getUniqueId())) {
                     player.sendMessage(ChatColor.GREEN + "This player is not online.");
                 } else {
@@ -503,6 +527,12 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 break;
             }
             case FRIEND_ADD_REQUEST_DISABLED: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 if (FriendCommand.requestsCache.remove(player.getUniqueId())) {
                     player.sendMessage(ChatColor.GREEN + "This player is not accepting friend requests.");
                 } else {
@@ -511,6 +541,12 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 break;
             }
             case FRIEND_ADD_REQUEST: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 UUID uuid = UUID.fromString(in.readUTF());
                 String name = in.readUTF();
                 requests.put(player.getUniqueId(), uuid);
@@ -520,6 +556,12 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 break;
             }
             case DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 User u = User.get(player);
                 if (u == null) return;
                 boolean response;
@@ -527,16 +569,22 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 sendPluginMessage(player, DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS_RESPONSE, response);
             }
             case DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK_RESPONSE: {
-                String p = in.readUTF();
-                if (runnables.containsKey(p)) {
+                String pe = in.readUTF();
+                if (runnables.containsKey(pe)) {
                     if (in.readBoolean())
-                        runnables.get(p).getKey().run();
+                        runnables.get(pe).getKey().run();
                     else
-                        runnables.get(p).getValue().run();
+                        runnables.get(pe).getValue().run();
                 }
                 break;
             }
             case REMOVE_FRIEND: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 UUID uuid = UUID.fromString(in.readUTF());
                 User u = User.get(player);
                 if (u == null) {
@@ -553,6 +601,12 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 break;
             }
             case DEMAND_FIND_PLAYER_RESPONSE: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 String pla = in.readUTF();
                 String srv = in.readUTF();
                 if (srv.equals("null")) {
@@ -563,18 +617,34 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 break;
             }
             case DEMAND_FIND_PLAYER_NOT_ONLINE: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 player.sendMessage(ChatColor.RED + "This player is not online.");
                 break;
             }
             case FRIEND_ADD_REQUEST_ACCEPT: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
                 UUID uuid = UUID.fromString(in.readUTF());
-                String name = in.readUTF();
-                FriendCommand.requestAccepted(player, uuid, name);
+                FriendCommand.requestAccepted(player, uuid, unsafe);
                 break;
             }
             case FRIEND_ADD_REQUEST_REJECT: {
-                String name = in.readUTF();
-                FriendCommand.requestRejected(player, name);
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
+                FriendCommand.requestRejected(player, unsafe);
                 break;
             }
         }
@@ -591,7 +661,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
 
     public void sendPluginMessage(Player player, byte typeId, Object...extraData) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeByte(typeId);
+        out.writeByte(typeId); // Subchannel
         if (extraData != null) {
             for (Object o : extraData) {
                 if (o instanceof String) out.writeUTF((String) o);
@@ -618,14 +688,14 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static final byte FRIEND_ADD_REQUEST_APPROVE = 7;
     public static final byte FRIEND_ADD_REQUEST_DENY = 8;
     public static final byte FRIEND_ADD_REQUEST_DISABLED = 9;
-    public static final byte FRIEND_ADD_REQUEST_ACCEPT = 18;
-    public static final byte FRIEND_ADD_REQUEST_REJECT = 19;
-    private static final byte DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS = 10;
-    private static final byte DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS_RESPONSE = 11;
-    public static final byte DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK = 12;
-    public static final byte DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK_RESPONSE = 13;
-    public static final byte REMOVE_FRIEND = 14;
-    public static final byte DEMAND_FIND_PLAYER = 15;
-    public static final byte DEMAND_FIND_PLAYER_RESPONSE = 16;
-    public static final byte DEMAND_FIND_PLAYER_NOT_ONLINE = 17;
+    public static final byte FRIEND_ADD_REQUEST_ACCEPT = 10;
+    public static final byte FRIEND_ADD_REQUEST_REJECT = 11;
+    private static final byte DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS = 12;
+    private static final byte DEMAND_IS_PLAYER_ACCEPTING_FRIEND_REQUESTS_RESPONSE = 13;
+    public static final byte DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK = 14;
+    public static final byte DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK_RESPONSE = 15;
+    public static final byte REMOVE_FRIEND = 16;
+    public static final byte DEMAND_FIND_PLAYER = 17;
+    public static final byte DEMAND_FIND_PLAYER_RESPONSE = 18;
+    public static final byte DEMAND_FIND_PLAYER_NOT_ONLINE = 19;
 }

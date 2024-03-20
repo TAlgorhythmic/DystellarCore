@@ -26,7 +26,7 @@ public class FlyCommand implements CommandExecutor {
                 return true;
             }
             if ((DystellarCore.PRACTICE_HOOK && PUser.get(player).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) {
-                player.sendMessage(ChatColor.RED + "You are not allowed to use this command ingame.");
+                player.sendMessage(ChatColor.RED + "You are not allowed to use this command in-game.");
                 return true;
             }
             player.setAllowFlight(!player.getAllowFlight());

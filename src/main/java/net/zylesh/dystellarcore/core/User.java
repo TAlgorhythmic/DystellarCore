@@ -97,7 +97,7 @@ public class User {
     }
 
     public void assignExtraOptions(byte[] tips) {
-        if (this.tipsSent != null) throw new UnsupportedOperationException("An instance already exists.");
+        if (this.extraOptions != null) throw new UnsupportedOperationException("An instance already exists.");
         this.extraOptions = tips;
     }
 

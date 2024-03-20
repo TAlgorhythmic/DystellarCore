@@ -7,6 +7,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 
+// TODO create gui and command
+
 public enum Suffix {
     NONE("", 10),
     L("&b【&c&lL&b】", 11),
