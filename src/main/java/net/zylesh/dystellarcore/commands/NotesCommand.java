@@ -19,7 +19,8 @@ public class NotesCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if ((!commandSender.hasPermission("dystellar.staff") || strings.length < 1) && commandSender instanceof Player) {
+        if (strings.length < 1) {
+            if (!(commandSender instanceof Player)) return true;
             Player p = (Player)commandSender;
             User user = User.get(p);
             p.sendMessage(ChatColor.YELLOW + "Your notes:");
@@ -33,6 +34,10 @@ public class NotesCommand implements CommandExecutor {
                 }
             }, 20L);
         } else {
+            if (!commandSender.hasPermission("dystellar.staff")) {
+                commandSender.sendMessage(ChatColor.RED + "No permission.");
+                return true;
+            }
             Player p = Bukkit.getPlayer(strings[0]);
             if (p != null && p.isOnline()) {
                 User user = User.get(p);
