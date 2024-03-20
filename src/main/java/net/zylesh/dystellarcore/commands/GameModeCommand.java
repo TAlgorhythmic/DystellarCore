@@ -6,7 +6,6 @@ import net.zylesh.skywars.SkywarsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,7 +18,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class GameModeCommand implements CommandExecutor, Listener {
 
@@ -108,9 +110,7 @@ public class GameModeCommand implements CommandExecutor, Listener {
             Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> playersInSpecMode.remove(player.getUniqueId()), 40L);
         } else {
             player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, true));
-            player.teleport(new Location(player.getWorld(), player.getLocation().getX(), player.getLocation().getY() + 1.0, player.getLocation().getZ()));
             player.setAllowFlight(true);
-            player.setFlying(true);
             ItemStack[] armorSet = player.getInventory().getArmorContents();
             ItemStack[] contents = player.getInventory().getContents();
             player.setGameMode(GameMode.ADVENTURE);
