@@ -23,7 +23,7 @@ public class NoteCommand implements CommandExecutor {
             commandSender.sendMessage(ChatColor.RED + "No permission.");
             return true;
         }
-        if (strings.length < 3) {
+        if (strings.length < 2) {
             commandSender.sendMessage(ChatColor.RED + "Usage: /note <player> <message-note>");
             return true;
         }
@@ -31,13 +31,14 @@ public class NoteCommand implements CommandExecutor {
         if (playerInt != null && playerInt.isOnline()) {
             User userInt = User.get(playerInt);
             StringBuilder reason = new StringBuilder();
-            for (int i = 2; i < strings.length; i++) {
-                if (i == 2) reason.append(strings[i]);
+            for (int i = 1; i < strings.length; i++) {
+                if (i == 1) reason.append(strings[i]);
                 else reason.append(" ").append(strings[i]);
             }
             userInt.addNote(reason.toString());
+            commandSender.sendMessage(ChatColor.DARK_AQUA + "Note added!");
         } else {
-            DystellarCore.getAsyncManager().execute(() -> {
+            DystellarCore.getAsyncManager().submit(() -> {
                 Mapping mapping = MariaDB.loadMapping(strings[1]);
                 if (mapping == null) {
                     commandSender.sendMessage(ChatColor.RED + "This player does not exist in the database.");
@@ -50,6 +51,7 @@ public class NoteCommand implements CommandExecutor {
                     }
                     user.addNote(reason.toString());
                     MariaDB.savePlayerToDatabase(user);
+                    commandSender.sendMessage(ChatColor.DARK_AQUA + "Note added!");
                 }
             });
         }
