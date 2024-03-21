@@ -81,102 +81,106 @@ public class Punish implements CommandExecutor, Listener {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!commandSender.hasPermission("dystellar.staff") || !(commandSender instanceof Player)) return true;
         Player p = (Player) commandSender;
+        Player pInt = Bukkit.getPlayer(strings[0]);
+        if (pInt == null || !pInt.isOnline()) {
+            p.sendMessage(ChatColor.RED + "This player is not online.");
+            return true;
+        }
+        commandCache.put(p.getUniqueId(), pInt);
         p.openInventory(inv);
         return true;
     }
+
+    private static final Map<UUID, Player> commandCache = new HashMap<>();
 
     @EventHandler
     public void onInvClick(InventoryClickEvent event) {
         if (event.getCurrentItem() == null || event.getCurrentItem().getType().equals(Material.AIR)) return;
         if (event.getClickedInventory().equals(inv)) event.setCancelled(true);
         ItemStack i = event.getCurrentItem();
-        User user = User.get((Player) event.getWhoClicked());
+        Player p = (Player) event.getWhoClicked();
+        Player playerToPunish = commandCache.get(p.getUniqueId());
+        if (playerToPunish == null) {
+            p.sendMessage(ChatColor.RED + "This player is no longer online.");
+            return;
+        }
+        User userToPunish = User.get(playerToPunish);
         try {
             if (i.equals(crossTeaming)) {
                 Punishment punishment = WARN_CROSSTEAMING.call();
-                user.punish(punishment);
-                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
-                    Player p = Bukkit.getPlayer(user.getUUID());
-                    if (p != null) {
-                        p.kickPlayer(ChatColor.RED + punishment.getReason());
-                    }
-                }, 30L);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
+                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> playerToPunish.kickPlayer(ChatColor.RED + punishment.getReason()), 30L);
             } else if (i.equals(bugExploiting)) {
                 Punishment punishment = WARN_BUGEXPLOITING.call();
-                user.punish(punishment);
-                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
-                    Player p = Bukkit.getPlayer(user.getUUID());
-                    if (p != null) {
-                        p.kickPlayer(ChatColor.RED + punishment.getReason());
-                    }
-                }, 30L);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
+                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> playerToPunish.kickPlayer(ChatColor.RED + punishment.getReason()), 30L);
             } else if (i.equals(teamKill)) {
                 Punishment punishment = WARN_TEAMKILL.call();
-                user.punish(punishment);
-                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
-                    Player p = Bukkit.getPlayer(user.getUUID());
-                    if (p != null) {
-                        p.kickPlayer(ChatColor.RED + punishment.getReason());
-                    }
-                }, 30L);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
+                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> playerToPunish.kickPlayer(ChatColor.RED + punishment.getReason()), 30L);
             } else if (i.equals(annoyingPlaystyle)) {
                 Punishment punishment = WARN_ANNOYING_PLAYSTYLE.call();
-                user.punish(punishment);
-                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
-                    Player p = Bukkit.getPlayer(user.getUUID());
-                    if (p != null) {
-                        p.kickPlayer(ChatColor.RED + punishment.getReason());
-                    }
-                }, 30L);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
+                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> playerToPunish.kickPlayer(ChatColor.RED + punishment.getReason()), 30L);
             } else if (i.equals(customWarn)) {
                 cache.put(event.getWhoClicked().getUniqueId(), customWarn);
                 event.getWhoClicked().closeInventory();
                 ((Player) event.getWhoClicked()).sendMessage(ChatColor.YELLOW + "Type the reason in chat, or type 'cancel' to cancel.");
             } else if (i.equals(lessToxic)) {
                 Punishment punishment = MUTE_LESS_TOXIC_BEHAVIOR.call();
-                user.punish(WARN_LESS_TOXIC_BEHAVIOR.call());
-                user.punish(punishment);
+                userToPunish.punish(WARN_LESS_TOXIC_BEHAVIOR.call());
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(toxic)) {
                 Punishment punishment = MUTE_TOXIC_BEHAVIOR.call();
-                user.punish(WARN_TOXIC_BEHAVIOR.call());
-                user.punish(punishment);
+                userToPunish.punish(WARN_TOXIC_BEHAVIOR.call());
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(severToxic)) {
                 Punishment punishment = MUTE_SEVER_TOXIC_BEHAVIOR.call();
-                user.punish(WARN_SEVER_TOXIC_BEHAVIOR.call());
-                user.punish(punishment);
+                userToPunish.punish(WARN_SEVER_TOXIC_BEHAVIOR.call());
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(floodSpam)) {
                 Punishment punishment = MUTE_FLOOD_SPAM.call();
-                user.punish(punishment);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(obvCheating) || i.equals(cheatingFoundInSS) || i.equals(refuseSS)) {
                 Punishment punishment = CHEATING.call();
-                user.punish(punishment);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(admitCheating)) {
                 Punishment punishment = CHEATING_ADMIT.call();
-                user.punish(punishment);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(rankedCheating)) {
                 Punishment punishment = CHEATING.call();
-                user.punish(RANKED_CHEATING);
-                user.punish(punishment);
+                userToPunish.punish(RANKED_CHEATING);
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(rankedAnnoying)) {
                 Punishment punishment = RANKED_ANNOYING_PLAYSTYLE.call();
                 Punishment punishment1 = WARN_ANNOYING_PLAYSTYLE.call();
-                user.punish(punishment);
-                user.punish(punishment1);
-                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
-                    Player p = Bukkit.getPlayer(user.getUUID());
-                    if (p != null) {
-                        p.kickPlayer(ChatColor.RED + punishment1.getReason());
-                    }
-                }, 30L);
+                userToPunish.punish(punishment);
+                userToPunish.punish(punishment1);
+                commandCache.remove(p.getUniqueId());
+                Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> playerToPunish.kickPlayer(ChatColor.RED + punishment1.getReason()), 30L);
             } else if (i.equals(rankedToxic)) {
                 Punishment punishment = RANKED_TOXIC_BEHAVIOR.call();
-                user.punish(MUTE_TOXIC_BEHAVIOR.call());
-                user.punish(WARN_TOXIC_BEHAVIOR.call());
-                user.punish(punishment);
+                userToPunish.punish(MUTE_TOXIC_BEHAVIOR.call());
+                userToPunish.punish(WARN_TOXIC_BEHAVIOR.call());
+                userToPunish.punish(punishment);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(emergencyBlacklist)) {
-                user.punish(BLACKLIST_INMEDIATE);
+                userToPunish.punish(BLACKLIST_INMEDIATE);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(threatening)) {
-                user.punish(THREATENING);
+                userToPunish.punish(THREATENING);
+                commandCache.remove(p.getUniqueId());
             } else if (i.equals(blacklistCustom)) {
                 cache.put(event.getWhoClicked().getUniqueId(), blacklistCustom);
                 event.getWhoClicked().closeInventory();
@@ -432,18 +436,27 @@ public class Punish implements CommandExecutor, Listener {
                 event.getPlayer().sendMessage(ChatColor.RED + "Cancelled.");
                 event.getPlayer().openInventory(inv);
             } else {
+                Player playerToPunish = commandCache.get(event.getPlayer().getUniqueId());
+                if (playerToPunish == null) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "This player is no longer online.");
+                    return;
+                }
+                User userToPunish = User.get(playerToPunish);
                 if (cache.get(event.getPlayer().getUniqueId()).equals(customWarn)) {
-                    User.get(event.getPlayer()).punish(new Warn(LocalDateTime.now().plusDays(25L), event.getMessage()));
+                    userToPunish.punish(new Warn(LocalDateTime.now().plusDays(25L), event.getMessage()));
+                    commandCache.remove(event.getPlayer().getUniqueId());
                 } else if (cache.get(event.getPlayer().getUniqueId()).equals(blacklistCustom)) {
-                    User.get(event.getPlayer()).punish(new Blacklist(null, event.getMessage()));
+                    userToPunish.punish(new Blacklist(null, event.getMessage()));
+                    commandCache.remove(event.getPlayer().getUniqueId());
                 } else if (cache.get(event.getPlayer().getUniqueId()).equals(note)) {
-                    User.get(event.getPlayer()).addNote(event.getMessage());
+                    userToPunish.addNote(event.getMessage());
+                    commandCache.remove(event.getPlayer().getUniqueId());
                 }
                 cache.remove(event.getPlayer().getUniqueId());
             }
             return;
         }
-        User user = User.get(event.getPlayer().getUniqueId());
+        User user = User.get(event.getPlayer());
         if (user == null) {
             event.setCancelled(true);
             Bukkit.getLogger().severe("User is null.");
