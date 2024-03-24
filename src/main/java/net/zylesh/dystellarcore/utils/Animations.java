@@ -61,6 +61,7 @@ public class Animations {
                 if (playerUser.getLastGame() instanceof GameVersus) {
                     GameVersus game = (GameVersus) playerUser.getLastGame();
                     for (PUser psld : game.getTeam1()) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         PlayerConnection connection = pla.getHandle().playerConnection;
                         if (!pla.equals(player)) {
@@ -68,6 +69,7 @@ public class Animations {
                         }
                     }
                     for (PUser psld : game.getTeam2()) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         PlayerConnection connection = pla.getHandle().playerConnection;
                         if (!pla.equals(player)) {
@@ -75,6 +77,7 @@ public class Animations {
                         }
                     }
                     for (PUser psld : game.semiDeathPlayers) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         PlayerConnection connection = pla.getHandle().playerConnection;
                         if (!pla.equals(player)) {
@@ -84,6 +87,7 @@ public class Animations {
                 } else {
                     GameFFA game = (GameFFA) playerUser.getLastGame();
                     for (PUser psld : game.getPlayers()) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         PlayerConnection connection = pla.getHandle().playerConnection;
                         if (!pla.equals(player)) {
@@ -105,12 +109,14 @@ public class Animations {
                         }
                     }
                     for (PUser psld : game.getTeam2()) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         if (!pla.equals(player)) {
                             pla.hidePlayer(player);
                         }
                     }
                     for (PUser psld : game.semiDeathPlayers) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         if (!pla.equals(player)) {
                             pla.hidePlayer(player);
@@ -119,6 +125,7 @@ public class Animations {
                 } else {
                     GameFFA game = (GameFFA) playerUser.getLastGame();
                     for (PUser psld : game.getPlayers()) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         if (!pla.equals(player)) {
                             pla.hidePlayer(player);
@@ -143,12 +150,14 @@ public class Animations {
                     if (playerUser.getLastGame() instanceof GameVersus) {
                         GameVersus game = (GameVersus) playerUser.getLastGame();
                         for (PUser psld : game.getTeam1()) {
+                            if (psld == null) continue;
                             CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                             PlayerConnection connection = pla.getHandle().playerConnection;
                             connection.sendPacket(new PacketPlayOutSpawnEntityWeather(lightning));
                             connection.sendPacket(new PacketPlayOutNamedSoundEffect("ambient.weather.thunder", psld.getPlayer().getLocation().getX(), psld.getPlayer().getLocation().getY(), psld.getPlayer().getLocation().getZ(), 3.0f, 1.0f));
                         }
                         for (PUser psld : game.getTeam2()) {
+                            if (psld == null) continue;
                             CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                             pla.hidePlayer(player);
                             PlayerConnection connection = pla.getHandle().playerConnection;
@@ -158,6 +167,7 @@ public class Animations {
                     } else {
                         GameFFA game = (GameFFA) playerUser.getLastGame();
                         for (PUser psld : game.getPlayers()) {
+                            if (psld == null) continue;
                             CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                             PlayerConnection connection = pla.getHandle().playerConnection;
                             connection.sendPacket(new PacketPlayOutSpawnEntityWeather(lightning));
@@ -174,10 +184,12 @@ public class Animations {
                     if (playerUser.getLastGame() instanceof GameVersus) {
                         GameVersus game = (GameVersus) playerUser.getLastGame();
                         for (PUser psld : game.getTeam1()) {
+                            if (psld == null) continue;
                             CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                             pla.playEffect(player.getLocation(), Effect.EXPLOSION_HUGE, 2);
                         }
                         for (PUser psld : game.getTeam2()) {
+                            if (psld == null) continue;
                             CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                             pla.hidePlayer(player);
                             pla.playEffect(player.getLocation(), Effect.EXPLOSION_HUGE, 2);
@@ -185,11 +197,11 @@ public class Animations {
                     } else {
                         GameFFA game = (GameFFA) playerUser.getLastGame();
                         for (PUser psld : game.getPlayers()) {
+                            if (psld == null) continue;
                             CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                             pla.playEffect(player.getLocation(), Effect.EXPLOSION_HUGE, 2);
                         }
                     }
-
                     break;
                 }
             }

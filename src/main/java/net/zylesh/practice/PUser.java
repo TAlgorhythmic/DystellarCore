@@ -301,10 +301,10 @@ public class PUser implements Comparable<PUser>, Listener {
             game.broadcastToGame(PLAYER_SPECTATE_BROADCAST.replaceAll("-player", player.getName()));
         }
         if (game instanceof GameVersus) {
-            for (PUser p : ((GameVersus) game).getTeam1()) if (!player.canSee(p.player)) player.showPlayer(p.player);
-            for (PUser p : ((GameVersus) game).getTeam2()) if (!player.canSee(p.player)) player.showPlayer(p.player);
+            for (PUser p : ((GameVersus) game).getTeam1()) if (p != null && !player.canSee(p.player)) player.showPlayer(p.player);
+            for (PUser p : ((GameVersus) game).getTeam2()) if (p != null && !player.canSee(p.player)) player.showPlayer(p.player);
         } else if (game instanceof GameFFA) {
-            for (PUser p : ((GameFFA) game).getPlayers()) if (!player.canSee(p.player)) player.showPlayer(p.player);
+            for (PUser p : ((GameFFA) game).getPlayers()) if (p != null && !player.canSee(p.player)) player.showPlayer(p.player);
         }
 
         game.getSpectators().forEach(playerUser -> {
@@ -391,60 +391,66 @@ public class PUser implements Comparable<PUser>, Listener {
         Utils.removeArmor(this.player);
         if (lastGame instanceof GameVersus) {
             for (PUser p : ((GameVersus) lastGame).getTeam1()) {
-                switch (this.getPlayerVisibility()) {
-                    case 0: {
-                        player.hidePlayer(p.getPlayer());
-                        break;
-                    }
-                    case 1: {
-                        if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
-                            player.showPlayer(p.getPlayer());
-                        else
+                if (p != null) {
+                    switch (this.getPlayerVisibility()) {
+                        case 0: {
                             player.hidePlayer(p.getPlayer());
-                        break;
-                    }
-                    case 2: {
-                        player.showPlayer(p.getPlayer());
-                        break;
+                            break;
+                        }
+                        case 1: {
+                            if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
+                                player.showPlayer(p.getPlayer());
+                            else
+                                player.hidePlayer(p.getPlayer());
+                            break;
+                        }
+                        case 2: {
+                            player.showPlayer(p.getPlayer());
+                            break;
+                        }
                     }
                 }
             }
             for (PUser p : ((GameVersus) lastGame).getTeam2()) {
-                switch (this.getPlayerVisibility()) {
-                    case 0: {
-                        player.hidePlayer(p.getPlayer());
-                        break;
-                    }
-                    case 1: {
-                        if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
-                            player.showPlayer(p.getPlayer());
-                        else
+                if (p != null) {
+                    switch (this.getPlayerVisibility()) {
+                        case 0: {
                             player.hidePlayer(p.getPlayer());
-                        break;
-                    }
-                    case 2: {
-                        player.showPlayer(p.getPlayer());
-                        break;
+                            break;
+                        }
+                        case 1: {
+                            if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
+                                player.showPlayer(p.getPlayer());
+                            else
+                                player.hidePlayer(p.getPlayer());
+                            break;
+                        }
+                        case 2: {
+                            player.showPlayer(p.getPlayer());
+                            break;
+                        }
                     }
                 }
             }
         } else {
             for (PUser p : ((GameFFA) lastGame).getPlayers()) {
-                switch (this.getPlayerVisibility()) {
-                    case 0: {
-                        player.hidePlayer(p.getPlayer());
-                        break;
-                    }
-                    case 1: {
-                        if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
-                            player.showPlayer(p.getPlayer());
-                        else
+                if (p != null) {
+                    switch (this.getPlayerVisibility()) {
+                        case 0: {
                             player.hidePlayer(p.getPlayer());
-                        break;
-                    }
-                    case 2: {
-                        player.showPlayer(p.getPlayer());
-                        break;
+                            break;
+                        }
+                        case 1: {
+                            if (p.player.hasPermission("practice.rank") && !p.player.hasPermission("practice.rankbypass"))
+                                player.showPlayer(p.getPlayer());
+                            else
+                                player.hidePlayer(p.getPlayer());
+                            break;
+                        }
+                        case 2: {
+                            player.showPlayer(p.getPlayer());
+                            break;
+                        }
                     }
                 }
             }
