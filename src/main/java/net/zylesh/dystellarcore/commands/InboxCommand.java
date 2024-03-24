@@ -83,13 +83,12 @@ public class InboxCommand implements CommandExecutor, Listener {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) return true;
         Player p = (Player) commandSender;
-        if (strings.length < 1 || !commandSender.hasPermission("dystellar.admin.inbox")) {
+        if (commandSender.hasPermission("dystellar.admin.inbox") && strings.length > 0 && strings[0].equalsIgnoreCase("manage")) {
+            p.openInventory(inv);
+        } else {
             User user = User.get(p);
             user.getInbox().open();
             return true;
-        }
-        if (strings[0].equalsIgnoreCase("manage")) {
-            p.openInventory(inv);
         }
         return true;
     }
