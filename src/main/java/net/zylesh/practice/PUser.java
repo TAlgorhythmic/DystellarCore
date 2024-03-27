@@ -1,5 +1,6 @@
 package net.zylesh.practice;
 
+import net.zylesh.dystellarcore.utils.Scheduler;
 import net.zylesh.dystellarcore.utils.Utils;
 import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.practicecore.Practice;
@@ -58,11 +59,11 @@ public class PUser implements Comparable<PUser>, Listener {
         return users;
     }
 
-    public ItemStack duelRequestsEnabledItem;
+    private ItemStack duelRequestsEnabledItem;
+    private ItemStack dndItem;
     private Player player;
     private String name;
     private final UUID uuid;
-    private boolean inGame;
     private boolean inParty;
     private PUser forceQueued;
     private Ladder lastQueueLadder;
@@ -71,7 +72,7 @@ public class PUser implements Comparable<PUser>, Listener {
     private Player lastDueledPlayer;
     private boolean partyChatActive;
     private int playerVisibility = 0;
-    public ItemStack playerVisibilityItem;
+    private ItemStack playerVisibilityItem;
     private boolean isInQueue;
     private boolean editMode;
     private boolean displayRank = true;
@@ -89,6 +90,18 @@ public class PUser implements Comparable<PUser>, Listener {
     public PKillEffect killEffect;
     public final EnumSet<PKillEffect> ownedEffects;
     private byte doNotDisturbMode = DISABLED;
+
+    public ItemStack getDuelRequestsEnabledItem() {
+        return duelRequestsEnabledItem;
+    }
+
+    public ItemStack getDndItem() {
+        return dndItem;
+    }
+
+    public ItemStack getPlayerVisibilityItem() {
+        return playerVisibilityItem;
+    }
 
     public PUser(UUID playeruuid) {
         this.invsEdited = new HashMap<>();
@@ -126,9 +139,83 @@ public class PUser implements Comparable<PUser>, Listener {
         for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) if (!this.elo.containsKey(PApi.LADDERS.get(lad))) elo.put(PApi.LADDERS.get(lad), 1000);
     }
 
-    private void initItems() {
-        this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
-        this.playerVisibilityItem = new ItemStack(Material.INK_SACK);
+    public void updateDnd() {
+        ItemMeta meta = dndItem.getItemMeta();
+        meta.setDisplayName(ChatColor.DARK_AQUA + "Do Not Disturb");
+        switch (this.doNotDisturbMode) {
+            case DISABLED: {
+                List<String> lore = List.of(
+                        " ",
+                        ChatColor.RED + "➢ Off",
+                        ChatColor.GRAY + " Prevent PMs Only",
+                        ChatColor.GRAY + " Prevent Global Chat Only",
+                        ChatColor.GRAY + " Prevent Both",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle.",
+                        " ",
+                        ChatColor.GRAY + "This setting will prevent you",
+                        ChatColor.GRAY + "from receiving global and private",
+                        ChatColor.GRAY + "messages while you are on ranked."
+                );
+                meta.setLore(lore);
+                break;
+            }
+            case ENABLED_PMS_ONLY: {
+                List<String> lore = List.of(
+                        " ",
+                        ChatColor.GRAY + " Off",
+                        ChatColor.YELLOW + "➢ Prevent PMs Only",
+                        ChatColor.GRAY + " Prevent Global Chat Only",
+                        ChatColor.GRAY + " Prevent Both",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle.",
+                        " ",
+                        ChatColor.GRAY + "This setting will prevent you",
+                        ChatColor.GRAY + "from receiving global and private",
+                        ChatColor.GRAY + "messages while you are on ranked."
+                );
+                meta.setLore(lore);
+                break;
+            }
+            case ENABLED_CHAT_ONLY: {
+                List<String> lore = List.of(
+                        " ",
+                        ChatColor.GRAY + " Off",
+                        ChatColor.GRAY + " Prevent PMs Only",
+                        ChatColor.YELLOW + "➢ Prevent Global Chat Only",
+                        ChatColor.GRAY + " Prevent Both",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle.",
+                        " ",
+                        ChatColor.GRAY + "This setting will prevent you",
+                        ChatColor.GRAY + "from receiving global and private",
+                        ChatColor.GRAY + "messages while you are on ranked."
+                );
+                meta.setLore(lore);
+                break;
+            }
+            case ENABLED: {
+                List<String> lore = List.of(
+                        " ",
+                        ChatColor.GRAY + " Off",
+                        ChatColor.GRAY + " Prevent PMs Only",
+                        ChatColor.GRAY + " Prevent Global Chat Only",
+                        ChatColor.GREEN + "➢ Prevent Both",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle.",
+                        " ",
+                        ChatColor.GRAY + "This setting will prevent you",
+                        ChatColor.GRAY + "from receiving global and private",
+                        ChatColor.GRAY + "messages while you are on ranked."
+                );
+                meta.setLore(lore);
+                break;
+            }
+        }
+        this.dndItem.setItemMeta(meta);
+    }
+
+    public void updatePlayerVisibility() {
         ItemMeta playervisibility = this.playerVisibilityItem.getItemMeta();
         playervisibility.setDisplayName(ChatColor.DARK_AQUA + "Player Visibility:");
         switch (this.playerVisibility) {
@@ -143,6 +230,13 @@ public class PUser implements Comparable<PUser>, Listener {
                 );
                 playervisibility.setLore(lore);
                 this.playerVisibilityItem.setDurability((short) 8);
+                Scheduler.splitIteration(Bukkit.getOnlinePlayers(), player -> {
+                    if (!Utils.arePlayersInSameGame(this, PUser.get(player))) {
+                        this.player.hidePlayer(player);
+                    } else {
+                        this.player.showPlayer(player);
+                    }
+                }, 30);
                 break;
             }
             case 1: {
@@ -156,6 +250,14 @@ public class PUser implements Comparable<PUser>, Listener {
                 );
                 playervisibility.setLore(lore);
                 this.playerVisibilityItem.setDurability((short) 9);
+                this.playerVisibilityItem.setDurability((short) 8);
+                Scheduler.splitIteration(Bukkit.getOnlinePlayers(), player -> {
+                    if (Utils.arePlayersInSameGame(this, PUser.get(player)) && player.hasPermission("practice.rank") && !player.hasPermission("practice.rankbypass")) {
+                        this.player.showPlayer(player);
+                    } else {
+                        this.player.hidePlayer(player);
+                    }
+                }, 30);
                 break;
             }
             case 2: {
@@ -169,10 +271,16 @@ public class PUser implements Comparable<PUser>, Listener {
                 );
                 playervisibility.setLore(lore);
                 this.playerVisibilityItem.setDurability((short) 10);
+                Scheduler.splitIteration(Bukkit.getOnlinePlayers(), player -> {
+                    this.player.showPlayer(player);
+                }, 30);
                 break;
             }
         }
+        this.playerVisibilityItem.setItemMeta(playervisibility);
+    }
 
+    public void updateDuelRequests() {
         ItemMeta duelrequests = this.duelRequestsEnabledItem.getItemMeta();
         duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests:");
         List<String> requestsLore = List.of(
@@ -183,13 +291,82 @@ public class PUser implements Comparable<PUser>, Listener {
                 ChatColor.YELLOW + "Click to toggle"
         );
         duelrequests.setLore(requestsLore);
-
         this.duelRequestsEnabledItem.setItemMeta(duelrequests);
-        this.playerVisibilityItem.setItemMeta(playervisibility);
+    }
+
+    private void initItems() {
+        this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
+        this.dndItem = new ItemStack(Material.ANVIL);
+        this.playerVisibilityItem = new ItemStack(Material.INK_SACK);
+        this.updateDnd();
+        this.updatePlayerVisibility();
+        this.updateDuelRequests();
         ItemStack nullGlass = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
         ItemMeta nullglass = nullGlass.getItemMeta();
         nullglass.setDisplayName(ChatColor.DARK_GRAY + " ");
         nullGlass.setItemMeta(nullglass);
+    }
+
+    public void toggleDuelRequests(boolean displayMessage) {
+        this.duelRequestsEnabled = !this.duelRequestsEnabled;
+        this.updateDuelRequests();
+        if (displayMessage && player != null) player.sendMessage(this.duelRequestsEnabled ? ChatColor.GREEN + "You are now receiving duel requests!" : ChatColor.DARK_AQUA + "You are no longer receiving duel requests.");
+    }
+
+    public void togglePlayerVisibility(boolean displayMessage) {
+        switch (playerVisibility) {
+            case 0:
+            case 1:
+                this.playerVisibility++;
+                break;
+            case 2:
+                this.playerVisibility = 0;
+                break;
+        }
+        this.updatePlayerVisibility();
+        if (displayMessage && player != null) {
+            switch (playerVisibility) {
+                case 0:
+                    player.sendMessage(ChatColor.DARK_AQUA + "All players have been hidden.");
+                    break;
+                case 1:
+                    player.sendMessage(ChatColor.DARK_AQUA + "Showing only premium players.");
+                    break;
+                case 2:
+                    player.sendMessage(ChatColor.DARK_AQUA + "All players have been shown.");
+                    break;
+            }
+        }
+    }
+
+    public void toggleDnd(boolean displayMessage) {
+        switch (doNotDisturbMode) {
+            case DISABLED:
+            case ENABLED_CHAT_ONLY:
+            case ENABLED_PMS_ONLY:
+                this.doNotDisturbMode++;
+                break;
+            case ENABLED:
+                this.doNotDisturbMode = DISABLED;
+                break;
+        }
+        this.updateDnd();
+        if (displayMessage && player != null) {
+            switch (doNotDisturbMode) {
+                case DISABLED:
+                    player.sendMessage(ChatColor.DARK_AQUA + "Do not disturb mode is now disabled!");
+                    break;
+                case ENABLED_CHAT_ONLY:
+                    player.sendMessage(ChatColor.DARK_AQUA + "Preventing global chat only.");
+                    break;
+                case ENABLED_PMS_ONLY:
+                    player.sendMessage(ChatColor.DARK_AQUA + "Preventing private messages only.");
+                    break;
+                case ENABLED:
+                    player.sendMessage(ChatColor.DARK_AQUA + "Preventing both private and global messages!");
+                    break;
+            }
+        }
     }
 
     public void postInitialize(Player p) {
@@ -198,6 +375,7 @@ public class PUser implements Comparable<PUser>, Listener {
         this.settings = Bukkit.createInventory(this.player, 9, ChatColor.RED + "Settings");
         settings.setItem(0, this.duelRequestsEnabledItem);
         settings.setItem(1, this.playerVisibilityItem);
+        settings.setItem(2, this.dndItem);
     }
 
     public int getPlayerVisibility() {
@@ -284,7 +462,7 @@ public class PUser implements Comparable<PUser>, Listener {
     public void spectate(PGame game, boolean silent, boolean giveItems) {
         if (isSpectating)
             return;
-        if (!inGame) {
+        if (!isInGame()) {
             this.player.teleport(game.getSpecLocation());
         }
         game.addSpec(this);
@@ -383,7 +561,7 @@ public class PUser implements Comparable<PUser>, Listener {
                     }
                 });
             }
-            if (!inGame) Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
+            if (!isInGame()) Bukkit.getPluginManager().callEvent(new PlayerKitDeselectEvent(player, this));
             this.isSpectating = false;
         }
         Scoreboards.INSTANCE.putLobby(uuid);

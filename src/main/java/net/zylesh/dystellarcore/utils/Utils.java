@@ -6,6 +6,7 @@ import com.lunarclient.bukkitapi.LunarClientAPI;
 import com.lunarclient.bukkitapi.nethandler.client.LCPacketTitle;
 import com.lunarclient.bukkitapi.title.LCTitleBuilder;
 import com.lunarclient.bukkitapi.title.TitleType;
+import net.zylesh.practice.PUser;
 import org.bukkit.entity.Player;
 import org.spigotmc.ProtocolInjector;
 
@@ -145,5 +146,9 @@ public class Utils {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + (Character.digit(s.charAt(i + 1), 16)));
         }
         return data;
+    }
+
+    public static boolean arePlayersInSameGame(PUser user, PUser user1) {
+        return user.getLastGame() != null && user.getLastGame().equals(user1.getLastGame()) && !user.getLastGame().isEnded();
     }
 }
