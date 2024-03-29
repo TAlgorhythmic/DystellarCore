@@ -34,11 +34,6 @@ public class ReplyCommand implements CommandExecutor {
                             player.sendMessage(ChatColor.RED + "This player is ignoring you.");
                             return true;
                         }
-                        if (!Validate.validateString(strings)) {
-                            player.sendMessage(ChatColor.RED + "Looks like you are using uncommon type of characters. (Contact staff if you think this is an error)");
-                            Bukkit.getLogger().warning(player.getName() + " tried to use invalid characters.");
-                            return true;
-                        }
                         StringBuilder message = new StringBuilder();
                         for (String string : strings) {
                             message.append(string).append(" ");

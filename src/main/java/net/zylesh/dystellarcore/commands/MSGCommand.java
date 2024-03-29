@@ -2,7 +2,6 @@ package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.User;
-import net.zylesh.dystellarcore.utils.Validate;
 import net.zylesh.practice.PUser;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,7 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static net.zylesh.dystellarcore.core.User.*;
-import static net.zylesh.practice.PUser.*;
+import static net.zylesh.practice.PUser.ENABLED;
+import static net.zylesh.practice.PUser.ENABLED_PMS_ONLY;
 
 public class MSGCommand implements CommandExecutor {
 
@@ -48,15 +48,14 @@ public class MSGCommand implements CommandExecutor {
                                 }
                                 break;
                             case PMS_ENABLED_FRIENDS_ONLY:
-                                // TODO
-                                break;
-                            case PMS_DISABLED:
+                                if (playerUser.friends.contains(playerInt.getUniqueId())) Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> player.sendMessage(ChatColor.DARK_AQUA + "This player is your friend and is only accepting messages from friends. use " + ChatColor.WHITE + "/fmsg " + playerInt.getName() + ChatColor.DARK_AQUA + " instead."), 5L);
+                            default:
                                 player.sendMessage(DystellarCore.PLAYER_MSG_DISABLED.replaceAll("-player", strings[0]));
                                 return true;
                         }
                         if (DystellarCore.PRACTICE_HOOK) {
                             PUser pUserInt = PUser.get(playerInt);
-                            if (pUserInt.isInGame() && pUserInt.getLastGame().isRanked()) {
+                            if (pUserInt.isInGame() && !pUserInt.getLastGame().isEnded() && pUserInt.getLastGame().isRanked()) {
                                 switch (pUserInt.getDoNotDisturbMode()) {
                                     case ENABLED_PMS_ONLY:
                                     case ENABLED: {
@@ -68,11 +67,6 @@ public class MSGCommand implements CommandExecutor {
                         }
                         playerUser.setLastMessagedPlayer(playerUserInt);
                         playerUserInt.setLastMessagedPlayer(playerUser);
-                        if (!Validate.validateString(strings)) {
-                            player.sendMessage(ChatColor.RED + "Looks like you are using uncommon type of characters. (Contact staff if you think this is an error)");
-                            Bukkit.getLogger().warning(player.getName() + " tried to use invalid characters.");
-                            return true;
-                        }
                         StringBuilder message = new StringBuilder();
                         for (int i = 1; i < strings.length; i++) {
                             message.append(strings[i]).append(" ");

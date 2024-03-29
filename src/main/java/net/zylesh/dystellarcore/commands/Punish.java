@@ -72,7 +72,6 @@ public class Punish implements CommandExecutor, Listener {
 
     public Punish() {
         Bukkit.getPluginCommand("punish").setExecutor(this);
-        Bukkit.getPluginCommand("p").setExecutor(this);
         initInventory();
         Bukkit.getPluginManager().registerEvents(this, DystellarCore.getInstance());
     }
@@ -474,11 +473,6 @@ public class Punish implements CommandExecutor, Listener {
         }
         if (!user.isGlobalChatEnabled()) {
             event.setCancelled(true);
-            return;
-        }
-        if (!Validate.validateString(event.getMessage())) {
-            event.setCancelled(true);
-            event.getPlayer().sendMessage(ChatColor.RED + "Looks like you are using uncommon type of characters. (Contact staff if you think this is an error)");
             return;
         }
         String playerName = event.getPlayer().getDisplayName();

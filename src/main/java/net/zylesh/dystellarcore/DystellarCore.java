@@ -191,10 +191,11 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 } else if (packet instanceof PacketPlayInUpdateSign) {
                     PacketPlayInUpdateSign update = (PacketPlayInUpdateSign) packet;
                     for (String s : update.f()) {
-                        if (!Validate.validateString(s)) {
+                        if (!Validate.validateSign(s)) {
                             cancel.set(true);
                             return;
                         }
+
                     }
                 }
             }

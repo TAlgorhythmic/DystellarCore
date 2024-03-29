@@ -89,7 +89,6 @@ public class MariaDB {
                 user.assignExtraOptions(Utils.hexStringToBytes(resultSet.getString("otherConfigs")));
                 return user;
             } else {
-                // TODO When more tips and configs are added, add them here too.
                 user = new User(uuid, IP, name);
 
                 byte[] tips = new byte[50];
@@ -167,8 +166,6 @@ public class MariaDB {
             builder = new StringBuilder();
             for (UUID uuid : user.friends) builder.append(uuid).append(";");
             statement.setString(13, builder.toString());
-
-            // TODO update on bungee
 
             statement.setString(14, Utils.bytesToHexString(user.extraOptions));
 

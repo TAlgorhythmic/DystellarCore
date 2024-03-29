@@ -35,8 +35,6 @@ import static net.zylesh.practice.practicecore.util.Msg.PLAYER_SPECTATE_BROADCAS
 
 public class PUser implements Comparable<PUser>, Listener {
 
-    // TODO Do not disturb item configs
-
     /**
      * Do Not Disturb Modes
      */
@@ -111,7 +109,6 @@ public class PUser implements Comparable<PUser>, Listener {
         this.elo = new HashMap<>();
         this.killEffect = PKillEffect.NONE;
         this.ownedEffects = EnumSet.of(PKillEffect.NONE);
-        initItems();
         for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) elo.put(PApi.LADDERS.get(lad), 1000);
     }
 
@@ -133,7 +130,6 @@ public class PUser implements Comparable<PUser>, Listener {
         this.ownedEffects = ownedEffects;
         this.elo = elo;
         this.doNotDisturbMode = doNotDisturb;
-        if (initInvs) initItems();
         this.kills = kills;
         this.deaths = deaths;
         for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) if (!this.elo.containsKey(PApi.LADDERS.get(lad))) elo.put(PApi.LADDERS.get(lad), 1000);
@@ -372,6 +368,7 @@ public class PUser implements Comparable<PUser>, Listener {
     public void postInitialize(Player p) {
         this.player = p;
         this.name = p.getName();
+        initItems();
         this.settings = Bukkit.createInventory(this.player, 9, ChatColor.RED + "Settings");
         settings.setItem(0, this.duelRequestsEnabledItem);
         settings.setItem(1, this.playerVisibilityItem);

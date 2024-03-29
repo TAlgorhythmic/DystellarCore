@@ -10,6 +10,7 @@ import java.util.ArrayList;
 // TODO create gui and command
 
 public enum Suffix {
+
     NONE("", 10),
     L("&b【&c&lL&b】", 11),
     LOL("&b【&c&lLOL&b】", 12),

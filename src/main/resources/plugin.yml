@@ -81,12 +81,14 @@ commands:
     usage: /editmode
     permission-message: Unknown command.
   punish:
-    aliases:
-      - p
     description: Punish a player.
     permission: dystellar.staff
     usage: /punish <player>
   message:
+    testitem:
+      permission: dystellar.admin.test
+      usage: /testitem <args>
+      description: Test model datas.
     aliases:
       - msg
       - tell
