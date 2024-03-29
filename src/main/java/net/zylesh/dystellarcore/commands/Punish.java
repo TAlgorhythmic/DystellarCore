@@ -5,7 +5,6 @@ import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.*;
 import net.zylesh.dystellarcore.utils.Utils;
-import net.zylesh.dystellarcore.utils.Validate;
 import net.zylesh.practice.PParty;
 import net.zylesh.practice.PUser;
 import net.zylesh.skywars.SkywarsAPI;
@@ -31,7 +30,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static net.zylesh.practice.PUser.*;
+import static net.zylesh.practice.PUser.ENABLED;
+import static net.zylesh.practice.PUser.ENABLED_CHAT_ONLY;
 
 public class Punish implements CommandExecutor, Listener {
 

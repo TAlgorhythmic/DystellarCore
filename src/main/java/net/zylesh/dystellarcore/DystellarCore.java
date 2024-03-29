@@ -20,6 +20,7 @@ import net.zylesh.dystellarcore.listeners.PluginMessageScheduler;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
 import net.zylesh.dystellarcore.serialization.Consts;
+import net.zylesh.dystellarcore.serialization.InboxSerialization;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Validate;
@@ -648,6 +649,18 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 FriendCommand.requestRejected(player, unsafe);
                 break;
             }
+            case INBOX_SEND: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
+                User user = User.get(player);
+                InboxSender sender = InboxSerialization.stringToSender(in.readUTF(), user.getInbox());
+                user.getInbox().addSender(sender);
+                break;
+            }
         }
     }
 
@@ -699,4 +712,5 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static final byte DEMAND_FIND_PLAYER = 17;
     public static final byte DEMAND_FIND_PLAYER_RESPONSE = 18;
     public static final byte DEMAND_FIND_PLAYER_NOT_ONLINE = 19;
+    public static final byte INBOX_SEND = 20;
 }

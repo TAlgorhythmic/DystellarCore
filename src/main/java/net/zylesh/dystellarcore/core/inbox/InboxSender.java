@@ -25,4 +25,6 @@ public interface InboxSender extends Comparable<InboxSender> {
     String getFrom();
 
     int getId();
+
+    InboxSender clone(Inbox inbox);
 }

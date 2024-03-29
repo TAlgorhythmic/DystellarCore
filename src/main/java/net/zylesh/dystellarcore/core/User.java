@@ -53,7 +53,7 @@ public class User {
     public static final byte PMS_DISABLED = 3;
 
     private final UUID id;
-    private boolean globalChatEnabled;
+    private boolean globalChatEnabled = true;
     private byte privateMessagesMode = PMS_ENABLED_WITH_IGNORELIST;
     private Suffix suffix = Suffix.NONE;
     private final TreeSet<Punishment> punishments = new TreeSet<>();
@@ -134,6 +134,7 @@ public class User {
         );
         meta.setLore(metaList);
         scoreboardEnabledItem.setItemMeta(meta);
+        configManager.setItem(0, scoreboardEnabledItem);
     }
 
     public void toggleScoreboard() {
@@ -157,6 +158,7 @@ public class User {
         );
         gtci.setLore(gciList);
         globalTabCompleteItem.setItemMeta(gtci);
+        configManager.setItem(1, globalTabCompleteItem);
     }
 
     public void toggleGlobalTabComplete() {
@@ -176,6 +178,7 @@ public class User {
         );
         gci.setLore(gciList);
         globalChatItem.setItemMeta(gci);
+        configManager.setItem(2, globalChatItem);
     }
 
     public void toggleGlobalChat() {
@@ -243,6 +246,7 @@ public class User {
         }
         pmsi.setLore(pmsiList);
         pmsItem.setItemMeta(pmsi);
+        configManager.setItem(3, pmsItem);
     }
 
     public void togglePms() {

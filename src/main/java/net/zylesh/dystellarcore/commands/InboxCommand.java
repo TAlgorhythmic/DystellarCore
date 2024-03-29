@@ -8,6 +8,7 @@ import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
 import net.zylesh.dystellarcore.core.inbox.senders.Message;
 import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
 import net.zylesh.dystellarcore.core.punishments.SenderContainer;
+import net.zylesh.dystellarcore.serialization.InboxSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.practice.PKillEffect;
 import org.bukkit.Bukkit;
@@ -121,9 +122,16 @@ public class InboxCommand implements CommandExecutor, Listener {
         } else if (e.getClickedInventory().equals(menu)) {
             e.setCancelled(true);
             ItemStack i = e.getCurrentItem();
+            Player p = (Player) e.getWhoClicked();
             if (i == null || i.getType().equals(Material.AIR) || i.equals(DystellarCore.NULL_GLASS)) return;
+            if (selected == null) {
+                p.sendMessage(ChatColor.RED + "An error ocurred trying to perform this action... Seems like you don't have a sender selected.");
+                p.closeInventory();
+                return;
+            }
             if (i.equals(SEND)) {
-
+                sending = true;
+                p.sendMessage(ChatColor.DARK_AQUA + "Type the player's name you want to send this mail to. Write whitespaces on the message if you want to cancel.");
             } else if (i.equals(DELETE)) {
 
             } else if (i.equals(BACK)) {
@@ -156,6 +164,7 @@ public class InboxCommand implements CommandExecutor, Listener {
     private volatile boolean settingCoins = false;
     private volatile PKillEffect killEffect;
     private volatile String ladder;
+    private volatile boolean sending;
 
     private void deselect() {
         creating = null;
@@ -173,6 +182,7 @@ public class InboxCommand implements CommandExecutor, Listener {
         settingCoins = false;
         killEffect = null;
         ladder = null;
+        sending = false;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -366,6 +376,22 @@ public class InboxCommand implements CommandExecutor, Listener {
                         }
                     }
                 }
+            }
+        } else if (sending) {
+            e.setCancelled(true);
+            if (e.getMessage().contains(" ")) {
+                e.getPlayer().sendMessage(ChatColor.RED + "Cancelled.");
+                return;
+            }
+            String name = e.getMessage();
+            Player pInt = Bukkit.getPlayer(name);
+            if (pInt != null && pInt.isOnline()) {
+                User u = User.get(e.getPlayer());
+                u.getInbox().addSender(selected.getSender().clone(u.getInbox()));
+                e.getPlayer().sendMessage(ChatColor.GREEN + "Sender successfully sent!");
+                deselect();
+            } else {
+                DystellarCore.getInstance().sendPluginMessage(e.getPlayer(), DystellarCore.INBOX_SEND, name, InboxSerialization.senderToString(selected.getSender(), selected.getSender().getSerialID()));
             }
         }
     }

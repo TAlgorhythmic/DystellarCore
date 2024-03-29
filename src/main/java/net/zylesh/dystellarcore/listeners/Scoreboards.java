@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Scoreboards implements Listener {
 
-    // TODO handle practice and skywars disabling or enabling scoreboard, btw finish configuration guis too.
+    // TODO handle skywars disabling or enabling scoreboard, btw finish configuration guis too.
 
     private static final ScheduledExecutorService threadPool = Executors.newSingleThreadScheduledExecutor();
     private static final Map<UUID, Map.Entry<FastBoard, Future<?>>> scoreboards = new HashMap<>();
