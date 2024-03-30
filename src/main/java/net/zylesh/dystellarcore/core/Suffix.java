@@ -1,55 +1,67 @@
 package net.zylesh.dystellarcore.core;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-// TODO create gui and command
+import static net.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
 
 public enum Suffix {
 
-    NONE("", 10),
-    L("&b【&c&lL&b】", 11),
-    LOL("&b【&c&lLOL&b】", 12),
-    GG("&b【&6&lGG&b】", 13),
-    GF("&b【&6&lGF&b】", 14),
-    LMAO("&b【&1&lLMAO&b】", 15),
-    LMFAO("&b【&1&lLMFAO&b】", 16),
-    HEART("&8[&c&l<3&8]", 17),
-    USA("&1░&cU&fS&cA&1░", 20),
-    COL("&eC&1O&cL", 21),
-    VEN("&f☆&eV&1E&cN&f☆", 22),
-    ARG("&e✺&bA&fR&bG&e✺", 23),
-    URU("&e✺&9U&fR&9U&e✺", 24),
-    ESP("&cE&eS&cP", 25),
-    PA("&1☆P&cA☆", 26),
-    UK("&cU&1K", 29),
-    IT("&aI&fT&cA", 30),
-    MEX("&2M&fE&cX", 31),
-    BR("&aB&eR&1A", 32),
-    PE("&cP&fE&cR", 33),
-    BOL("&cB&eO&2L", 34),
-    CUB("&cC&1U&fB", 35),
-    CHL("&1C&fH&cL", 38),
-    FR("&1F&fR&cA", 39),
-    GER("&0G&cE&eR", 40),
-    POL("&fP&cO&fL", 41),
-    IR("&2I&fR&eE", 42),
-    ROM("&1R&eO&cM", 43),
-    TR("&f☾&cTR&f☆", 44);
+    NONE("", 10, null),
+    L("&b【&c&lL&b】", 11, "dystellar.suffix.l"),
+    LOL("&b【&c&lLOL&b】", 12, "dystellar.suffix.lol"),
+    GG("&b【&6&lGG&b】", 13, "dystellar.suffix.gg"),
+    GF("&b【&6&lGF&b】", 14, "dystellar.suffix.gf"),
+    LMAO("&b【&1&lLMAO&b】", 15, "dystellar.suffix.lmao"),
+    LMFAO("&b【&1&lLMFAO&b】", 16, "dystellar.suffix.lmfao"),
+    HEART("&8[&c&l<3&8]", 17, "dystellar.suffix.heart"),
+    USA("&1░&cU&fS&cA&1░", 20, "dystellar.suffix.usa"),
+    COL("&eC&1O&cL", 21, "dystellar.suffix.col"),
+    VEN("&f☆&eV&1E&cN&f☆", 22, "dystellar.suffix.ven"),
+    ARG("&e✺&bA&fR&bG&e✺", 23, "dystellar.suffix.arg"),
+    URU("&e✺&9U&fR&9U&e✺", 24, "dystellar.suffix.uru"),
+    ESP("&cE&eS&cP", 25, "dystellar.suffix.esp"),
+    PA("&1☆P&cA☆", 26, "dystellar.suffix.pa"),
+    UK("&cU&1K", 29, "dystellar.suffix.uk"),
+    IT("&aI&fT&cA", 30, "dystellar.suffix.it"),
+    MEX("&2M&fE&cX", 31, "dystellar.suffix.mex"),
+    BR("&aB&eR&1A", 32, "dystellar.suffix.br"),
+    PE("&cP&fE&cR", 33, "dystellar.suffix.pe"),
+    BOL("&cB&eO&2L", 34, "dystellar.suffix.bol"),
+    CUB("&cC&1U&fB", 35, "dystellar.suffix.cub"),
+    CHL("&1C&fH&cL", 38, "dystellar.suffix.chl"),
+    FR("&1F&fR&cA", 39, "dystellar.suffix.fr"),
+    GER("&0G&cE&eR", 40, "dystellar.suffix.ger"),
+    POL("&fP&cO&fL", 41, "dystellar.suffix.pol"),
+    IR("&2I&fR&eE", 42, "dystellar.suffix.ir"),
+    ROM("&1R&eO&cM", 43, "dystellar.suffix.rom"),
+    TR("&f☾&cTR&f☆", 44, "dystellar.suffix.tr");
 
 
-    Suffix(String suffix, int slot) {
+    Suffix(String suffix, int slot, @Nullable String permission) {
         this.suffix = suffix;
         this.slot = slot;
+        this.permission = permission;
     }
 
     private ItemStack icon;
     private final int slot;
     private final String suffix;
+    @Nullable private final String permission;
+
+    @Nullable
+    public String getPermission() {
+        return permission;
+    }
 
     public void setIcon(ItemStack icon) {
         this.icon = icon;
@@ -69,10 +81,11 @@ public enum Suffix {
     }
 
     public static void initialize() {
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add(" ");
-        lore.add(" ");
-        lore.add(ChatColor.YELLOW + "Click to select.");
+        List<String> lore = List.of(
+                " ",
+                " ",
+                ChatColor.YELLOW + "Click to select."
+        );
         ItemStack NONE_ITEM = new ItemStack(Material.COAL_BLOCK);
         ItemMeta none = NONE_ITEM.getItemMeta();
         none.setDisplayName(NONE.suffix);
@@ -247,5 +260,24 @@ public enum Suffix {
         tr.setLore(lore);
         TR_ITEM.setItemMeta(tr);
         TR.setIcon(TR_ITEM);
+        for (int i = 0; i < 10; i++) {
+            GUI.setItem(i, NULL_GLASS);
+        }
+        GUI.setItem(17, NULL_GLASS);
+        GUI.setItem(18, NULL_GLASS);
+        GUI.setItem(26, NULL_GLASS);
+        GUI.setItem(27, NULL_GLASS);
+        GUI.setItem(35, NULL_GLASS);
+        GUI.setItem(36, NULL_GLASS);
+        for (int i = 44; i < 54; i++) {
+            GUI.setItem(i, NULL_GLASS);
+        }
+        for (Suffix suffix1 : values()) {
+            SUFFIXES_BY_SLOT.put(suffix1.slot, suffix1);
+            GUI.setItem(suffix1.slot, suffix1.icon);
+        }
     }
+
+    public static final Map<Integer, Suffix> SUFFIXES_BY_SLOT = new HashMap<>();
+    public static final Inventory GUI = Bukkit.createInventory(null, 54, ChatColor.DARK_AQUA + "Suffixes");
 }

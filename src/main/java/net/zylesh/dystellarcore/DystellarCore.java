@@ -180,6 +180,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new InboxCommand();
         new GeneralListeners();
         new FriendCommand();
+        new SuffixCommand();
         // Some exploits fix.
         PacketListener.registerPacketHandler(new IPacketListener() {
             @Override

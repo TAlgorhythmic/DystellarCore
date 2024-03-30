@@ -12,6 +12,12 @@ description: Base commands and utilities for Dystellar Network
 website: dystellar.gg
 load: STARTUP
 commands:
+  suffix:
+    usage: /suffix
+    description: Change your suffix.
+    aliases:
+      - suffixs
+      - suffixes
   friend:
     aliases:
       - f
