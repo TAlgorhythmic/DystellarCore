@@ -6,6 +6,9 @@ ranked-ban-message: "&cYou are banned from playing ranked. Contact staff for mor
 mute-message: "&cYou are muted. Expires in <time>"
 handle-spawn-protection: false
 handle-spawn-mechanics: false
+send-texturepack: false
+texturepack-link: https://example.com/
+sha1sum-texturepack: 4f4257210bd4019cf085338fbc90d9d3128960a5
 player-msg-disabled: "&c-player has disabled private messages."
 msg-send-format: "&7(&dTo -receiver&7) &b-message"
 msg-receive-format: "&7(&dFrom -sender&7) &b-message"

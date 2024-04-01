@@ -420,6 +420,7 @@ public class User {
             if (User.get(event.getPlayer()).globalTabComplete) DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.GLOBAL_TAB_REGISTER);
             User user = User.get(event.getPlayer());
             user.initializeSettingsPanel(event.getPlayer());
+            Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.SHOULD_SEND_PACK), 10L);
         }
 
         @EventHandler

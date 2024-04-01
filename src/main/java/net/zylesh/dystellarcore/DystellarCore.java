@@ -25,9 +25,7 @@ import net.zylesh.dystellarcore.serialization.LocationSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.utils.Validate;
 import net.zylesh.practice.PKillEffect;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -35,12 +33,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.spigotmc.ProtocolInjector;
 
 import java.io.*;
 import java.sql.Connection;
@@ -109,6 +112,9 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static final List<String> AUTOMATED_MESSAGES = new ArrayList<>();
     private static final AtomicInteger i = new AtomicInteger();
     public static boolean PREVENT_WEATHER = true;
+    public static boolean PACK_ENABLED = false;
+    public static String PACK_LINK;
+    public static String PACK_HASH;
 
     public static final ItemStack NULL_GLASS = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
     static {
@@ -137,8 +143,10 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         if (AUTOMATED_MESSAGES_ENABLED && !AUTOMATED_MESSAGES.isEmpty()) {
             asyncManager.scheduleAtFixedRate(() -> {
                 PacketPlayOutChat chat = new PacketPlayOutChat(ChatSerializer.a(AUTOMATED_MESSAGES.get(i.get())));
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.sendPacket(chat);
+                synchronized (Bukkit.getOnlinePlayers()) {
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        player.sendPacket(chat);
+                    }
                 }
                 i.incrementAndGet();
                 if (i.get() >= AUTOMATED_MESSAGES.size()) i.set(0);
@@ -319,8 +327,43 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         } catch (IOException e) {
             e.printStackTrace();
         }
+        PACK_ENABLED = getConfig().getBoolean("send-texturepack");
+        if (PACK_ENABLED) {
+            PACK_LINK = getConfig().getString("texturepack-link");
+            PACK_HASH = getConfig().getString("sha1sum-texturepack");
+
+            ItemMeta confirmMeta = CONFIRM.getItemMeta();
+            confirmMeta.setDisplayName(ChatColor.GREEN + "Confirm");
+            CONFIRM.setItemMeta(confirmMeta);
+
+            ItemMeta denyMeta = DENY.getItemMeta();
+            denyMeta.setDisplayName(ChatColor.RED + "Deny");
+            List<String> loreDeny = List.of(ChatColor.WHITE + "If you click this option you will get kicked.");
+            denyMeta.setLore(loreDeny);
+            DENY.setItemMeta(denyMeta);
+
+            ItemMeta infoMeta = INFO.getItemMeta();
+            infoMeta.setDisplayName(ChatColor.DARK_AQUA + "Info:");
+            List<String> loreInfo = List.of(
+                    ChatColor.WHITE + "This server uses a custom resource pack",
+                    ChatColor.WHITE + "to enhance your game experience. Click",
+                    ChatColor.WHITE + "\"Confirm\" to download and apply."
+            );
+            infoMeta.setLore(loreInfo);
+            INFO.setItemMeta(infoMeta);
+
+            packConfirmation = Bukkit.createInventory(null, 9, ChatColor.DARK_AQUA + "Resource Pack Confirmation");
+            packPacket = new ProtocolInjector.PacketPlayResourcePackSend(PACK_LINK, PACK_HASH);
+            packConfirmation.setItem(2, CONFIRM);
+            packConfirmation.setItem(4, INFO);
+            packConfirmation.setItem(6, DENY);
+        }
         Suffix.initialize();
     }
+
+    private static final ItemStack CONFIRM = new ItemStack(Material.WOOL, 1, (short) 5);
+    private static final ItemStack INFO = new ItemStack(Material.WOOL);
+    private static final ItemStack DENY = new ItemStack(Material.WOOL, 1, (short) 14);
 
     @Override
     public YamlConfiguration getConfig() {
@@ -662,8 +705,57 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 user.getInbox().addSender(sender);
                 break;
             }
+            case SHOULD_SEND_PACK_RESPONSE: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
+                player.openInventory(packConfirmation);
+                prompts.add(player);
+                break;
+            }
         }
     }
+
+    private static final Set<Player> prompts = new HashSet<>();
+
+    @EventHandler
+    public void onClick(InventoryClickEvent event) {
+        if (event.getClickedInventory().equals(packConfirmation)) {
+            event.setCancelled(true);
+            ItemStack i = event.getCurrentItem();
+            if (i == null || i.getType().equals(Material.AIR)) return;
+            Player p = (Player) event.getWhoClicked();
+            if (i.equals(CONFIRM)) {
+                prompts.remove(p);
+                p.closeInventory();
+                Bukkit.getScheduler().runTaskLater(this, () -> p.sendPacket(packPacket), 5L);
+            } else if (i.equals(DENY)) {
+                prompts.remove(p);
+                p.kickPlayer(ChatColor.RED + "Resource Pack denied.");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDrag(InventoryDragEvent event) {
+        if (event.getInventory().equals(packConfirmation)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onClose(InventoryCloseEvent event) {
+        if (event.getInventory().equals(packConfirmation) && prompts.contains((Player) event.getPlayer())) {
+            event.getPlayer().openInventory(packConfirmation);
+        }
+    }
+
+    private static Inventory packConfirmation;
+
+    private ProtocolInjector.PacketPlayResourcePackSend packPacket;
 
     public final Map<UUID, UUID> requests = new HashMap<>();
 
@@ -714,4 +806,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static final byte DEMAND_FIND_PLAYER_RESPONSE = 18;
     public static final byte DEMAND_FIND_PLAYER_NOT_ONLINE = 19;
     public static final byte INBOX_SEND = 20;
+    public static final byte SHOULD_SEND_PACK = 21;
+    public static final byte SHOULD_SEND_PACK_RESPONSE = 22;
+
 }
