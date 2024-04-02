@@ -57,6 +57,9 @@ public abstract class Punishment implements Comparable<Punishment> {
         } else if (o.expirationDate == null && expirationDate != null) {
             return 1;
         }
+        if (expirationDate == null) {
+            return 0;
+        }
         long time = Duration.between(LocalDateTime.now(), expirationDate).getSeconds();
         long otime = Duration.between(LocalDateTime.now(), o.expirationDate).getSeconds();
         if (time > otime) {
