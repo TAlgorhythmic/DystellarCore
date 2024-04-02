@@ -80,6 +80,10 @@ public class Punish implements CommandExecutor, Listener {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!commandSender.hasPermission("dystellar.staff") || !(commandSender instanceof Player)) return true;
         Player p = (Player) commandSender;
+        if (strings.length < 1) {
+            p.sendMessage(ChatColor.RED + "Usage: /punish <player>");
+            return true;
+        }
         Player pInt = Bukkit.getPlayer(strings[0]);
         if (pInt == null || !pInt.isOnline()) {
             p.sendMessage(ChatColor.RED + "This player is not online.");
