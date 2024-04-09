@@ -4,6 +4,7 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.minecraft.server.v1_7_R4.*;
+import net.zylesh.dystellarcore.arenasapi.AbstractArena;
 import net.zylesh.dystellarcore.commands.*;
 import net.zylesh.dystellarcore.core.IPacketListener;
 import net.zylesh.dystellarcore.core.PacketListener;
@@ -215,7 +216,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
 
             }
         });
-
+        AbstractArena.init();
     }
 
     @Override
