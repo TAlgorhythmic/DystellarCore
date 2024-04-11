@@ -3,6 +3,7 @@ package net.zylesh.dystellarcore.arenasapi;
 import net.zylesh.dystellarcore.serialization.InventorySerialization;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
@@ -17,31 +18,31 @@ import java.io.IOException;
 
 public class BlockGeometrySchemaUtilRepresentation {
 
-    private static final byte BED = 0;
-    private static final byte DIRECTIONAL = 1;
-    private static final byte ATTACHABLE = 2;
-    private static final byte COLORABLE = 3;
-    private static final byte REDSTONE = 4;
-    private static final byte CAKE = 5;
-    private static final byte CHEST = 6;
-    private static final byte PRESSURE_SENSOR = 8;
-    private static final byte FLOWER_POT = 9;
-    private static final byte OPENABLE = 10;
-    private static final byte LONG_GRASS = 11;
-    private static final byte MUSHROOM = 12;
-    private static final byte NETHERWARTS = 13;
-    private static final byte PISTON_BASE = 14;
-    private static final byte PISTON_EXTENSION = 15;
-    private static final byte RAILS = 16;
-    private static final byte SANDSTONE = 17;
-    private static final byte SIGN = 18;
-    private static final byte STEP = 19;
-    private static final byte SMOOTH_BRICK = 20;
-    private static final byte MONSTER_EGGS = 21;
-    private static final byte STAIRS = 22;
-    private static final byte TRAPDOOR = 23;
-    private static final byte TREE = 24;
-    private static final byte WOODEN_STEP = 25;
+    static final byte BED = 0;
+    static final byte DIRECTIONAL = 1;
+    static final byte ATTACHABLE = 2;
+    static final byte COLORABLE = 3;
+    static final byte REDSTONE = 4;
+    static final byte CAKE = 5;
+    static final byte CHEST = 6;
+    static final byte PRESSURE_SENSOR = 8;
+    static final byte FLOWER_POT = 9;
+    static final byte OPENABLE = 10;
+    static final byte LONG_GRASS = 11;
+    static final byte MUSHROOM = 12;
+    static final byte NETHERWARTS = 13;
+    static final byte PISTON_BASE = 14;
+    static final byte PISTON_EXTENSION = 15;
+    static final byte RAILS = 16;
+    static final byte SANDSTONE = 17;
+    static final byte SIGN = 18;
+    static final byte STEP = 19;
+    static final byte SMOOTH_BRICK = 20;
+    static final byte MONSTER_EGGS = 21;
+    static final byte STAIRS = 22;
+    static final byte TRAPDOOR = 23;
+    static final byte TREE = 24;
+    static final byte WOODEN_STEP = 25;
 
     private Vector posVector1;
     private Vector posVector2;
@@ -122,8 +123,21 @@ public class BlockGeometrySchemaUtilRepresentation {
         }
     }
 
-    public void loadFromFile(DataInputStream in) throws IOException {
+    public OfflineRegion loadFromFile(DataInputStream in, boolean close) throws IOException {
+        this.x = in.readInt();
+        this.y = in.readInt();
+        this.z = in.readInt();
+        OfflineBlock[][][] blockData = new OfflineBlock[x][y][z];
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                for (int k = 0; k < z; k++) {
+                    int typeId = in.readInt();
+                    Biome biome = Biome.valueOf(in.readUTF());
 
+                    Object[] extensions = BlocksSchemes.decodeExtensions(in);
+                }
+            }
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -135,9 +149,6 @@ public class BlockGeometrySchemaUtilRepresentation {
             for (int j = 0; j < y; j++) {
                 for (int k = 0; k < z; k++) {
                     Block block = this.blockData[i][j][k];
-                    out.writeInt(i);
-                    out.writeInt(j);
-                    out.writeInt(k);
                     out.writeInt(block.getTypeId());
                     out.writeUTF(block.getBiome().name());
 
@@ -167,7 +178,7 @@ public class BlockGeometrySchemaUtilRepresentation {
                     }
                     if (block.getState() instanceof Redstone) {
                         Redstone redstone = (Redstone) block.getState();
-                        out.writeByte(COLORABLE);
+                        out.writeByte(REDSTONE);
                         out.writeBoolean(redstone.isPowered());
                     }
                     if (block.getState() instanceof Cake) {
