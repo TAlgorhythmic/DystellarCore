@@ -2,9 +2,9 @@ package net.zylesh.dystellarcore.arenasapi;
 
 import net.zylesh.dystellarcore.serialization.InventorySerialization;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Biome;
-import org.bukkit.block.Block;
+import org.bukkit.block.*;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.material.*;
@@ -31,9 +31,7 @@ public class BlockGeometrySchemaUtilRepresentation {
     static final byte LONG_GRASS = 11;
     static final byte MUSHROOM = 12;
     static final byte NETHERWARTS = 13;
-    static final byte PISTON_BASE = 14;
     static final byte PISTON_EXTENSION = 15;
-    static final byte RAILS = 16;
     static final byte SANDSTONE = 17;
     static final byte SIGN = 18;
     static final byte STEP = 19;
@@ -123,6 +121,7 @@ public class BlockGeometrySchemaUtilRepresentation {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public OfflineRegion loadFromFile(DataInputStream in, boolean close) throws IOException {
         this.x = in.readInt();
         this.y = in.readInt();
@@ -133,11 +132,14 @@ public class BlockGeometrySchemaUtilRepresentation {
                 for (int k = 0; k < z; k++) {
                     int typeId = in.readInt();
                     Biome biome = Biome.valueOf(in.readUTF());
+                    DataArray extensions = BlocksSchemes.decodeExtensions(in);
 
-                    Object[] extensions = BlocksSchemes.decodeExtensions(in);
+                    blockData[i][j][k] = new OfflineBlock(Material.getMaterial(typeId), biome, extensions);
                 }
             }
         }
+        if (close) in.close();
+        return new OfflineRegion(blockData, x, y, z);
     }
 
     @SuppressWarnings("deprecation")
@@ -157,32 +159,32 @@ public class BlockGeometrySchemaUtilRepresentation {
                     out.writeByte(extensions);
 
                     if (block.getState() instanceof Bed) {
-                        Bed bed = (Bed) block.getState();
+                        Bed bed = (Bed) block.getState().getData();
                         out.writeByte(BED);
                         out.writeBoolean(bed.isHeadOfBed());
                     }
                     if (block.getState() instanceof Directional) {
-                        Directional direction = (Directional) block.getState();
+                        Directional direction = (Directional) block.getState().getData();
                         out.writeByte(DIRECTIONAL);
                         out.writeUTF(direction.getFacing().name());
                     }
                     if (block.getState() instanceof Attachable) {
-                        Attachable attachable = (Attachable) block.getState();
+                        Attachable attachable = (Attachable) block.getState().getData();
                         out.writeByte(ATTACHABLE);
                         out.writeUTF(attachable.getAttachedFace().name());
                     }
                     if (block.getState() instanceof Colorable) {
-                        Colorable colorable = (Colorable) block.getState();
+                        Colorable colorable = (Colorable) block.getState().getData();
                         out.writeByte(COLORABLE);
                         out.writeUTF(colorable.getColor().name());
                     }
                     if (block.getState() instanceof Redstone) {
-                        Redstone redstone = (Redstone) block.getState();
+                        Redstone redstone = (Redstone) block.getState().getData();
                         out.writeByte(REDSTONE);
                         out.writeBoolean(redstone.isPowered());
                     }
                     if (block.getState() instanceof Cake) {
-                        Cake cake = (Cake) block.getState();
+                        Cake cake = (Cake) block.getState().getData();
                         out.writeByte(CAKE);
                         out.writeInt(cake.getSlicesEaten());
                         out.writeInt(cake.getSlicesRemaining());
@@ -193,52 +195,43 @@ public class BlockGeometrySchemaUtilRepresentation {
                         out.writeUTF(InventorySerialization.inventoryToString(chest.getBlockInventory().getContents()));
                     }
                     if (block.getState() instanceof PressureSensor) {
-                        PressureSensor sensor = (PressureSensor) block.getState();
+                        PressureSensor sensor = (PressureSensor) block.getState().getData();
                         out.writeByte(PRESSURE_SENSOR);
                         out.writeBoolean(sensor.isPressed());
                     }
                     if (block.getState() instanceof FlowerPot) {
-                        FlowerPot flowerpot = (FlowerPot) block.getState();
+                        FlowerPot flowerpot = (FlowerPot) block.getState().getData();
                         out.writeByte(FLOWER_POT);
                         out.writeInt(flowerpot.getContents().getItemTypeId());
                     }
                     if (block.getState() instanceof Openable) {
-                        Openable openable = (Openable) block.getState();
+                        Openable openable = (Openable) block.getState().getData();
                         out.writeByte(OPENABLE);
                         out.writeBoolean(openable.isOpen());
                     }
                     if (block.getState() instanceof LongGrass) {
-                        LongGrass grass = (LongGrass) block.getState();
+                        LongGrass grass = (LongGrass) block.getState().getData();
                         out.writeByte(LONG_GRASS);
                         out.writeUTF(grass.getSpecies().name());
                     }
                     if (block.getState() instanceof Mushroom) {
-                        Mushroom mushroom = (Mushroom) block.getState();
+                        Mushroom mushroom = (Mushroom) block.getState().getData();
                         out.writeByte(MUSHROOM);
                         out.writeBoolean(mushroom.isStem());
                     }
                     if (block.getState() instanceof NetherWarts) {
-                        NetherWarts netherWarts = (NetherWarts) block.getState();
+                        NetherWarts netherWarts = (NetherWarts) block.getState().getData();
                         out.writeByte(NETHERWARTS);
                         out.writeUTF(netherWarts.getState().name());
                     }
-                    if (block.getState() instanceof PistonBaseMaterial) {
-                        PistonBaseMaterial material = (PistonBaseMaterial) block.getState();
-                        out.writeByte(PISTON_BASE);
-                        out.writeBoolean(material.isSticky());
-                    }
                     if (block.getState() instanceof PistonExtensionMaterial) {
-                        PistonExtensionMaterial material = (PistonExtensionMaterial) block.getState();
+                        PistonExtensionMaterial material = (PistonExtensionMaterial) block.getState().getData();
                         out.writeByte(PISTON_EXTENSION);
                         out.writeUTF(material.getAttachedFace().name());
-                    }
-                    if (block.getState() instanceof Rails) {
-                        Rails r = (Rails) block.getState();
-                        out.writeByte(RAILS);
-                        out.writeBoolean(r.isCurve());
+                        out.writeBoolean(material.isSticky());
                     }
                     if (block.getState() instanceof Sandstone) {
-                        Sandstone sandstone = (Sandstone) block.getState();
+                        Sandstone sandstone = (Sandstone) block.getState().getData();
                         out.writeByte(SANDSTONE);
                         out.writeUTF(sandstone.getType().name());
                     }
@@ -249,38 +242,39 @@ public class BlockGeometrySchemaUtilRepresentation {
                         for (String line : sign.getLines()) out.writeUTF(line);
                     }
                     if (block.getState() instanceof Step) {
-                        Step step = (Step) block.getState();
+                        Step step = (Step) block.getState().getData();
                         out.writeByte(STEP);
                         out.writeBoolean(step.isInverted());
                     }
                     if (block.getState() instanceof SmoothBrick) {
-                        SmoothBrick smoothBrick = (SmoothBrick) block.getState();
+                        SmoothBrick smoothBrick = (SmoothBrick) block.getState().getData();
                         out.writeByte(SMOOTH_BRICK);
                         out.writeUTF(smoothBrick.getMaterial().name());
                     }
                     if (block.getState() instanceof MonsterEggs) {
-                        MonsterEggs eggs = (MonsterEggs) block.getState();
+                        MonsterEggs eggs = (MonsterEggs) block.getState().getData();
                         out.writeByte(MONSTER_EGGS);
                         out.writeUTF(eggs.getMaterial().name());
                     }
                     if (block.getState() instanceof Stairs) {
-                        Stairs stairs = (Stairs) block.getState();
+                        Stairs stairs = (Stairs) block.getState().getData();
                         out.writeByte(STAIRS);
                         out.writeBoolean(stairs.isInverted());
                     }
                     if (block.getState() instanceof TrapDoor) {
-                        TrapDoor trapDoor = (TrapDoor) block.getState();
+                        TrapDoor trapDoor = (TrapDoor) block.getState().getData();
                         out.writeByte(TRAPDOOR);
                         out.writeBoolean(trapDoor.isInverted());
                         out.writeBoolean(trapDoor.isOpen());
                     }
                     if (block.getState() instanceof Tree) {
-                        Tree tree = (Tree) block.getState();
+                        Tree tree = (Tree) block.getState().getData();
                         out.writeByte(TREE);
                         out.writeUTF(tree.getSpecies().name());
+                        out.writeUTF(tree.getDirection().name());
                     }
                     if (block.getState() instanceof WoodenStep) {
-                        WoodenStep step = (WoodenStep) block.getState();
+                        WoodenStep step = (WoodenStep) block.getState().getData();
                         out.writeByte(WOODEN_STEP);
                         out.writeUTF(step.getSpecies().name());
                         out.writeBoolean(step.isInverted());
@@ -292,32 +286,30 @@ public class BlockGeometrySchemaUtilRepresentation {
 
     private static byte getExtensions(Block block) {
         byte extensions = 0;
-        if (block.getState() instanceof Bed) extensions++;
-        if (block.getState() instanceof Directional) extensions++;
-        if (block.getState() instanceof Attachable) extensions++;
-        if (block.getState() instanceof Colorable) extensions++;
-        if (block.getState() instanceof Redstone) extensions++;
-        if (block.getState() instanceof Cake) extensions++;
+        if (block.getState().getData() instanceof Bed) extensions++;
+        if (block.getState().getData() instanceof Directional) extensions++;
+        if (block.getState().getData() instanceof Attachable) extensions++;
+        if (block.getState().getData() instanceof Colorable) extensions++;
+        if (block.getState().getData() instanceof Redstone) extensions++;
+        if (block.getState().getData() instanceof Cake) extensions++;
         if (block.getState() instanceof Chest) extensions++;
-        if (block.getState() instanceof Cauldron) extensions++;
-        if (block.getState() instanceof PressureSensor) extensions++;
-        if (block.getState() instanceof FlowerPot) extensions++;
-        if (block.getState() instanceof Openable) extensions++;
-        if (block.getState() instanceof LongGrass) extensions++;
-        if (block.getState() instanceof Mushroom) extensions++;
-        if (block.getState() instanceof NetherWarts) extensions++;
-        if (block.getState() instanceof PistonBaseMaterial) extensions++;
-        if (block.getState() instanceof PistonExtensionMaterial) extensions++;
-        if (block.getState() instanceof Rails) extensions++;
-        if (block.getState() instanceof Sandstone) extensions++;
+        if (block.getState().getData() instanceof Cauldron) extensions++;
+        if (block.getState().getData() instanceof PressureSensor) extensions++;
+        if (block.getState().getData() instanceof FlowerPot) extensions++;
+        if (block.getState().getData() instanceof Openable) extensions++;
+        if (block.getState().getData() instanceof LongGrass) extensions++;
+        if (block.getState().getData() instanceof Mushroom) extensions++;
+        if (block.getState().getData() instanceof NetherWarts) extensions++;
+        if (block.getState().getData() instanceof PistonExtensionMaterial) extensions++;
+        if (block.getState().getData() instanceof Sandstone) extensions++;
         if (block.getState() instanceof Sign) extensions++;
-        if (block.getState() instanceof Step) extensions++;
-        if (block.getState() instanceof SmoothBrick) extensions++;
-        if (block.getState() instanceof MonsterEggs) extensions++;
-        if (block.getState() instanceof Stairs) extensions++;
-        if (block.getState() instanceof TrapDoor) extensions++;
-        if (block.getState() instanceof Tree) extensions++;
-        if (block.getState() instanceof WoodenStep) extensions++;
+        if (block.getState().getData() instanceof Step) extensions++;
+        if (block.getState().getData() instanceof SmoothBrick) extensions++;
+        if (block.getState().getData() instanceof MonsterEggs) extensions++;
+        if (block.getState().getData() instanceof Stairs) extensions++;
+        if (block.getState().getData() instanceof TrapDoor) extensions++;
+        if (block.getState().getData() instanceof Tree) extensions++;
+        if (block.getState().getData() instanceof WoodenStep) extensions++;
         return extensions;
     }
 

@@ -4,8 +4,6 @@ import net.zylesh.dystellarcore.DystellarCore;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static net.zylesh.dystellarcore.arenasapi.BlockGeometrySchemaUtilRepresentation.*;
 
@@ -35,83 +33,63 @@ public class BlocksSchemes {
     public static DataArray decodeExtensions(DataInputStream in) throws IOException {
         byte extensions = in.readByte();
         DataArray array = new DataArray();
+        array.writeByte(extensions);
         for (byte e = 0; e < extensions; e++) {
             byte type = in.readByte();
-            ext.add(type);
+            array.writeByte(type);
             switch (type) {
-                case BED: {
-                    break;
-                }
-                case DIRECTIONAL: {
-                    break;
-                }
-                case ATTACHABLE: {
-                    break;
-                }
-                case COLORABLE: {
-                    break;
-                }
-                case REDSTONE: {
-                    break;
-                }
-                case CAKE: {
-                    break;
-                }
-                case CHEST: {
-                    break;
-                }
-                case PRESSURE_SENSOR: {
-                    break;
-                }
-                case FLOWER_POT: {
-                    break;
-                }
-                case OPENABLE: {
-                    break;
-                }
-                case LONG_GRASS: {
-                    break;
-                }
-                case MUSHROOM: {
-                    break;
-                }
-                case NETHERWARTS: {
-                    break;
-                }
-                case PISTON_BASE: {
-                    break;
-                }
-                case PISTON_EXTENSION: {
-                    break;
-                }
-                case RAILS: {
-                    break;
-                }
-                case SANDSTONE: {
-                    break;
-                }
-                case SIGN: {
-                    break;
-                }
+                case BED:
+                case REDSTONE:
+                case PRESSURE_SENSOR:
+                case OPENABLE:
+                case MUSHROOM:
+                case STAIRS:
                 case STEP: {
+                    array.writeBoolean(in.readBoolean());
                     break;
                 }
+                case DIRECTIONAL:
+                case ATTACHABLE:
+                case COLORABLE:
+                case CHEST:
+                case NETHERWARTS:
+                case LONG_GRASS:
+                case SANDSTONE:
+                case MONSTER_EGGS:
                 case SMOOTH_BRICK: {
-                    break;
-                }
-                case MONSTER_EGGS: {
-                    break;
-                }
-                case STAIRS: {
-                    break;
-                }
-                case TRAPDOOR: {
+                    array.writeString(in.readUTF());
                     break;
                 }
                 case TREE: {
+                    array.writeString(in.readUTF());
+                    array.writeString(in.readUTF());
                     break;
                 }
+                case PISTON_EXTENSION:
                 case WOODEN_STEP: {
+                    array.writeString(in.readUTF());
+                    array.writeBoolean(in.readBoolean());
+                    break;
+                }
+                case CAKE: {
+                    array.writeInt(in.readInt());
+                    array.writeInt(in.readInt());
+                    break;
+                }
+                case FLOWER_POT: {
+                    array.writeInt(in.readInt());
+                    break;
+                }
+                case SIGN: {
+                    int lenght = array.writeInt(in.readInt());
+                    for (int i = 0; i < lenght; i++) {
+                        array.writeString(in.readUTF());
+                    }
+                    break;
+                }
+                case TRAPDOOR: {
+                    array.writeBoolean(in.readBoolean());
+                    array.writeBoolean(in.readBoolean());
                     break;
                 }
             }

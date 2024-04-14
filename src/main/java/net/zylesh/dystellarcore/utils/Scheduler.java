@@ -24,6 +24,4 @@ public class Scheduler {
             task.run(next);
         }
     }
-
-    public static <T> void splitTridimensionalArrayIteration()
 }
