@@ -103,6 +103,7 @@ public class Animations {
                 if (playerUser.getLastGame() instanceof GameVersus) {
                     GameVersus game = (GameVersus) playerUser.getLastGame();
                     for (PUser psld : game.getTeam1()) {
+                        if (psld == null) continue;
                         CraftPlayer pla = (CraftPlayer) psld.getPlayer();
                         if (!pla.equals(player)) {
                             pla.hidePlayer(player);
