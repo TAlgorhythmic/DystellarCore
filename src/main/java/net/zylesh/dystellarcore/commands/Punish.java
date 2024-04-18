@@ -36,9 +36,9 @@ import static net.zylesh.practice.PUser.ENABLED_CHAT_ONLY;
 public class Punish implements CommandExecutor, Listener {
 
     // Blacklists
-    public static final Blacklist BLACKLIST_10_WARNS = new Blacklist(null, "Don't say we didn't warn you. LOL");
-    private static final Blacklist BLACKLIST_INMEDIATE = new Blacklist(null, "Hope we don't see you again.");
-    private static final Blacklist THREATENING = new Blacklist(null, "Threatening");
+    public static final Blacklist BLACKLIST_10_WARNS = new Blacklist("Don't say we didn't warn you. LOL");
+    private static final Blacklist BLACKLIST_INMEDIATE = new Blacklist("Hope we don't see you again.");
+    private static final Blacklist THREATENING = new Blacklist("Threatening");
 
     // Bans
     public static final Callable<Ban> BAN_3_WARNS = () -> new Ban(LocalDateTime.now().plusDays(7L), "Receiving 3 Warnings");
@@ -449,7 +449,7 @@ public class Punish implements CommandExecutor, Listener {
                     userToPunish.punish(new Warn(LocalDateTime.now().plusDays(25L), event.getMessage()));
                     commandCache.remove(event.getPlayer().getUniqueId());
                 } else if (cache.get(event.getPlayer().getUniqueId()).equals(blacklistCustom)) {
-                    userToPunish.punish(new Blacklist(null, event.getMessage()));
+                    userToPunish.punish(new Blacklist(event.getMessage()));
                     commandCache.remove(event.getPlayer().getUniqueId());
                 } else if (cache.get(event.getPlayer().getUniqueId()).equals(note)) {
                     userToPunish.addNote(event.getMessage());

@@ -36,7 +36,7 @@ public class BlacklistCommand implements CommandExecutor {
                 if (i == 2) reason.append(strings[i]);
                 else reason.append(" ").append(strings[i]);
             }
-            Blacklist blacklist = new Blacklist(null, reason.toString());
+            Blacklist blacklist = new Blacklist(reason.toString());
             userInt.punish(blacklist);
         } else {
             DystellarCore.getAsyncManager().execute(() -> {
@@ -50,13 +50,13 @@ public class BlacklistCommand implements CommandExecutor {
                         if (i == 2) reason.append(strings[i]);
                         else reason.append(" ").append(strings[i]);
                     }
-                    Blacklist ban = new Blacklist(null, reason.toString());
+                    Blacklist ban = new Blacklist(reason.toString());
                     user.addPunishment(ban);
                     MariaDB.savePlayerToDatabase(user);
                 }
             });
         }
-
+        // TODO check
         return true;
     }
 }
