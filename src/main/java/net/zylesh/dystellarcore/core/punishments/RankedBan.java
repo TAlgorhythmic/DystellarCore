@@ -7,8 +7,14 @@ import java.time.LocalDateTime;
 
 public class RankedBan extends Punishment {
 
+    public static final byte SERIALIZATION_ID = 3;
+
     public RankedBan(LocalDateTime expirationDate, String reason) {
         super(expirationDate, reason);
+    }
+
+    public RankedBan(int id, LocalDateTime creationDate, LocalDateTime expirationDate, String reason) {
+        super(id, creationDate, expirationDate, reason);
     }
 
     @Override
@@ -44,5 +50,10 @@ public class RankedBan extends Punishment {
     @Override
     public int getPriorityScale() {
         return 4;
+    }
+
+    @Override
+    public byte getSerializedId() {
+        return SERIALIZATION_ID;
     }
 }

@@ -44,7 +44,7 @@ public class SuffixCommand implements CommandExecutor, Listener {
 
     @EventHandler
     public void click(InventoryClickEvent e) {
-        if (!e.getClickedInventory().equals(Suffix.GUI) || e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
+        if (e.getClickedInventory() == null || !e.getClickedInventory().equals(Suffix.GUI) || e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
         e.setCancelled(true);
         ItemStack i = e.getCurrentItem();
         if (i.equals(NULL_GLASS)) {

@@ -11,8 +11,14 @@ import java.time.LocalDateTime;
 
 public class Mute extends Punishment {
 
+    public static final byte SERIALIZATION_ID = 2;
+
     public Mute(LocalDateTime expirationDate, String reason) {
         super(expirationDate, reason);
+    }
+
+    public Mute(int id, LocalDateTime creationDate, LocalDateTime expirationDate, String reason) {
+        super(id, creationDate, expirationDate, reason);
     }
 
     @Override
@@ -59,5 +65,10 @@ public class Mute extends Punishment {
     @Override
     public int getPriorityScale() {
         return 3;
+    }
+
+    @Override
+    public byte getSerializedId() {
+        return SERIALIZATION_ID;
     }
 }

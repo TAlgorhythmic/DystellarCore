@@ -12,12 +12,23 @@ public abstract class Punishment implements Comparable<Punishment> {
     private final LocalDateTime creationDate;
     private final LocalDateTime expirationDate;
     private final String reason;
+    protected final int id;
 
-    public Punishment(LocalDateTime expirationDate, String reason) {
+    protected Punishment(LocalDateTime expirationDate, String reason) {
         this.creationDate = LocalDateTime.now();
         this.expirationDate = expirationDate;
         this.reason = reason;
+        this.id = (int) (Math.random() * (double) 31 * (double) 1000000 / (double) 3);
     }
+
+    protected Punishment(int id, LocalDateTime creationDate, LocalDateTime expirationDate, String reason) {
+        this.id = id;
+        this.creationDate = creationDate;
+        this.expirationDate = expirationDate;
+        this.reason = reason;
+    }
+
+    public abstract byte getSerializedId();
 
     public void onPunishment(User user) {
         Bukkit.getPluginManager().callEvent(new PlayerPunishedEvent(user, this));
@@ -67,5 +78,10 @@ public abstract class Punishment implements Comparable<Punishment> {
             return 1;
         }
         return 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 }

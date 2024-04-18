@@ -11,10 +11,17 @@ import java.time.LocalDateTime;
 
 public class Ban extends Punishment {
 
+    public static final byte SERIALIZATION_ID = 0;
+
     private boolean isAlsoIP = false;
 
     public Ban(LocalDateTime expirationDate, String reason) {
         super(expirationDate, reason);
+    }
+
+    public Ban(int id, LocalDateTime creationDate, LocalDateTime expirationDate, String reason, boolean isAlsoIP) {
+        super(id, creationDate, expirationDate, reason);
+        this.isAlsoIP = isAlsoIP;
     }
 
     @Override
@@ -55,6 +62,11 @@ public class Ban extends Punishment {
     @Override
     public boolean allowUnranked() {
         return false;
+    }
+
+    @Override
+    public byte getSerializedId() {
+        return SERIALIZATION_ID;
     }
 
     @Override

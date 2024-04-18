@@ -1,7 +1,8 @@
 package net.zylesh.dystellarcore.serialization;
 
-import net.zylesh.dystellarcore.core.punishments.Punishment;
+import net.zylesh.dystellarcore.core.punishments.*;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -11,40 +12,48 @@ import java.util.Set;
 public class Punishments {
 
     public static String serialize(Punishment p) {
-        String classPath = p.getClass().getName();
-        return p.allowRanked() + // 0
-                ";" +
-                p.allowUnranked() + // 1
-                ";" +
-                p.allowJoinMinigames() + // 2
-                ";" +
-                p.allowChat() + // 3
-                ";" +
-                p.getCreationDate().format(DateTimeFormatter.ISO_DATE_TIME) + // 4
-                ";" +
-                p.getExpirationDate().format(DateTimeFormatter.ISO_DATE_TIME) + // 5
-                ";" +
-                classPath + // 6
-                ";" +
-                p.getReason(); // 7
+        StringBuilder builder = new StringBuilder();
+        builder.append(p.hashCode()).append(";") // 0
+                .append(p.getCreationDate().format(DateTimeFormatter.ISO_DATE_TIME)).append(";") // 1
+                .append(p.getExpirationDate() == null ? "null" : p.getExpirationDate().format(DateTimeFormatter.ISO_DATE_TIME)).append(";") // 2
+                .append(p.getSerializedId()).append(";") // 3
+                .append(p.getReason()); // 4
+        if (p instanceof Ban) builder.append(((Ban) p).isAlsoIP()); // 5
+        return builder.toString();
     }
 
-    @SuppressWarnings("unchecked")
+    @Nullable
     public static Punishment deserialize(String p) {
         String[] ss = p.split(";");
-        try {
-            Class<? extends Punishment> clazz = (Class<? extends Punishment>) Class.forName(ss[6]);
-            return clazz.getConstructor(LocalDateTime.class, String.class).newInstance(LocalDateTime.parse(ss[5], DateTimeFormatter.ISO_DATE_TIME), ss[7]);
-        } catch (Exception e) {
-            e.printStackTrace();
+        int id = Integer.parseInt(ss[0]);
+        LocalDateTime creationDate = LocalDateTime.parse(ss[1], DateTimeFormatter.ISO_DATE_TIME);
+        LocalDateTime expirationDate = ss[2].equals("null") ? null : LocalDateTime.parse(ss[2], DateTimeFormatter.ISO_DATE_TIME);
+        byte serializedId = Byte.parseByte(ss[3]);
+        String reason = ss[4];
+
+        switch (serializedId) {
+            case Ban.SERIALIZATION_ID: {
+                boolean b = Boolean.parseBoolean(ss[5]);
+                return new Ban(id, creationDate, expirationDate, reason, b);
+            }
+            case Blacklist.SERIALIZATION_ID: {
+                return new Blacklist(id, creationDate, reason);
+            }
+            case Mute.SERIALIZATION_ID: {
+                return new Mute(id, creationDate, expirationDate, reason);
+            }
+            case RankedBan.SERIALIZATION_ID: {
+                return new RankedBan(id, creationDate, expirationDate, reason);
+            }
+            case Warn.SERIALIZATION_ID: {
+                return new Warn(id, creationDate, expirationDate, reason);
+            }
         }
         return null;
     }
 
     public static String serializeNotes(Set<String> notes) {
-        StringBuilder sb = new StringBuilder();
-        for (String note : notes) sb.append(note).append(";");
-        return sb.toString();
+        return String.join(";", notes);
     }
 
     public static Set<String> deserializeNotes(String s) {

@@ -11,8 +11,14 @@ import java.time.LocalDateTime;
 
 public class Blacklist extends Punishment {
 
-    public Blacklist(LocalDateTime expirationDate, String reason) {
-        super(expirationDate, reason);
+    public static final byte SERIALIZATION_ID = 1;
+
+    public Blacklist(String reason) {
+        super(null, reason);
+    }
+
+    public Blacklist(int id, LocalDateTime creationDate, String reason) {
+        super(id, creationDate, null, reason);
     }
 
     @Override
@@ -53,5 +59,10 @@ public class Blacklist extends Punishment {
     @Override
     public int getPriorityScale() {
         return 0;
+    }
+
+    @Override
+    public byte getSerializedId() {
+        return SERIALIZATION_ID;
     }
 }

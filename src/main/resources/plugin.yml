@@ -12,6 +12,10 @@ description: Base commands and utilities for Dystellar Network
 website: dystellar.gg
 load: STARTUP
 commands:
+  unpunish:
+    description: Unpunish a player
+    permission: dystellar.admin
+    usage: /unpunish <player>
   suffix:
     usage: /suffix
     description: Change your suffix.

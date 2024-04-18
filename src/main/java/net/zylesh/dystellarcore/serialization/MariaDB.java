@@ -68,7 +68,7 @@ public class MariaDB {
                 user.setGlobalChatEnabled(resultSet.getBoolean("chat"));
                 user.setPrivateMessagesMode((byte) resultSet.getInt("messages"));
                 user.setSuffix(Suffix.valueOf(resultSet.getString("suffix")));
-                String[] punishments = resultSet.getString("punishments") != null ? resultSet.getString("punishments").split(":") : null;
+                String[] punishments = resultSet.getString("punishments") != null ? resultSet.getString("punishments").split(":\\|") : null;
                 if (punishments != null) for (String s : punishments) user.addPunishment(Punishments.deserialize(s));
                 if (resultSet.getString("notes") != null) user.getNotes().addAll(Punishments.deserializeNotes(resultSet.getString("notes")));
                 user.setLanguage(resultSet.getString("lang"));
@@ -145,11 +145,7 @@ public class MariaDB {
             else {
                 StringBuilder sb = new StringBuilder();
                 for (Punishment p : user.getPunishments()) {
-                    sb.append(Punishments.serialize(p)).append(":");
-                    if ((p instanceof Ban && ((Ban) p).isAlsoIP()) || p instanceof Blacklist) {
-                        if (ipP == null) ipP = new StringBuilder();
-                        ipP.append(Punishments.serialize(p)).append(":");
-                    }
+                    sb.append(Punishments.serialize(p)).append(":\\|");
                 }
                 statement.setString(5, sb.toString());
             }

@@ -10,8 +10,14 @@ import java.time.LocalDateTime;
 
 public class Warn extends Punishment {
 
+    public static final byte SERIALIZATION_ID = 4;
+
     public Warn(LocalDateTime expirationDate, String reason) {
         super(expirationDate, reason);
+    }
+
+    public Warn(int id, LocalDateTime creationDate, LocalDateTime expirationDate, String reason) {
+        super(id, creationDate, expirationDate, reason);
     }
 
     @Override
@@ -71,5 +77,10 @@ public class Warn extends Punishment {
     @Override
     public int getPriorityScale() {
         return 5;
+    }
+
+    @Override
+    public byte getSerializedId() {
+        return SERIALIZATION_ID;
     }
 }
