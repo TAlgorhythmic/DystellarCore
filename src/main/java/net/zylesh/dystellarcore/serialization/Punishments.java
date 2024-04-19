@@ -11,6 +11,20 @@ import java.util.Set;
 
 public class Punishments {
 
+    public static String serializePunishments(Set<Punishment> punishments) {
+        StringBuilder sb = new StringBuilder();
+        for (Punishment p : punishments) {
+            String pun = Punishments.serialize(p);
+            sb.append(pun).append(":\\|");
+        }
+        return sb.toString();
+    }
+
+    public static Set<Punishment> deserializePunishments(String s, Set<Punishment> punishmentSet) {
+        for (String s1 : s.split(":\\|")) punishmentSet.add(Punishments.deserialize(s1));
+        return punishmentSet;
+    }
+
     public static String serialize(Punishment p) {
         StringBuilder builder = new StringBuilder();
         builder.append(p.hashCode()).append(";") // 0

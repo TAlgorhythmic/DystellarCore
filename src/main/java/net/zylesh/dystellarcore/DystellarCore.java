@@ -3,6 +3,7 @@ package net.zylesh.dystellarcore;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.server.v1_7_R4.*;
 import net.zylesh.dystellarcore.arenasapi.AbstractArena;
 import net.zylesh.dystellarcore.commands.*;
@@ -16,14 +17,12 @@ import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
 import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
 import net.zylesh.dystellarcore.core.inbox.senders.Message;
 import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
+import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.listeners.GeneralListeners;
 import net.zylesh.dystellarcore.listeners.PluginMessageScheduler;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
-import net.zylesh.dystellarcore.serialization.Consts;
-import net.zylesh.dystellarcore.serialization.InboxSerialization;
-import net.zylesh.dystellarcore.serialization.LocationSerialization;
-import net.zylesh.dystellarcore.serialization.MariaDB;
+import net.zylesh.dystellarcore.serialization.*;
 import net.zylesh.dystellarcore.utils.Validate;
 import net.zylesh.practice.PKillEffect;
 import org.bukkit.*;
@@ -60,6 +59,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static net.zylesh.dystellarcore.commands.UnpunishCommand.createInventory;
+import static net.zylesh.dystellarcore.commands.UnpunishCommand.invs;
 
 public final class DystellarCore extends JavaPlugin implements PluginMessageListener, Listener {
 
@@ -460,6 +462,25 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         ByteArrayDataInput in = ByteStreams.newDataInput(bytes);
         byte id = in.readByte();
         switch (id) {
+            case DEMAND_PUNISHMENTS_DATA: {
+                String string = in.readUTF();
+                Player player = Bukkit.getPlayer(string);
+                if (player == null) return;
+                User user = User.get(player);
+                sendPluginMessage(player, PUNISHMENTS_DATA_RESPONSE, Punishments.serializePunishments(user.getPunishments()));
+                break;
+            }
+            case PUNISHMENTS_DATA_RESPONSE: {
+                String string = in.readUTF();
+                Player player = Bukkit.getPlayer(string);
+                if (player == null) return;
+                UUID target = UUID.fromString(in.readUTF());
+                Set<Punishment> punishments = Punishments.deserializePunishments(in.readUTF(), new HashSet<>());
+                invs.put(p.getUniqueId(), new AbstractMap.SimpleImmutableEntry<>(target, new Punishment[27]));
+                Inventory inv = createInventory(p, punishments);
+                p.openInventory(inv);
+                break;
+            }
             case REGISTER_RECEIVED: {
                 String unsafe = in.readUTF();
                 Player player = Bukkit.getPlayer(unsafe);
@@ -810,5 +831,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static final byte INBOX_SEND = 20;
     public static final byte SHOULD_SEND_PACK = 21;
     public static final byte SHOULD_SEND_PACK_RESPONSE = 22;
-
+    public static final byte DEMAND_PUNISHMENTS_DATA = 23;
+    public static final byte PUNISHMENTS_DATA_RESPONSE = 24;
 }
