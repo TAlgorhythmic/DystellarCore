@@ -6,7 +6,6 @@ import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.inbox.InboxSender;
 import net.zylesh.dystellarcore.core.punishments.Ban;
-import net.zylesh.dystellarcore.core.punishments.Blacklist;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.core.punishments.SenderContainer;
 import net.zylesh.dystellarcore.utils.Utils;
@@ -145,7 +144,12 @@ public class MariaDB {
             else {
                 StringBuilder sb = new StringBuilder();
                 for (Punishment p : user.getPunishments()) {
-                    sb.append(Punishments.serialize(p)).append(":\\|");
+                    String pun = Punishments.serialize(p);
+                    sb.append(pun).append(":\\|");
+                    if (p instanceof Ban && ((Ban) p).isAlsoIP()) {
+                        if (ipP == null) ipP = new StringBuilder();
+                        ipP.append(pun).append(":\\|");
+                    }
                 }
                 statement.setString(5, sb.toString());
             }
@@ -187,7 +191,7 @@ public class MariaDB {
             statement2.setString(1, user.getIp());
             statement2.setString(2, user.getName());
             statement2.setString(3, user.getUUID().toString());
-            if (ipP == null) statement2.setString(4, null);
+            if (ipP == null) statement2.setString(4, "");
             else statement2.setString(4, ipP.toString());
             statement2.execute();
         } catch (SQLException e) {
