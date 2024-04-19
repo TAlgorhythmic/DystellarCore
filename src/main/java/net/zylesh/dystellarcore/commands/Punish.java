@@ -99,7 +99,9 @@ public class Punish implements CommandExecutor, Listener {
     @EventHandler
     public void onInvClick(InventoryClickEvent event) {
         if (event.getCurrentItem() == null || event.getCurrentItem().getType().equals(Material.AIR)) return;
-        if (event.getClickedInventory().equals(inv)) event.setCancelled(true);
+        if (event.getClickedInventory().equals(inv)) {
+            event.setCancelled(true);
+        } else return;
         ItemStack i = event.getCurrentItem();
         Player p = (Player) event.getWhoClicked();
         Player playerToPunish = commandCache.get(p.getUniqueId());
