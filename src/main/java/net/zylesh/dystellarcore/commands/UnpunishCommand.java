@@ -52,7 +52,7 @@ public class UnpunishCommand implements Listener, CommandExecutor {
             Inventory inv = createInventory(p, User.get(pInt).getPunishments());
             p.openInventory(inv);
         } else {
-            p.sendMessage(ChatColor.DARK_AQUA + "This player is not online in your same server. Asking data to the proxy...");
+            p.sendMessage(ChatColor.DARK_AQUA + "This player is not online in your server. Asking data to the proxy...");
             p.sendMessage(ChatColor.DARK_AQUA + "Please wait...");
             DystellarCore.getInstance().sendPluginMessage(p, DEMAND_PUNISHMENTS_DATA, strings[0]);
         }
@@ -66,11 +66,11 @@ public class UnpunishCommand implements Listener, CommandExecutor {
         Punishment pun = invs.get(event.getWhoClicked().getUniqueId()).getValue()[event.getSlot()];
         if (pun == null) return;
         Player pInt = Bukkit.getPlayer(invs.get(event.getWhoClicked().getUniqueId()).getKey());
+        Player p = (Player) event.getWhoClicked();
         if (pInt != null && pInt.isOnline()) {
             User user = User.get(pInt);
             user.getPunishments().remove(pun);
             event.getWhoClicked().closeInventory();
-            Player p = (Player) event.getWhoClicked();
             p.sendMessage(ChatColor.GREEN + "Punishment removed!");
             pInt.sendMessage(ChatColor.GREEN + "The punishment with ID " + pun.hashCode() + " was removed from your punishments list!");
             String[] details = new String[] {
@@ -84,7 +84,8 @@ public class UnpunishCommand implements Listener, CommandExecutor {
             };
             pInt.sendMessage(details);
         } else {
-            // TODO remove punishments packets
+            p.sendMessage(ChatColor.GREEN + "Sending request...");
+            DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.REMOVE_PUNISHMENT_BY_ID, invs.get(p.getUniqueId()).getKey().toString(), invs.get(p.getUniqueId()).getValue()[event.getSlot()].hashCode());
         }
     }
 

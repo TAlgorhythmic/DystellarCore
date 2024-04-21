@@ -3,7 +3,6 @@ package net.zylesh.dystellarcore;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.server.v1_7_R4.*;
 import net.zylesh.dystellarcore.arenasapi.AbstractArena;
 import net.zylesh.dystellarcore.commands.*;
@@ -739,6 +738,34 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 prompts.add(player);
                 break;
             }
+            case REMOVE_PUNISHMENT_BY_ID: {
+                String unsafe = in.readUTF();
+                int pId = in.readInt();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) return;
+                User user = User.get(player);
+                Punishment punishmentToRemove = null;
+                for (Punishment pun : user.getPunishments()) {
+                    if (pun.hashCode() == pId) {
+                        punishmentToRemove = pun;
+                        break;
+                    }
+                }
+
+                if (punishmentToRemove == null || !user.getPunishments().remove(punishmentToRemove)) return;
+                player.sendMessage(ChatColor.GREEN + "The punishment with ID " + pId + " was removed from your punishments list!");
+                String[] details = new String[] {
+                        ChatColor.DARK_GREEN + "Punishment details:",
+                        "===============================",
+                        ChatColor.DARK_AQUA + "Type" + ChatColor.WHITE + ": " + ChatColor.GRAY + p.getClass().getSimpleName(),
+                        ChatColor.DARK_AQUA + "Creation Date" + ChatColor.WHITE + ": " + ChatColor.GRAY + punishmentToRemove.getCreationDate().format(DateTimeFormatter.ISO_DATE_TIME),
+                        ChatColor.DARK_AQUA + "Expiration Date" + ChatColor.WHITE + ": " + ChatColor.GRAY + (punishmentToRemove.getExpirationDate() == null ? "Never" : punishmentToRemove.getExpirationDate().format(DateTimeFormatter.ISO_DATE_TIME)),
+                        ChatColor.DARK_AQUA + "Reason" + ChatColor.WHITE + ": " + ChatColor.GRAY + punishmentToRemove.getReason(),
+                        "==============================="
+                };
+                player.sendMessage(details);
+                break;
+            }
         }
     }
 
@@ -833,4 +860,5 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static final byte SHOULD_SEND_PACK_RESPONSE = 22;
     public static final byte DEMAND_PUNISHMENTS_DATA = 23;
     public static final byte PUNISHMENTS_DATA_RESPONSE = 24;
+    public static final byte REMOVE_PUNISHMENT_BY_ID = 25;
 }
