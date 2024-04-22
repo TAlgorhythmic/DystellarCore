@@ -27,7 +27,7 @@ public class BanCommand implements CommandExecutor {
             return true;
         }
         if (strings.length < 3) {
-            commandSender.sendMessage(ChatColor.RED + "Usage: /ban <player> <time> <reason> [IPBan:<true/false>]");
+            commandSender.sendMessage(ChatColor.RED + "Usage: /ban <player> <time> <reason> [Optional: BanAlsoIP: <true> (only write if true, if you don't write anything at the end it defaults to false)]");
             return true;
         }
         Player playerInt = Bukkit.getPlayer(strings[0]);
