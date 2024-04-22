@@ -15,6 +15,8 @@ public abstract class AbstractArena {
         ItemMeta meta = WAND.getItemMeta();
         meta.setDisplayName(ChatColor.YELLOW + "Utility Wand");
         List<String> lore = List.of(ChatColor.WHITE + "Use it like if it was World Edit.");
+        meta.setLore(lore);
+        WAND.setItemMeta(meta);
     }
 
     private final String name;
