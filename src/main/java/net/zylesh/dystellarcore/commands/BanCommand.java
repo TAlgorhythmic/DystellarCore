@@ -35,11 +35,11 @@ public class BanCommand implements CommandExecutor {
             User userInt = User.get(playerInt);
             LocalDateTime time = LocalDateTime.now();
             for (String e : strings[1].split(",")) {
-                if (!s.matches("[0-9]+[dhm]")) {
+                if (!e.matches("[0-9]+[dhm]")) {
                     commandSender.sendMessage(ChatColor.RED + "The format is incorrect.");
                     return true;
                 }
-                int integer = Integer.parseInt(e.substring(0, e.length() - 1));
+                int integer = Integer.parseInt(e.substring(0, 1));
                 switch (e.charAt(e.length() - 1)) {
                     case 'd': time = time.plusDays(integer); break;
                     case 'h': time = time.plusHours(integer); break;
