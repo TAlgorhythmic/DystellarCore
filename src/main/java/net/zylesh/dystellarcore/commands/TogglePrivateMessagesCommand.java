@@ -1,5 +1,6 @@
 package net.zylesh.dystellarcore.commands;
 
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,20 +28,20 @@ public class TogglePrivateMessagesCommand implements CommandExecutor {
             playerUser.togglePms();
             switch (playerUser.getPrivateMessagesMode()) {
                 case PMS_ENABLED:
-                    player.sendMessage(ChatColor.GREEN + "You are now accepting all private messages.");
+                    player.sendMessage(Msgs.PMS_ENABLED);
                     break;
                 case PMS_ENABLED_WITH_IGNORELIST:
-                    player.sendMessage(ChatColor.YELLOW + "You are now blocking messages from players in your ignore list.");
+                    player.sendMessage(Msgs.PMS_ENABLED_WITH_BLACK_LIST);
                     break;
                 case PMS_ENABLED_FRIENDS_ONLY:
-                    player.sendMessage(ChatColor.GOLD + "You are now only accepting messages from friends.");
+                    player.sendMessage(Msgs.PMS_ENABLED_FRIENDS_ONLY);
                     break;
                 case PMS_DISABLED:
-                    player.sendMessage(ChatColor.RED + "You are now blocking all messages.");
+                    player.sendMessage(Msgs.PMS_DISABLED);
                     break;
             }
         } else {
-            commandSender.sendMessage(ChatColor.RED + "You must be a player in order to execute this command.");
+            commandSender.sendMessage(Msgs.ERROR_NOT_A_PLAYER);
         }
         return true;
     }

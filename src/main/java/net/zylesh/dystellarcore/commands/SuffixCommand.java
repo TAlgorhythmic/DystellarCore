@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
 import org.bukkit.Bukkit;
@@ -60,7 +61,7 @@ public class SuffixCommand implements CommandExecutor, Listener {
             p.sendMessage(ChatColor.BLUE + "Suffix selected" + ChatColor.WHITE + ": " + ChatColor.AQUA + user.getSuffix().toString());
             p.closeInventory();
         } else {
-            p.sendMessage(ChatColor.RED + "You don't have this prefix.");
+            p.sendMessage(Msgs.ERROR_PREFIX_NOT_OWNED);
             p.closeInventory();
         }
     }

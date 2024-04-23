@@ -72,7 +72,7 @@ public class BanCommand implements CommandExecutor {
                     } else {
                         time = LocalDateTime.now();
                         for (String e : strings[1].split(",")) {
-                            if (!s.matches("[0-9]+[dhm]")) {
+                            if (!e.matches("[0-9]+[dhm]")) {
                                 commandSender.sendMessage(ChatColor.RED + "The format is incorrect.");
                                 return;
                             }

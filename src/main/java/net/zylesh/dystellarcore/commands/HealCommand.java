@@ -1,10 +1,10 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.practice.PUser;
 import net.zylesh.skywars.SkywarsAPI;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,7 +23,7 @@ public class HealCommand implements CommandExecutor {
             if (!(commandSender instanceof Player)) return true;
             Player player = (Player) commandSender;
             if ((DystellarCore.PRACTICE_HOOK && PUser.get(player).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) {
-                player.sendMessage(ChatColor.RED + "You are not allowed to use this command in game.");
+                player.sendMessage(Msgs.COMMAND_DENY_INGAME);
                 return true;
             }
             player.setHealth(20.0);
@@ -32,7 +32,7 @@ public class HealCommand implements CommandExecutor {
         } else {
             Player player = Bukkit.getPlayer(strings[0]);
             if (player == null) {
-                commandSender.sendMessage(ChatColor.RED + "This player is not online.");
+                commandSender.sendMessage(Msgs.ERROR_PLAYER_NOT_ONLINE);
                 return true;
             }
             player.setHealth(20.0);

@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -9,7 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -35,11 +38,11 @@ public class FreezeCommand implements CommandExecutor, Listener {
         }
         Player player = Bukkit.getPlayer(strings[0]);
         if (player == null) {
-            commandSender.sendMessage(ChatColor.RED + "This player does not exist or is not online.");
+            commandSender.sendMessage(Msgs.ERROR_PLAYER_NOT_ONLINE);
             return true;
         }
         if (frozenPlayers.remove(player.getUniqueId())) {
-            commandSender.sendMessage(ChatColor.GREEN + player.getName() + " is now free to go.");
+            commandSender.sendMessage(Msgs.STAFF_UNFREEZE.replace("<player>", player.getName()));
             player.sendMessage(DystellarCore.UNFREEZE_MESSAGE);
             player.removePotionEffect(PotionEffectType.BLINDNESS);
             player.removePotionEffect(PotionEffectType.SLOW);
@@ -47,7 +50,7 @@ public class FreezeCommand implements CommandExecutor, Listener {
         }
         frozenPlayers.add(player.getUniqueId());
         for (String s1 : DystellarCore.FREEZE_MESSAGE) player.sendMessage(s1);
-        commandSender.sendMessage(ChatColor.YELLOW + player.getName() + " is now frozen.");
+        commandSender.sendMessage(Msgs.STAFF_FREEZE.replace("<player>", player.getName()));
         player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 1));
         player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 100));
         return true;
@@ -58,5 +61,15 @@ public class FreezeCommand implements CommandExecutor, Listener {
         if (frozenPlayers.contains(event.getPlayer().getUniqueId())) {
             if (event.getTo().getX() != event.getFrom().getX() || event.getTo().getY() != event.getFrom().getY() || event.getTo().getZ() != event.getFrom().getZ()) event.getPlayer().teleport(event.getFrom());
         }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        frozenPlayers.remove(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onKick(PlayerKickEvent event) {
+        frozenPlayers.remove(event.getPlayer().getUniqueId());
     }
 }

@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.serialization.Mapping;
@@ -70,12 +71,12 @@ public class PunishmentsCommand implements CommandExecutor {
                 DystellarCore.getAsyncManager().execute(() -> {
                     String ip = MariaDB.loadIP(strings[0]);
                     if (ip == null) {
-                        commandSender.sendMessage(ChatColor.RED + "This player is not registered in the database.");
+                        commandSender.sendMessage(Msgs.ERROR_PLAYER_NOT_FOUND);
                         return;
                     }
                     Mapping mapping = MariaDB.loadMapping(ip);
                     if (mapping == null) {
-                        commandSender.sendMessage(ChatColor.RED + "This player is not registered in the database.");
+                        commandSender.sendMessage(Msgs.ERROR_PLAYER_NOT_FOUND);
                         return;
                     }
                     User user = MariaDB.loadPlayerFromDatabase(mapping.getUUID(), mapping.getIP(), mapping.getName());

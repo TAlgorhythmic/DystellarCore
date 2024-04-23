@@ -2,6 +2,7 @@ package net.zylesh.dystellarcore.commands;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.*;
 import net.zylesh.dystellarcore.utils.Utils;
@@ -86,7 +87,7 @@ public class Punish implements CommandExecutor, Listener {
         }
         Player pInt = Bukkit.getPlayer(strings[0]);
         if (pInt == null || !pInt.isOnline()) {
-            p.sendMessage(ChatColor.RED + "This player is not online.");
+            p.sendMessage(Msgs.ERROR_PLAYER_NOT_ONLINE);
             return true;
         }
         commandCache.put(p.getUniqueId(), pInt);
@@ -106,7 +107,7 @@ public class Punish implements CommandExecutor, Listener {
         Player p = (Player) event.getWhoClicked();
         Player playerToPunish = commandCache.get(p.getUniqueId());
         if (playerToPunish == null) {
-            p.sendMessage(ChatColor.RED + "This player is no longer online.");
+            p.sendMessage(Msgs.ERROR_PLAYER_NO_LONGER_ONLINE);
             return;
         }
         User userToPunish = User.get(playerToPunish);

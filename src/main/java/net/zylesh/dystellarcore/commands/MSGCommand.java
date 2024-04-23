@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.practice.PUser;
 import org.bukkit.Bukkit;
@@ -28,7 +29,7 @@ public class MSGCommand implements CommandExecutor {
             Player player = (Player) commandSender;
             User playerUser = User.get(player);
             if (playerUser.getPrivateMessagesMode() == PMS_DISABLED) {
-                player.sendMessage(ChatColor.RED + "You can't send messages while blocking all private messages. Enable them with " + ChatColor.YELLOW + "/pms");
+                player.sendMessage(Msgs.CANT_SEND_PMS_DISABLED);
                 return true;
             }
             if (strings.length - 1 >= 1) {
@@ -43,7 +44,7 @@ public class MSGCommand implements CommandExecutor {
                                 break;
                             case PMS_ENABLED_WITH_IGNORELIST:
                                 if (playerUserInt.getIgnoreList().contains(player.getUniqueId())) {
-                                    player.sendMessage(ChatColor.RED + "This player is ignoring you.");
+                                    player.sendMessage(Msgs.PLAYER_HAS_BLOCKED_YOU);
                                     return true;
                                 }
                                 break;
@@ -59,7 +60,7 @@ public class MSGCommand implements CommandExecutor {
                                 switch (pUserInt.getDoNotDisturbMode()) {
                                     case ENABLED_PMS_ONLY:
                                     case ENABLED: {
-                                        player.sendMessage(ChatColor.RED + playerInt.getName() + " is in do not disturb mode.");
+                                        player.sendMessage(Msgs.PLAYER_IN_DND.replace("<player>", playerInt.getName()));
                                         return true;
                                     }
                                 }
@@ -80,14 +81,14 @@ public class MSGCommand implements CommandExecutor {
                                 .replaceAll("-receiver", playerInt.getPlayerListName())
                                 .replaceAll("-message", message.toString()));
                     } else {
-                        player.sendMessage(ChatColor.RED + strings[0] + " is not online.");
+                        player.sendMessage(Msgs.ERROR_PLAYER_NOT_ONLINE);
                     }
                 }
             } else {
-                player.sendMessage(ChatColor.RED + "Usage: /msg <player> <message>");
+                player.sendMessage(Msgs.ERROR_PLAYER_NOT_ONLINE);
             }
         } else {
-            commandSender.sendMessage(ChatColor.RED + "You must be a player in order to execute this command.");
+            commandSender.sendMessage(Msgs.ERROR_NOT_A_PLAYER);
         }
         return true;
     }

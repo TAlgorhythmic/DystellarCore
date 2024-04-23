@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.serialization.Consts;
 import net.zylesh.dystellarcore.serialization.MariaDB;
@@ -37,7 +38,7 @@ public class FriendCommand implements CommandExecutor, Listener {
             sendTip = true;
         }
         u.friends.add(uuid);
-        p.sendMessage(ChatColor.GREEN + name + " has accepted your friend request!");
+        p.sendMessage(Msgs.FRIEND_REQUEST_ACCEPTED_SENDER.replace("<player>", name));
         if (sendTip) p.sendMessage(Consts.FIRST_FRIEND_TIP_MSG);
     }
 
@@ -45,7 +46,7 @@ public class FriendCommand implements CommandExecutor, Listener {
         if (!requestsCache.remove(p.getUniqueId())) {
             return;
         }
-        p.sendMessage(ChatColor.RED + name + " has rejected your friend request.");
+        p.sendMessage(Msgs.FRIEND_REQUEST_REJECTED_SENDER.replace("<player>", name));
     }
 
     private static final String[] help = {
@@ -80,7 +81,7 @@ public class FriendCommand implements CommandExecutor, Listener {
                     return true;
                 }
                 if (cooldowns.contains(p.getUniqueId())) {
-                    p.sendMessage(ChatColor.RED + "You are on cooldown, wait 20 seconds before performing this action again.");
+                    p.sendMessage(Msgs.ON_COOLDOWN.replace("<seconds>", "20"));
                     return true;
                 }
                 requestsCache.add(p.getUniqueId());
@@ -96,13 +97,13 @@ public class FriendCommand implements CommandExecutor, Listener {
                 User u = User.get(p);
                 if (pInt != null && pInt.isOnline()) {
                     if (!u.friends.remove(pInt.getUniqueId())) {
-                        p.sendMessage(ChatColor.RED + "This player is not in your friends list. (Your friend probably changed his minecraft nickname and we do not have his new data)");
+                        p.sendMessage(Msgs.PLAYER_NOT_ON_FRIENDS_LIST);
                         return true;
                     }
                     User uInt = User.get(pInt);
                     uInt.friends.remove(u.getUUID());
-                    p.sendMessage(ChatColor.RED + pInt.getName() + " has been removed from your friends list.");
-                    pInt.sendMessage(ChatColor.RED + p.getName() + " has removed been removed from your friends list. (He removed you)");
+                    p.sendMessage(Msgs.FRIEND_REMOVED_SENDER.replace("<player>", pInt.getName()));
+                    pInt.sendMessage(Msgs.FRIEND_REMOVED_RECEIVER.replace("<player>", p.getName()));
                 } else {
                     DystellarCore.getAsyncManager().submit(() -> {
                         UUID uuid;
@@ -115,11 +116,11 @@ public class FriendCommand implements CommandExecutor, Listener {
                             uuidsCache.put(p, map);
                         }
                         if (uuid == null) {
-                            p.sendMessage(ChatColor.RED + "This player does not const in our database.");
+                            p.sendMessage(Msgs.ERROR_PLAYER_NOT_FOUND);
                             return;
                         }
                         if (!u.friends.remove(uuid)) {
-                            p.sendMessage(ChatColor.RED + "This player is not in your friends list.");
+                            p.sendMessage(Msgs.PLAYER_NOT_ON_FRIENDS_LIST);
                             return;
                         }
                         DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.REMOVE_FRIEND, uuid.toString());
@@ -134,7 +135,7 @@ public class FriendCommand implements CommandExecutor, Listener {
                 }
                 Player pInt = Bukkit.getPlayer(strings[1]);
                 if (pInt != null && pInt.isOnline()) {
-                    p.sendMessage(ChatColor.GREEN + pInt.getName() + " is in your exact same server!");
+                    p.sendMessage(Msgs.FIND_SAME_SERVER_AS_SENDER.replace("<player>", pInt.getName()));
                     return true;
                 } else {
                     DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.DEMAND_FIND_PLAYER, strings[1]);
@@ -143,7 +144,7 @@ public class FriendCommand implements CommandExecutor, Listener {
             }
             case "list": {
                 if (cooldowns.contains(p.getUniqueId())) {
-                    p.sendMessage(ChatColor.RED + "You are on cooldown, wait 20 seconds before performing this action again.");
+                    p.sendMessage(Msgs.ON_COOLDOWN.replace("<seconds>", "20"));
                     return true;
                 }
                 cooldowns.add(p.getUniqueId());
@@ -171,7 +172,7 @@ public class FriendCommand implements CommandExecutor, Listener {
             }
             case "accept": {
                 if (!DystellarCore.getInstance().requests.containsKey(p.getUniqueId())) {
-                    p.sendMessage(ChatColor.RED + "You don't have any pending friend requests. (Or it has expired)");
+                    p.sendMessage(Msgs.FRIEND_REQUEST_EXPIRED);
                     return true;
                 }
                 User u = User.get(p);
@@ -182,18 +183,18 @@ public class FriendCommand implements CommandExecutor, Listener {
                 }
                 UUID uuid = DystellarCore.getInstance().requests.remove(p.getUniqueId());
                 u.friends.add(uuid);
-                p.sendMessage(ChatColor.GREEN + "Friend request accepted!");
+                p.sendMessage(Msgs.FRIEND_REQUEST_ACCEPTED_RECEIVER);
                 if (sendTip) p.sendMessage(Consts.FIRST_FRIEND_TIP_MSG);
                 DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.FRIEND_ADD_REQUEST_ACCEPT, uuid.toString());
                 break;
             }
             case "reject": {
                 if (!DystellarCore.getInstance().requests.containsKey(p.getUniqueId())) {
-                    p.sendMessage(ChatColor.RED + "You don't have any pending friend requests. (Or it has expired)");
+                    p.sendMessage(Msgs.FRIEND_REQUEST_EXPIRED);
                     return true;
                 }
                 UUID uuid = DystellarCore.getInstance().requests.remove(p.getUniqueId());
-                p.sendMessage(ChatColor.RED + "Friend request rejected.");
+                p.sendMessage(Msgs.FRIEND_REQUEST_REJECTED_RECEIVER);
                 DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.FRIEND_ADD_REQUEST_REJECT, uuid.toString());
                 break;
             }
@@ -202,10 +203,10 @@ public class FriendCommand implements CommandExecutor, Listener {
                 byte setting = u.extraOptions[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS];
                 if (setting == Consts.BYTE_FALSE) {
                     u.extraOptions[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] = Consts.BYTE_TRUE;
-                    p.sendMessage(ChatColor.DARK_AQUA + "You are able to receive friend requests.");
+                    p.sendMessage(Msgs.FRIEND_REQUESTS_ENABLED);
                 } else {
                     u.extraOptions[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] = Consts.BYTE_FALSE;
-                    p.sendMessage(ChatColor.RED + "You are no longer able to receive friend requests.");
+                    p.sendMessage(Msgs.FRIEND_REQUESTS_DISABLED);
                 }
                 break;
             }

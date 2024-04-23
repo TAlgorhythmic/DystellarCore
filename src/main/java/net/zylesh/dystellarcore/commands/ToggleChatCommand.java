@@ -1,5 +1,6 @@
 package net.zylesh.dystellarcore.commands;
 
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -23,12 +24,12 @@ public class ToggleChatCommand implements CommandExecutor {
             User playerUser = User.get(player);
             playerUser.toggleGlobalChat();
             if (playerUser.isGlobalChatEnabled()) {
-                player.sendMessage(ChatColor.GREEN + "You've enabled global chat.");
+                player.sendMessage(Msgs.GLOBAL_CHAT_ENABLED);
             } else {
-                player.sendMessage(ChatColor.YELLOW + "You've disabled global chat.");
+                player.sendMessage(Msgs.GLOBAL_CHAT_DISABLED);
             }
         } else {
-            commandSender.sendMessage(ChatColor.RED + "You must be a player in order to execute this command.");
+            commandSender.sendMessage(Msgs.ERROR_NOT_A_PLAYER);
         }
         return true;
     }

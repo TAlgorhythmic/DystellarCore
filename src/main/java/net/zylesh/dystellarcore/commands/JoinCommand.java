@@ -3,6 +3,7 @@ package net.zylesh.dystellarcore.commands;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -32,7 +33,7 @@ public class JoinCommand implements CommandExecutor {
         p.sendPluginMessage(DystellarCore.getInstance(), "BungeeCord", out.toByteArray());
         Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
             if (p.isOnline()) {
-                p.sendMessage(ChatColor.RED + "Error trying to connect to server.");
+                p.sendMessage(Msgs.SERVER_CONNECTION_ERROR);
             }
         }, 30L);
         return true;

@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,10 +26,10 @@ public class ToggleGlobalTabComplete implements CommandExecutor {
         user.toggleGlobalTabComplete();
         if (user.isGlobalTabComplete()) {
             DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.GLOBAL_TAB_REGISTER);
-            p.sendMessage(ChatColor.GREEN + "Global tab complete enabled.");
+            p.sendMessage(Msgs.GLOBAL_TAB_ENABLED);
         } else {
             DystellarCore.getInstance().sendPluginMessage(p, DystellarCore.GLOBAL_TAB_UNREGISTER);
-            p.sendMessage(ChatColor.YELLOW + "Global tab complete disabled.");
+            p.sendMessage(Msgs.GLOBAL_TAB_DISABLED);
         }
         return true;
     }

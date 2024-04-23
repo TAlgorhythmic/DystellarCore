@@ -1,11 +1,13 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.practice.PUser;
 import net.zylesh.skywars.SkywarsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -37,11 +39,15 @@ public class GameModeCommand implements CommandExecutor, Listener {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (strings.length < 2) {
             if (!(commandSender instanceof Player)) return true;
-            if (!strings[0].matches("[0-3]")) {
-                commandSender.sendMessage(ChatColor.RED + "The only gamemodes available are 0, 1, 2, 3");
+            Player player = (Player) commandSender;
+            if ((DystellarCore.PRACTICE_HOOK && PUser.get(player).isInGame()) || (DystellarCore.SKYWARS_HOOK && SkywarsAPI.getPlayerUser(player).isInGame())) {
+                player.sendMessage(Msgs.COMMAND_DENY_INGAME);
                 return true;
             }
-            Player player = (Player) commandSender;
+            if (!strings[0].matches("[0-3]")) {
+                player.sendMessage(ChatColor.RED + "The only gamemodes available are 0, 1, 2, 3");
+                return true;
+            }
             switch (Integer.parseInt(strings[0])) {
                 case 0:
                     if (playersInSpecMode.containsKey(player.getUniqueId())) setSpectator(player);
@@ -67,7 +73,7 @@ public class GameModeCommand implements CommandExecutor, Listener {
         } else {
             Player player = Bukkit.getPlayer(strings[1]);
             if (player == null) {
-                commandSender.sendMessage(ChatColor.RED + "This player is not online.");
+                commandSender.sendMessage(Msgs.ERROR_PLAYER_NOT_ONLINE);
                 return true;
             }
             if (!strings[0].matches("[0-3]")) {
@@ -110,10 +116,12 @@ public class GameModeCommand implements CommandExecutor, Listener {
             Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> playersInSpecMode.remove(player.getUniqueId()), 40L);
         } else {
             player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, true));
+            player.setGameMode(GameMode.ADVENTURE);
             player.setAllowFlight(true);
+            player.teleport(new Location(player.getWorld(), player.getLocation().getX(), player.getLocation().getY() + 2.0, player.getLocation().getZ()));
+            player.setFlying(true);
             ItemStack[] armorSet = player.getInventory().getArmorContents();
             ItemStack[] contents = player.getInventory().getContents();
-            player.setGameMode(GameMode.ADVENTURE);
             player.sendMessage(ChatColor.YELLOW + "Game Mode set to spectator (emulated).");
             playersInSpecMode.put(player.getUniqueId(), new AbstractMap.SimpleEntry<>(armorSet, contents));
         }

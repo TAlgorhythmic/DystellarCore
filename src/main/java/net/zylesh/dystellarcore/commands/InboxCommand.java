@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
@@ -191,7 +192,7 @@ public class InboxCommand implements CommandExecutor, Listener {
             e.setCancelled(true);
             if (selectingType) {
                 if (!e.getMessage().matches("[0-9]+")) {
-                    e.getPlayer().sendMessage(ChatColor.RED + "Input must be a number, try again.");
+                    e.getPlayer().sendMessage(Msgs.ERROR_INPUT_NOT_NUMBER);
                     return;
                 }
                 byte type = Byte.parseByte(e.getMessage());

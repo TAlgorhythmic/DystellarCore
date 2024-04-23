@@ -1,5 +1,6 @@
 package net.zylesh.dystellarcore.commands;
 
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,18 +21,22 @@ public class IgnoreCommand implements CommandExecutor {
         if (!(commandSender instanceof Player)) return true;
         Player p = (Player) commandSender;
         if (strings.length < 1) {
-            p.sendMessage(ChatColor.RED + "Usage: /ignore <player>");
+            p.sendMessage(ChatColor.RED + "Usage: /block <player>");
             return true;
         }
         Player pInt = Bukkit.getPlayer(strings[0]);
         if (pInt == null || !pInt.isOnline()) {
-            p.sendMessage(ChatColor.RED + "This player does not exist or is not online.");
+            p.sendMessage(Msgs.ERROR_PLAYER_DOES_NOT_EXIST);
             return true;
         }
-        if (User.get(p).getIgnoreList().add(pInt.getUniqueId())) {
-            p.sendMessage(ChatColor.YELLOW + "You are now ignoring " + ChatColor.WHITE + pInt.getName());
+        User u = User.get(p);
+        if (u.getIgnoreList().add(pInt.getUniqueId())) {
+            p.sendMessage(Msgs.PLAYER_BLOCKED.replace("<player>", pInt.getName()));
+            if (u.getPrivateMessagesMode() == User.PMS_ENABLED) {
+                p.sendMessage(Msgs.BLOCKING_POINTLESS_HINT);
+            }
         } else {
-            p.sendMessage(ChatColor.RED + "You were already ignoring " + ChatColor.YELLOW + pInt.getName());
+            p.sendMessage(Msgs.ERROR_PLAYER_ALREADY_BLOCKED);
         }
         return true;
     }

@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.commands;
 
 import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.Mute;
 import net.zylesh.dystellarcore.serialization.Mapping;
@@ -39,7 +40,7 @@ public class MuteCommand implements CommandExecutor {
             } else {
                 time = LocalDateTime.now();
                 for (String e : strings[1].split(",")) {
-                    if (!s.matches("[0-9]+[dhm]")) {
+                    if (!e.matches("[0-9]+[dhm]")) {
                         commandSender.sendMessage(ChatColor.RED + "The format is incorrect.");
                         return true;
                     }
@@ -62,7 +63,7 @@ public class MuteCommand implements CommandExecutor {
             DystellarCore.getAsyncManager().execute(() -> {
                 Mapping mapping = MariaDB.loadMapping(strings[1]);
                 if (mapping == null) {
-                    commandSender.sendMessage(ChatColor.RED + "This player does not exist in the database.");
+                    commandSender.sendMessage(Msgs.ERROR_PLAYER_NOT_FOUND);
                 } else {
                     User user = MariaDB.loadPlayerFromDatabase(mapping.getUUID(), mapping.getIP(), mapping.getName());
                     LocalDateTime time;
@@ -71,7 +72,7 @@ public class MuteCommand implements CommandExecutor {
                     } else {
                         time = LocalDateTime.now();
                         for (String e : strings[1].split(",")) {
-                            if (!s.matches("[0-9]+[dhm]")) {
+                            if (!e.matches("[0-9]+[dhm]")) {
                                 commandSender.sendMessage(ChatColor.RED + "The format is incorrect.");
                                 return;
                             }

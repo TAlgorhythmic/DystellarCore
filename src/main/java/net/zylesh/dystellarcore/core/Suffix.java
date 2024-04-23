@@ -83,7 +83,6 @@ public enum Suffix {
     public static void initialize() {
         List<String> lore = List.of(
                 " ",
-                " ",
                 ChatColor.YELLOW + "Click to select."
         );
         ItemStack NONE_ITEM = new ItemStack(Material.COAL_BLOCK);

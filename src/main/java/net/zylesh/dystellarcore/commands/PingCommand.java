@@ -1,5 +1,6 @@
 package net.zylesh.dystellarcore.commands;
 
+import net.zylesh.dystellarcore.core.Msgs;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -24,7 +25,7 @@ public class PingCommand implements CommandExecutor {
             }
             CraftPlayer playerInt = (CraftPlayer) Bukkit.getPlayer(strings[0]);
             if (playerInt == null || !playerInt.isOnline()) {
-                player.sendMessage(ChatColor.RED + strings[0] + " is not online.");
+                player.sendMessage(Msgs.ERROR_PLAYER_DOES_NOT_EXIST);
                 return true;
             }
             player.sendMessage(ChatColor.YELLOW + strings[0] + "'s ping: " + ChatColor.AQUA + playerInt.getHandle().ping + "ms");
@@ -36,7 +37,7 @@ public class PingCommand implements CommandExecutor {
         }
         CraftPlayer playerInt = (CraftPlayer) Bukkit.getPlayer(strings[0]);
         if (!playerInt.isOnline()) {
-            commandSender.sendMessage(ChatColor.RED + strings[0] + " is not online.");
+            commandSender.sendMessage(Msgs.ERROR_PLAYER_DOES_NOT_EXIST);
             return true;
         }
         commandSender.sendMessage(ChatColor.YELLOW + strings[0] + "'s ping: " + ChatColor.AQUA + playerInt.getHandle().ping + "ms");

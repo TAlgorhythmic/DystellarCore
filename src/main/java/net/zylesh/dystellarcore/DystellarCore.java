@@ -6,10 +6,8 @@ import com.google.common.io.ByteStreams;
 import net.minecraft.server.v1_7_R4.*;
 import net.zylesh.dystellarcore.arenasapi.AbstractArena;
 import net.zylesh.dystellarcore.commands.*;
-import net.zylesh.dystellarcore.core.IPacketListener;
+import net.zylesh.dystellarcore.core.*;
 import net.zylesh.dystellarcore.core.PacketListener;
-import net.zylesh.dystellarcore.core.Suffix;
-import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.inbox.InboxSender;
 import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
@@ -83,6 +81,8 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     private final File si = new File(getDataFolder(), "spawnitems.yml");
     private final YamlConfiguration spawnitems = YamlConfiguration.loadConfiguration(si);
     private final File am = new File(getDataFolder(), "automated-messages.txt");
+    private final File m = new File(getDataFolder(), "lang-en.yml");
+    private final YamlConfiguration lang = YamlConfiguration.loadConfiguration(m);
 
     public static boolean SKYWARS_HOOK = false;
     public static boolean PRACTICE_HOOK = false;
@@ -183,6 +183,8 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new ItemMetaCommand();
         new PingCommand();
         new ToggleChatCommand();
+        new TogglePrivateMessagesCommand();
+        new ToggleGlobalTabComplete();
         new PacketListener();
         new PluginMessageScheduler();
         new IgnoreCommand();
@@ -234,8 +236,11 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[Dystellar] Loading configuration...");
             if (!conf.exists()) saveResource("config.yml", true);
             if (!si.exists()) saveResource("spawnitems.yml", true);
+            if (!m.exists()) saveResource("lang-en.yml", true);
             config.load(conf);
             spawnitems.load(si);
+            lang.load(m);
+            Msgs.init();
             if (am.createNewFile()) {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClassLoader().getResourceAsStream("automated-messages.txt")))); PrintWriter writer = new PrintWriter(am)) {
                     reader.lines().forEach(writer::println);
@@ -256,6 +261,10 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
+    }
+
+    public YamlConfiguration getLang() {
+        return lang;
     }
 
     private void initDb() throws IOException, SQLException {
@@ -382,6 +391,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         try {
             config.save(conf);
             spawnitems.save(si);
+            lang.save(m);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -31,7 +31,7 @@ public class Ban extends Punishment {
         Player p = Bukkit.getPlayer(user.getUUID());
         if (p != null) {
             if (!DystellarCore.ALLOW_BANNED_PLAYERS) {
-                p.kickPlayer(ChatColor.translateAlternateColorCodes('&', getMessage().replaceAll("<reason>", getReason()).replaceAll("<time>", Utils.getTimeFormat(getExpirationDate()))));
+                p.kickPlayer(ChatColor.translateAlternateColorCodes('&', getMessage().replace("<reason>", getReason()).replace("<time>", Utils.getTimeFormat(getExpirationDate()))));
             } else {
                 p.sendMessage(" ");
                 p.sendMessage(ChatColor.RED + "You have been banned.");
