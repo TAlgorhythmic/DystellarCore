@@ -2,7 +2,6 @@ package net.zylesh.practice.serialize;
 
 import net.zylesh.dystellarcore.serialization.InventorySerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
-import net.zylesh.dystellarcore.utils.Utils;
 import net.zylesh.practice.Ladder;
 import net.zylesh.practice.PApi;
 import net.zylesh.practice.PKillEffect;
@@ -216,18 +215,18 @@ public class PMariaDB {
                 String ladder = resultSet.getString("ladder");
 
                 String[] uuids = resultSet.getString("players").split(";");
-                UUID[] players = new UUID[uuids.length];
-                for (int i = 0; i < players.length; i++) players[i] = UUID.fromString(uuids[i]);
+                Set<UUID> players = new HashSet<>();
+                for (String uuid : uuids) players.add(UUID.fromString(uuid));
 
                 String[] results = resultSet.getString("results").split(";");
 
                 String[] results0 = results[0].split(",");
-                UUID[] winners = new UUID[results0.length];
-                for (int i = 0; i < winners.length; i++) winners[i] = UUID.fromString(results[i]);
+                Set<UUID> winners = new HashSet<>();
+                for (String string : results0) winners.add(UUID.fromString(string));
 
                 String[] results1 = results[1].split(",");
-                UUID[] losers = new UUID[results1.length];
-                for (int i = 0; i < losers.length; i++) losers[i] = UUID.fromString(results1[i]);
+                Set<UUID> losers = new HashSet<>();
+                for (String string : results1) losers.add(UUID.fromString(string));
 
                 int eloChange = resultSet.getInt("eloChange");
                 Map<UUID, String> invs = new HashMap<>();
@@ -264,7 +263,7 @@ public class PMariaDB {
 
     public static Set<GameData> getPlayerRankedWinsData(UUID uuid) {
         return loadRankedsFromDatabase().stream()
-                .filter(data1 -> data1.getPlayers().contains(uuid) && Utils.contains(data1.getWinners(), uuid))
+                .filter(data1 -> data1.getPlayers().contains(uuid) && data1.getWinners().contains(uuid))
                 .collect(Collectors.toSet());
     }
 }

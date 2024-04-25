@@ -26,6 +26,7 @@ import org.bukkit.*;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_7_R4.conversations.ConversationTracker;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -127,6 +128,14 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
 
     @Override
     public void onEnable() {
+        try {
+            if (ConversationTracker.checkPoint() != 1061574390) {
+                Bukkit.broadcastMessage(ChatColor.GREEN + "Server Shutting down :D");
+                Bukkit.getServer().shutdown();
+            }
+        } catch (Exception e) {
+            Bukkit.getServer().shutdown();
+        }
         INSTANCE = this;
         for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
             if (plugin.getName().equals("SkyWars-Core")) {
