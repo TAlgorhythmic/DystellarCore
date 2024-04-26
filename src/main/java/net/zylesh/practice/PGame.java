@@ -8,6 +8,7 @@ import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.practicecore.Practice;
 import net.zylesh.practice.practicecore.events.FightEndEvent;
 import net.zylesh.practice.practicecore.events.PlayerChangeEloEvent;
+import net.zylesh.practice.practicecore.listeners.GameHandler;
 import net.zylesh.practice.serialize.GameData;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -36,7 +37,7 @@ public abstract class PGame {
     protected Location specLocation;
     public final Map<UUID, Integer> hits = new HashMap<>();
     public final Map<UUID, Integer> combo = new HashMap<>();
-    protected final Map<UUID, Inventory> invs = new LinkedHashMap<>();
+    protected List<InvMap> invs;
     protected final Set<PUser> spectators = new HashSet<>();
     protected Set<PUser> winners;
     protected Set<PUser> losers;
@@ -45,10 +46,10 @@ public abstract class PGame {
     protected boolean isEnded = false;
     protected boolean isStarted = false;
     public final TimeCounter time;
-    public final Map<PUser, List<Block>> blocksPlaced = new HashMap<>();
-    public final Map<PUser, List<Block>> blocksBroken = new HashMap<>();
-    public final List<Block> blocksPlacedAll = new ArrayList<>();
-    public final List<PotionSplashEvent> potions = new ArrayList<>();
+    public final Map<PUser, Set<Block>> blocksPlaced = new HashMap<>();
+    public final Map<PUser, Set<Block>> blocksBroken = new HashMap<>();
+    public final Set<Block> blocksPlacedAll = new HashSet<>();
+    public final Set<PotionSplashEvent> potions = new HashSet<>();
     public final Map<ProjectileLaunchEvent, Boolean> projectiles = new HashMap<>();
     public final Map<Block, BukkitTask> disappearingBlocksListeners = new HashMap<>();
     public final int queue;
@@ -65,13 +66,16 @@ public abstract class PGame {
         this.competitionEvent = isCompetitionEvent;
         this.uuid = UUID.randomUUID();
         GAMES.put(uuid, this);
+        initInvsSet();
     }
 
     public GameData getSerializable() {
         return null;
     }
 
-    public Map<UUID, Inventory> getInvs() {
+    protected abstract void initInvsSet();
+
+    public List<InvMap> getInvs() {
         return invs;
     }
 
@@ -159,7 +163,7 @@ public abstract class PGame {
     public abstract void nextRound(@Nullable Set<PUser> winners);
 
     public void resetArena() {
-        for (List<Block> blocks : blocksPlaced.values()) {
+        for (Set<Block> blocks : blocksPlaced.values()) {
             for (Block block : blocks) {
                 block.setType(Material.AIR);
             }
@@ -205,9 +209,14 @@ public abstract class PGame {
 
     public abstract void endUnexpectedly(String message);
 
-    public void end(Set<PUser> winner, Set<PUser> loser) {
+    public void end(Set<PUser> winner, Set<PUser> loser, boolean createInvs) {
         this.winners = winner;
         this.losers = loser;
+        if (createInvs) {
+            for (PUser p : winners) {
+                GameHandler.INSTANCE.createInventory(p, p.getPlayer().getHealth());
+            }
+        }
         this.date = LocalDateTime.now();
         this.time.getAndEndTask();
         this.isEnded = true;

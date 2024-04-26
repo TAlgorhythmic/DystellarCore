@@ -1,10 +1,10 @@
 package net.zylesh.practice.serialize;
 
 import net.zylesh.dystellarcore.serialization.InventorySerialization;
+import net.zylesh.practice.InvMap;
 import net.zylesh.practice.Ladder;
 import net.zylesh.practice.PArena;
 import net.zylesh.practice.PUser;
-import org.bukkit.inventory.Inventory;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ public class GameData {
     private final LocalDateTime date;
     public final int time;
 
-    public GameData(PArena arena, Set<PUser> team1, @Nullable Set<PUser> team2, Ladder ladder, int eloChange, Map<UUID, Integer> hits, Map<UUID, Integer> combo, Map<UUID, Inventory> invs, Set<PUser> winners, Set<PUser> losers, LocalDateTime date, int time) {
+    public GameData(PArena arena, Set<PUser> team1, @Nullable Set<PUser> team2, Ladder ladder, int eloChange, Map<UUID, Integer> hits, Map<UUID, Integer> combo, List<InvMap> invs, Set<PUser> winners, Set<PUser> losers, LocalDateTime date, int time) {
         this.arena = arena.getName();
         for (PUser pUser : team1) this.players.add(pUser.getUuid());
         if (team2 != null) for (PUser pUser : team2) this.players.add(pUser.getUuid());
@@ -37,8 +37,8 @@ public class GameData {
         for (PUser p : winners) this.winners.add(p.getUuid());
         for (PUser p : losers) this.losers.add(p.getUuid());
         this.invs = new HashMap<>();
-        for (Map.Entry<UUID, Inventory> entry : invs.entrySet()) {
-            this.invs.put(entry.getKey(), InventorySerialization.inventoryToString(entry.getValue().getContents()));
+        for (InvMap entry : invs) {
+            this.invs.put(entry.getUser().getUuid(), InventorySerialization.inventoryToString(entry.getInv().getContents()));
         }
         this.date = date;
         this.time = time;
