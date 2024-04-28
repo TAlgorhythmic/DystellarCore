@@ -152,7 +152,7 @@ public abstract class PGame {
 
     public abstract void onPlayerDeath(PUser playerUser);
 
-    protected abstract void die(PUser playerUser);
+    protected abstract void die(PUser playerUser, boolean addBack);
 
     protected abstract void respawn(PUser playerUser);
 
