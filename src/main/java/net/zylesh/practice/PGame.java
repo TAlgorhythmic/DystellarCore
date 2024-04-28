@@ -75,6 +75,8 @@ public abstract class PGame {
 
     protected abstract void initInvsSet();
 
+    public abstract void onLeave(PUser user);
+
     public List<InvMap> getInvs() {
         return invs;
     }
