@@ -6,6 +6,7 @@ import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.practicecore.Practice;
 import net.zylesh.practice.practicecore.core.GameFFA;
 import net.zylesh.practice.practicecore.core.GameVersus;
+import net.zylesh.practice.practicecore.core.QueueType;
 import net.zylesh.practice.practicecore.events.PlayerKitDeselectEvent;
 import net.zylesh.practice.practicecore.listeners.Scoreboards;
 import org.bukkit.Bukkit;
@@ -57,6 +58,8 @@ public class PUser implements Comparable<PUser>, Listener {
         return users;
     }
 
+    private ItemStack displayRankItem;
+    private ItemStack pingRangeItem;
     private ItemStack duelRequestsEnabledItem;
     private ItemStack dndItem;
     private Player player;
@@ -71,7 +74,7 @@ public class PUser implements Comparable<PUser>, Listener {
     private boolean partyChatActive;
     private int playerVisibility = 0;
     private ItemStack playerVisibilityItem;
-    private boolean isInQueue;
+    private QueueType queue;
     private boolean editMode;
     private boolean displayRank = true;
     private boolean duelRequestsEnabled = true;
@@ -88,6 +91,7 @@ public class PUser implements Comparable<PUser>, Listener {
     public PKillEffect killEffect;
     public final EnumSet<PKillEffect> ownedEffects;
     private byte doNotDisturbMode = DISABLED;
+    private boolean pingRange = false;
 
     public ItemStack getDuelRequestsEnabledItem() {
         return duelRequestsEnabledItem;
@@ -118,7 +122,7 @@ public class PUser implements Comparable<PUser>, Listener {
         return elo / this.elo.values().size();
     }
 
-    public PUser(UUID uuid, String name, String rank, PKillEffect killEffect, boolean displayRank, boolean duelRequestsEnabled, int playerVisibility, Map<Ladder, ItemStack[]> invs, Map<Ladder, Integer> elo, int kills, int deaths, EnumSet<PKillEffect> ownedEffects, boolean initInvs, byte doNotDisturb) {
+    public PUser(UUID uuid, String name, String rank, PKillEffect killEffect, boolean displayRank, boolean duelRequestsEnabled, int playerVisibility, Map<Ladder, ItemStack[]> invs, Map<Ladder, Integer> elo, int kills, int deaths, EnumSet<PKillEffect> ownedEffects, boolean initInvs, byte doNotDisturb, boolean pingRange) {
         this.name = name;
         this.uuid = uuid;
         this.rank = rank;
@@ -132,6 +136,7 @@ public class PUser implements Comparable<PUser>, Listener {
         this.doNotDisturbMode = doNotDisturb;
         this.kills = kills;
         this.deaths = deaths;
+        this.pingRange = pingRange;
         for (String lad : Main.INSTANCE.getLaddersConfig().getStringList("ladders-list")) if (!this.elo.containsKey(PApi.LADDERS.get(lad))) elo.put(PApi.LADDERS.get(lad), 1000);
     }
 
@@ -147,11 +152,11 @@ public class PUser implements Comparable<PUser>, Listener {
                         ChatColor.GRAY + " Prevent Global Chat Only",
                         ChatColor.GRAY + " Prevent Both",
                         " ",
-                        ChatColor.YELLOW + "Click to toggle.",
-                        " ",
                         ChatColor.GRAY + "This setting will prevent you",
                         ChatColor.GRAY + "from receiving global and private",
-                        ChatColor.GRAY + "messages while you are on ranked."
+                        ChatColor.GRAY + "messages while you are on ranked.",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle."
                 );
                 meta.setLore(lore);
                 break;
@@ -164,11 +169,11 @@ public class PUser implements Comparable<PUser>, Listener {
                         ChatColor.GRAY + " Prevent Global Chat Only",
                         ChatColor.GRAY + " Prevent Both",
                         " ",
-                        ChatColor.YELLOW + "Click to toggle.",
-                        " ",
                         ChatColor.GRAY + "This setting will prevent you",
                         ChatColor.GRAY + "from receiving global and private",
-                        ChatColor.GRAY + "messages while you are on ranked."
+                        ChatColor.GRAY + "messages while you are on ranked.",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle."
                 );
                 meta.setLore(lore);
                 break;
@@ -181,11 +186,11 @@ public class PUser implements Comparable<PUser>, Listener {
                         ChatColor.YELLOW + "➢ Prevent Global Chat Only",
                         ChatColor.GRAY + " Prevent Both",
                         " ",
-                        ChatColor.YELLOW + "Click to toggle.",
-                        " ",
                         ChatColor.GRAY + "This setting will prevent you",
                         ChatColor.GRAY + "from receiving global and private",
-                        ChatColor.GRAY + "messages while you are on ranked."
+                        ChatColor.GRAY + "messages while you are on ranked.",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle."
                 );
                 meta.setLore(lore);
                 break;
@@ -198,17 +203,26 @@ public class PUser implements Comparable<PUser>, Listener {
                         ChatColor.GRAY + " Prevent Global Chat Only",
                         ChatColor.GREEN + "➢ Prevent Both",
                         " ",
-                        ChatColor.YELLOW + "Click to toggle.",
-                        " ",
                         ChatColor.GRAY + "This setting will prevent you",
                         ChatColor.GRAY + "from receiving global and private",
-                        ChatColor.GRAY + "messages while you are on ranked."
+                        ChatColor.GRAY + "messages while you are on ranked.",
+                        " ",
+                        ChatColor.YELLOW + "Click to toggle."
                 );
                 meta.setLore(lore);
                 break;
             }
         }
         this.dndItem.setItemMeta(meta);
+        settings.setItem(2, this.dndItem);
+    }
+
+    public boolean isPingRange() {
+        return pingRange;
+    }
+
+    public void setPingRange(boolean pingRange) {
+        this.pingRange = pingRange;
     }
 
     public void updatePlayerVisibility() {
@@ -274,11 +288,12 @@ public class PUser implements Comparable<PUser>, Listener {
             }
         }
         this.playerVisibilityItem.setItemMeta(playervisibility);
+        settings.setItem(1, this.playerVisibilityItem);
     }
 
     public void updateDuelRequests() {
         ItemMeta duelrequests = this.duelRequestsEnabledItem.getItemMeta();
-        duelrequests.setDisplayName(ChatColor.AQUA + "Duel Requests:");
+        duelrequests.setDisplayName(ChatColor.DARK_AQUA + "Duel Requests:");
         List<String> requestsLore = List.of(
                 " ",
                 this.duelRequestsEnabled ? ChatColor.GRAY + " Off" : ChatColor.RED + "➢ Off",
@@ -288,15 +303,53 @@ public class PUser implements Comparable<PUser>, Listener {
         );
         duelrequests.setLore(requestsLore);
         this.duelRequestsEnabledItem.setItemMeta(duelrequests);
+        settings.setItem(0, this.duelRequestsEnabledItem);
+    }
+
+    public void updateDisplayRank() {
+        ItemMeta dRank = this.displayRankItem.getItemMeta();
+        dRank.setDisplayName(ChatColor.DARK_AQUA + "Elo Rank Display:");
+        List<String> requestsLore = List.of(
+                " ",
+                this.displayRank ? ChatColor.GRAY + " Off" : ChatColor.RED + "➢ Off",
+                this.displayRank ? ChatColor.GREEN + "➢ On" : ChatColor.GRAY + " On",
+                " ",
+                ChatColor.YELLOW + "Click to toggle"
+        );
+        dRank.setLore(requestsLore);
+        this.displayRankItem.setItemMeta(dRank);
+        settings.setItem(3, this.displayRankItem);
+    }
+
+    public void updatePingRange() {
+        ItemMeta ping = this.pingRangeItem.getItemMeta();
+        ping.setDisplayName(ChatColor.DARK_AQUA + "Ping Range Queue:");
+        List<String> requestsLore = List.of(
+                " ",
+                this.pingRange ? ChatColor.GRAY + " Off" : ChatColor.RED + "➢ Off",
+                this.pingRange ? ChatColor.GREEN + "➢ On" : ChatColor.GRAY + " On",
+                " ",
+                ChatColor.DARK_AQUA + "By enabling this, you will be enforced to queue",
+                ChatColor.DARK_AQUA + "only people with a similar ping as yours.",
+                " ",
+                ChatColor.YELLOW + "Click to toggle"
+        );
+        ping.setLore(requestsLore);
+        this.pingRangeItem.setItemMeta(ping);
+        settings.setItem(4, this.pingRangeItem);
     }
 
     private void initItems() {
         this.duelRequestsEnabledItem = new ItemStack(Material.DIAMOND_SWORD);
         this.dndItem = new ItemStack(Material.ANVIL);
         this.playerVisibilityItem = new ItemStack(Material.INK_SACK);
+        this.displayRankItem = new ItemStack(Material.NAME_TAG);
+        this.pingRangeItem = new ItemStack(Material.BOAT);
+        this.updateDisplayRank();
         this.updateDnd();
         this.updatePlayerVisibility();
         this.updateDuelRequests();
+        this.updatePingRange();
         ItemStack nullGlass = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
         ItemMeta nullglass = nullGlass.getItemMeta();
         nullglass.setDisplayName(ChatColor.DARK_GRAY + " ");
@@ -307,6 +360,10 @@ public class PUser implements Comparable<PUser>, Listener {
         this.duelRequestsEnabled = !this.duelRequestsEnabled;
         this.updateDuelRequests();
         if (displayMessage && player != null) player.sendMessage(this.duelRequestsEnabled ? ChatColor.GREEN + "You are now receiving duel requests!" : ChatColor.DARK_AQUA + "You are no longer receiving duel requests.");
+    }
+
+    public QueueType getQueue() {
+        return queue;
     }
 
     public void togglePlayerVisibility(boolean displayMessage) {
@@ -365,14 +422,23 @@ public class PUser implements Comparable<PUser>, Listener {
         }
     }
 
+    public void toggleDisplayRank(boolean displayMessage) {
+        this.displayRank = !this.displayRank;
+        this.updateDisplayRank();
+        if (displayMessage) player.sendMessage(displayRank ? ChatColor.GREEN + "Elo display rank enabled!" : ChatColor.DARK_AQUA + "Elo display rank disabled.");
+    }
+
+    public void updatePingRange(boolean displayMessage) {
+        this.pingRange = !this.pingRange;
+        this.updatePingRange();
+        if (displayMessage) player.sendMessage(pingRange ? ChatColor.GREEN + "You've enabled ping range queueing!" : ChatColor.DARK_AQUA + "You've disabled ping range queueing.");
+    }
+
     public void postInitialize(Player p) {
         this.player = p;
         this.name = p.getName();
+        this.settings = Bukkit.createInventory(this.player, 9, ChatColor.DARK_AQUA + "Settings");
         initItems();
-        this.settings = Bukkit.createInventory(this.player, 9, ChatColor.RED + "Settings");
-        settings.setItem(0, this.duelRequestsEnabledItem);
-        settings.setItem(1, this.playerVisibilityItem);
-        settings.setItem(2, this.dndItem);
     }
 
     public int getPlayerVisibility() {
@@ -405,11 +471,11 @@ public class PUser implements Comparable<PUser>, Listener {
     }
 
     public boolean isInQueue() {
-        return isInQueue;
+        return queue != null;
     }
 
-    public void setInQueue(boolean inQueue) {
-        isInQueue = inQueue;
+    public void setQueue(@Nullable QueueType queue) {
+        this.queue = queue;
     }
 
     public boolean isSpectating() {

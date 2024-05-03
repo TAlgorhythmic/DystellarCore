@@ -6,6 +6,7 @@ import net.minecraft.server.v1_7_R4.PacketPlayOutChat;
 import net.zylesh.dystellarcore.utils.TimeCounter;
 import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.practicecore.Practice;
+import net.zylesh.practice.practicecore.core.QueueType;
 import net.zylesh.practice.practicecore.events.FightEndEvent;
 import net.zylesh.practice.practicecore.events.PlayerChangeEloEvent;
 import net.zylesh.practice.practicecore.listeners.GameHandler;
@@ -52,11 +53,11 @@ public abstract class PGame {
     public final Set<PotionSplashEvent> potions = new HashSet<>();
     public final Map<ProjectileLaunchEvent, Boolean> projectiles = new HashMap<>();
     public final Map<Block, BukkitTask> disappearingBlocksListeners = new HashMap<>();
-    public final int queue;
+    public final QueueType queue;
     public final UUID uuid;
     public Location center;
 
-    protected PGame(PArena arena, Ladder ladder, boolean isRanked, boolean isCompetitionEvent, boolean isDuel, int queue) {
+    protected PGame(PArena arena, Ladder ladder, boolean isRanked, boolean isCompetitionEvent, boolean isDuel, QueueType queue) {
         this.time = new TimeCounter();
         this.arena = arena;
         this.queue = queue;
@@ -326,7 +327,7 @@ public abstract class PGame {
             for (PUser p : spectators) {
                 p.goBackToLobby();
             }
-            if (queue < 6) {
+            if (queue != null) {
                 Practice.updateQueueVariable(ladder, queue);
             }
         }, 80);

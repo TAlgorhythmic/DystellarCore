@@ -8,6 +8,7 @@ import com.lunarclient.bukkitapi.title.LCTitleBuilder;
 import com.lunarclient.bukkitapi.title.TitleType;
 import net.zylesh.practice.PUser;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 import org.spigotmc.ProtocolInjector;
 
 import java.lang.reflect.Array;
@@ -121,7 +122,9 @@ public class Utils {
         p.setHealth(20.0);
         p.setFoodLevel(20);
         p.setSaturation(12.0f);
-        p.getActivePotionEffects().forEach(potionEffect -> p.removePotionEffect(potionEffect.getType()));
+        p.getActivePotionEffects().forEach(potionEffect -> {
+            if (!potionEffect.getType().equals(PotionEffectType.BLINDNESS)) p.removePotionEffect(potionEffect.getType());
+        });
     }
 
     public static void removeArmor(Player p) {

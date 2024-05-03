@@ -26,7 +26,7 @@ public class PMariaDB {
      * @param user player to save
      */
     public static void savePlayerToDatabase(PUser user) {
-        try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement("REPLACE practice_players(uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects, dnd) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+        try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement("REPLACE practice_players(uuid, name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects, dnd, pingRange) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
             statement.setString(1, user.getUuid().toString());
             statement.setString(2, user.getName());
             statement.setString(3, user.getRank());
@@ -50,6 +50,7 @@ public class PMariaDB {
             for (PKillEffect effect : user.ownedEffects) builder.append(effect.name()).append(";");
             statement.setString(12, builder.toString());
             statement.setInt(13, user.getDoNotDisturbMode());
+            statement.setBoolean(14, user.isPingRange());
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -59,7 +60,7 @@ public class PMariaDB {
 
     public static PUser loadPlayerFromDatabase(UUID uuid, boolean loadInvs) {
         try (Connection connection = MariaDB.getConnection(); PreparedStatement statement = connection.prepareStatement(
-                "SELECT name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects, dnd FROM practice_players WHERE uuid = ?;"
+                "SELECT name, rank, displayRank, requests, visibility, invs, elo, effect, kills, deaths, effects, dnd, pingRange FROM practice_players WHERE uuid = ?;"
         )) {
             statement.setString(1, uuid.toString());
             ResultSet resultSet = statement.executeQuery();
@@ -96,7 +97,8 @@ public class PMariaDB {
                     } catch (IllegalArgumentException ignored) {}
                 }
                 byte doNotDisturb = (byte) resultSet.getInt("dnd");
-                return new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, loadInvs, doNotDisturb);
+                boolean pingRange = resultSet.getBoolean("pingRange");
+                return new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, loadInvs, doNotDisturb, pingRange);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -147,7 +149,8 @@ public class PMariaDB {
                     } catch (IllegalArgumentException ignored) {}
                 }
                 byte doNotDisturb = (byte) resultSet.getInt("dnd");
-                PUser user = new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, false, doNotDisturb);
+                boolean pingRange = resultSet.getBoolean("pingRange");
+                PUser user = new PUser(uuid, name, rank, effect, displayRank, duelRequests, visibility, invs, elo, kills, deaths, effectEnumSet, false, doNotDisturb, pingRange);
                 players.add(user);
             }
         } catch (SQLException e) {
