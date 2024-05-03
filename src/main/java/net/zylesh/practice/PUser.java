@@ -422,13 +422,21 @@ public class PUser implements Comparable<PUser>, Listener {
         }
     }
 
+    public ItemStack getDisplayRankItem() {
+        return displayRankItem;
+    }
+
+    public ItemStack getPingRangeItem() {
+        return pingRangeItem;
+    }
+
     public void toggleDisplayRank(boolean displayMessage) {
         this.displayRank = !this.displayRank;
         this.updateDisplayRank();
         if (displayMessage) player.sendMessage(displayRank ? ChatColor.GREEN + "Elo display rank enabled!" : ChatColor.DARK_AQUA + "Elo display rank disabled.");
     }
 
-    public void updatePingRange(boolean displayMessage) {
+    public void togglePingRange(boolean displayMessage) {
         this.pingRange = !this.pingRange;
         this.updatePingRange();
         if (displayMessage) player.sendMessage(pingRange ? ChatColor.GREEN + "You've enabled ping range queueing!" : ChatColor.DARK_AQUA + "You've disabled ping range queueing.");
