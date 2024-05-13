@@ -1,3 +1,4 @@
+debug-mode: false
 teleport-on-join: false
 teleport-on-void: false
 scoreboard-enabled: false

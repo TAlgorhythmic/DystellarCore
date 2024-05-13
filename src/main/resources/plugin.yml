@@ -52,7 +52,7 @@ commands:
     description: IgnoreList management command.
     usage: /ignorelist <args>
     aliases:
-      - blacklist
+      - blockslist
   ignore:
     usage: /ignore <player>
     description: Stop receiving messages from a player.

@@ -24,6 +24,8 @@ import java.util.logging.Level;
 
 public class MariaDB {
 
+    private MariaDB() {}
+
     private static final int SERIALIZAION_VERSION = 0;
 
     private static String HOST;

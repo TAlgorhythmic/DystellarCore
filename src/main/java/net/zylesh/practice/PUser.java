@@ -6,6 +6,7 @@ import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.practicecore.Practice;
 import net.zylesh.practice.practicecore.core.GameFFA;
 import net.zylesh.practice.practicecore.core.GameVersus;
+import net.zylesh.practice.practicecore.core.QueueEntry;
 import net.zylesh.practice.practicecore.core.QueueType;
 import net.zylesh.practice.practicecore.events.PlayerKitDeselectEvent;
 import net.zylesh.practice.practicecore.listeners.Scoreboards;
@@ -75,6 +76,7 @@ public class PUser implements Comparable<PUser>, Listener {
     private int playerVisibility = 0;
     private ItemStack playerVisibilityItem;
     private QueueType queue;
+    private QueueEntry entry;
     private boolean editMode;
     private boolean displayRank = true;
     private boolean duelRequestsEnabled = true;
@@ -366,6 +368,10 @@ public class PUser implements Comparable<PUser>, Listener {
         return queue;
     }
 
+    public QueueEntry getEntry() {
+        return entry;
+    }
+
     public void togglePlayerVisibility(boolean displayMessage) {
         switch (playerVisibility) {
             case 0:
@@ -482,8 +488,9 @@ public class PUser implements Comparable<PUser>, Listener {
         return queue != null;
     }
 
-    public void setQueue(@Nullable QueueType queue) {
+    public void setQueue(@Nullable QueueType queue, QueueEntry entry) {
         this.queue = queue;
+        this.entry = entry;
     }
 
     public boolean isSpectating() {

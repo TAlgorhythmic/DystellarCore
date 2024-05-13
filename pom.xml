@@ -76,21 +76,21 @@
             <artifactId>practice</artifactId>
             <version>2.0-RELEASE</version>
             <scope>system</scope>
-            <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-2.1-BETA.jar</systemPath>
+            <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-3.0-RC1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>cb</groupId>
             <artifactId>api</artifactId>
             <version>3.1.0</version>
             <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/practice/plugins/CheatBreakerAPI.jar</systemPath>
+            <systemPath>/home/inti/Desktop/practice/plugins/CheatBreakerAPI.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.lunarclient</groupId>
             <artifactId>bukkitapi</artifactId>
             <version>v1.0.1</version>
             <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/practice/plugins/LunarAPI.jar</systemPath>
+            <systemPath>/home/inti/Desktop/practice/plugins/LunarAPI.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>net.zylesh</groupId>
@@ -104,14 +104,14 @@
             <artifactId>api</artifactId>
             <version>1.0-RELEASE</version>
             <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/practice/plugins/PlaceholderAPI-2.11.4.jar</systemPath>
+            <systemPath>/home/inti/Desktop/practice/plugins/PlaceholderAPI-2.11.4.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>luckperms</groupId>
             <artifactId>api</artifactId>
             <version>1.0-RELEASE</version>
             <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/practice/plugins/LuckPerms-Bukkit-Legacy-5.3.39.jar</systemPath>
+            <systemPath>/home/inti/Desktop/practice/plugins/LuckPerms-Bukkit-Legacy-5.3.39.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>fr.mrmicky</groupId>

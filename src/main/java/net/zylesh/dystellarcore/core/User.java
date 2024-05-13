@@ -417,10 +417,15 @@ public class User {
 
         @EventHandler
         public void onJoin(PlayerJoinEvent event) {
-            if (User.get(event.getPlayer()).globalTabComplete) DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.GLOBAL_TAB_REGISTER);
             User user = User.get(event.getPlayer());
             user.initializeSettingsPanel(event.getPlayer());
-            Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.SHOULD_SEND_PACK), 10L);
+            Bukkit.getScheduler().runTaskLater(DystellarCore.getInstance(), () -> {
+                if (user.globalTabComplete) DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.GLOBAL_TAB_REGISTER);
+                if (DystellarCore.PACK_ENABLED) {
+                    DystellarCore.getInstance().sendPluginMessage(event.getPlayer(), DystellarCore.SHOULD_SEND_PACK);
+                    if (DystellarCore.DEBUG_MODE) Bukkit.getLogger().info("[Debug] Resource pack request sent to proxy.");
+                }
+            }, 30L);
         }
 
         @EventHandler

@@ -41,7 +41,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
-import org.spigotmc.ProtocolInjector;
 
 import java.io.*;
 import java.sql.Connection;
@@ -117,7 +116,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static boolean PREVENT_WEATHER = true;
     public static boolean PACK_ENABLED = false;
     public static String PACK_LINK;
-    public static String PACK_HASH;
+    public static boolean DEBUG_MODE = false;
 
     public static final ItemStack NULL_GLASS = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
     static {
@@ -339,6 +338,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         AUTOMATED_MESSAGES_ENABLED = getConfig().getBoolean("automated-messages-enabled");
         AUTOMATED_MESSAGES_RATE = getConfig().getInt("automated-messages-rate");
         PREVENT_WEATHER = getConfig().getBoolean("prevent-weather-changing");
+        DEBUG_MODE = getConfig().getBoolean("debug-mode");
         try (BufferedReader reader = new BufferedReader(new FileReader(am))) {
             reader.lines().forEach(s -> {
                 if (s.startsWith("-=")) {
@@ -351,7 +351,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         PACK_ENABLED = getConfig().getBoolean("send-texturepack");
         if (PACK_ENABLED) {
             PACK_LINK = getConfig().getString("texturepack-link");
-            PACK_HASH = getConfig().getString("sha1sum-texturepack");
 
             ItemMeta confirmMeta = CONFIRM.getItemMeta();
             confirmMeta.setDisplayName(ChatColor.GREEN + "Confirm");
@@ -374,7 +373,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             INFO.setItemMeta(infoMeta);
 
             packConfirmation = Bukkit.createInventory(null, 9, ChatColor.DARK_AQUA + "Resource Pack Confirmation");
-            packPacket = new ProtocolInjector.PacketPlayResourcePackSend(PACK_LINK, PACK_HASH);
             packConfirmation.setItem(2, CONFIRM);
             packConfirmation.setItem(4, INFO);
             packConfirmation.setItem(6, DENY);
@@ -469,7 +467,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 event.getPlayer().kickPlayer(ChatColor.RED + "You are not allowed to join this server. (Contact us if you think this is an error)");
                 awaitingPlayers.remove(event.getPlayer().getUniqueId());
             }
-        }, 50L);
+        }, 35L);
     }
 
     private final Set<UUID> awaitingPlayers = new HashSet<>();
@@ -757,6 +755,19 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                 prompts.add(player);
                 break;
             }
+            case PUNISHMENT_ADD_CLIENTBOUND: {
+                String unsafe = in.readUTF();
+                Player player = Bukkit.getPlayer(unsafe);
+                if (player == null || !player.isOnline()) {
+                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+                    return;
+                }
+                String serialized = in.readUTF();
+                Punishment punishment = Punishments.deserialize(serialized);
+                User user = User.get(player);
+                user.punish(punishment);
+                break;
+            }
             case REMOVE_PUNISHMENT_BY_ID: {
                 String unsafe = in.readUTF();
                 int pId = in.readInt();
@@ -800,7 +811,9 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             if (i.equals(CONFIRM)) {
                 prompts.remove(p);
                 p.closeInventory();
-                Bukkit.getScheduler().runTaskLater(this, () -> p.sendPacket(packPacket), 5L);
+                Bukkit.getScheduler().runTaskLater(this, () -> {
+                    p.setResourcePack(PACK_LINK);
+                }, 5L);
             } else if (i.equals(DENY)) {
                 prompts.remove(p);
                 p.kickPlayer(ChatColor.RED + "Resource Pack denied.");
@@ -823,8 +836,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     }
 
     private static Inventory packConfirmation;
-
-    private ProtocolInjector.PacketPlayResourcePackSend packPacket;
 
     public final Map<UUID, UUID> requests = new HashMap<>();
 
@@ -880,4 +891,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     public static final byte DEMAND_PUNISHMENTS_DATA = 23;
     public static final byte PUNISHMENTS_DATA_RESPONSE = 24;
     public static final byte REMOVE_PUNISHMENT_BY_ID = 25;
+    public static final byte PUNISHMENT_ADD_PROXYBOUND = 26;
+    public static final byte PUNISHMENT_ADD_CLIENTBOUND = 27;
 }

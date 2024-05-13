@@ -24,4 +24,8 @@ public abstract class AbstractArena {
     public AbstractArena(String name) {
         this.name = name;
     }
+
+    public String getName() {
+        return name;
+    }
 }
