@@ -1,6 +1,7 @@
 package net.zylesh.dystellarcore.arenasapi;
 
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
 public class OfflineRegion {
@@ -15,6 +16,17 @@ public class OfflineRegion {
 
     public void paste(World world, Vector vector) {
         // TODO
+        int x = (int) (vector.getBlockX() - center[0]);
+        int y = (int) (vector.getBlockY() - center[1]);
+        int z = (int) (vector.getBlockZ() - center[2]);
+        for (int i = 0; i < blockData.length; i++) {
+            for (int j = 0; j < blockData[i].length; j++) {
+                for (int k = 0; k < blockData[i][j].length; k++) {
+                    blockData[i][j][k].paste(world, x, y, z);
+
+                }
+            }
+        }
     }
 
     public OfflineBlock[][][] getBlockData() {
