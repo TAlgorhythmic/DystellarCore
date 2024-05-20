@@ -69,7 +69,7 @@ public class WandCommand implements CommandExecutor, Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
         if (!Objects.equals(WAND, event.getItem())) return;
-        selections.put(event.getPlayer().getUniqueId(), new Location[]{null, null});
+        if (!selections.containsKey(event.getPlayer().getUniqueId())) selections.put(event.getPlayer().getUniqueId(), new Location[]{null, null});
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             event.setCancelled(true);
             Location loc = event.getClickedBlock().getLocation();
@@ -79,7 +79,7 @@ public class WandCommand implements CommandExecutor, Listener {
             event.setCancelled(true);
             Location loc = event.getClickedBlock().getLocation();
             selections.get(event.getPlayer().getUniqueId())[1] = loc;
-            event.getPlayer().sendMessage(ChatColor.DARK_AQUA + "Position 1 set to: " + ChatColor.GRAY + "(" + loc.getWorld().getName() + "; " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")");
+            event.getPlayer().sendMessage(ChatColor.DARK_AQUA + "Position 2 set to: " + ChatColor.GRAY + "(" + loc.getWorld().getName() + "; " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")");
         }
     }
 
@@ -147,7 +147,6 @@ public class WandCommand implements CommandExecutor, Listener {
                 path.mkdirs();
                 p.sendMessage(ChatColor.DARK_GREEN + "Saving...");
                 try {
-                    path.createNewFile();
                     BlocksSchemes.save(representation, path);
                     p.sendMessage(ChatColor.GREEN + "Region Scheme successfully saved!");
                 } catch (IOException e) {
