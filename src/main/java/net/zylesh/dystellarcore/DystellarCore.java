@@ -252,7 +252,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             String currentVersion = lang.getString("config-version");
             InputStreamReader reader0 = new InputStreamReader(getResource("lang-en.yml"));
             YamlConfiguration rawLang = YamlConfiguration.loadConfiguration(reader0);
-            rawLang.load(reader0);
             reader0.close();
             String newVersion = rawLang.getString("config-version");
             if (currentVersion.equals("1.0") && newVersion.equals("1.1")) {
