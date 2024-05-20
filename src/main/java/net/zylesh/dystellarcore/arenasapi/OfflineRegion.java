@@ -1,8 +1,11 @@
 package net.zylesh.dystellarcore.arenasapi;
 
+import net.zylesh.dystellarcore.utils.Operation;
+import net.zylesh.dystellarcore.utils.Scheduler;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class OfflineRegion {
 
@@ -14,19 +17,36 @@ public class OfflineRegion {
         this.center = new double[] {(double) xLenght / 2.0, (double) yLenght / 2.0, (double) zLenght / 2.0};
     }
 
-    public void paste(World world, Vector vector) {
-        // TODO
-        int x = (int) (vector.getBlockX() - center[0]);
-        int y = (int) (vector.getBlockY() - center[1]);
-        int z = (int) (vector.getBlockZ() - center[2]);
-        for (int i = 0; i < blockData.length; i++) {
-            for (int j = 0; j < blockData[i].length; j++) {
-                for (int k = 0; k < blockData[i][j].length; k++) {
-                    blockData[i][j][k].paste(world, x, y, z);
-
+    /**
+     * Recommended to do this asynchronously.
+     * @param world The world
+     * @param vector Location vector (this location will be assumed as center)
+     */
+    public Operation paste(World world, Vector vector) {
+        AtomicInteger realPositionX = new AtomicInteger((int) (vector.getBlockX() - center[0]));
+        AtomicInteger realPositionY = new AtomicInteger((int) (vector.getBlockY() - center[1]));
+        AtomicInteger realPotitionZ = new AtomicInteger((int) (vector.getBlockZ() - center[2]));
+        int xMax = (int) (vector.getBlockX() + center[0]);
+        int yMax = (int) (vector.getBlockY() + center[1]);
+        int zMax = (int) (vector.getBlockZ() + center[2]);
+        Operation operation = new Operation(this, realPositionX, realPositionY, realPotitionZ);
+        Scheduler.splitTridimensionalArrayIteration(blockData, (object, isFinished) -> {
+            if (isFinished.get()) return;
+            object.paste(world, realPositionX.get(), realPositionY.get(), realPotitionZ.get());
+            realPotitionZ.getAndIncrement();
+            if (!(realPotitionZ.get() < zMax)) {
+                realPotitionZ.set(vector.getBlockZ());
+                realPositionY.getAndIncrement();
+                if (!(realPositionY.get() < yMax)) {
+                    realPositionY.set(vector.getBlockY());
+                    realPositionX.getAndIncrement();
+                    if (!(realPositionX.get() < xMax)) {
+                        isFinished.set(true);
+                    }
                 }
             }
-        }
+        }, 50);
+        return operation;
     }
 
     public OfflineBlock[][][] getBlockData() {

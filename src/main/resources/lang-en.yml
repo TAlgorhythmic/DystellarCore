@@ -1,5 +1,5 @@
 # Config version. Do not modify this field!
-config-version: 1.0
+config-version: 1.1
 #
 # <player> placeholder: will be replaced with the affected player when applicable.
 # <seconds> placeholder: will be replaced with an integer value representing seconds when applicable.
@@ -9,7 +9,7 @@ config-version: 1.0
 # ===============================================================================
 #
 pms-enabled: "§aYou are now accepting all private messages."
-pms-enabled-with-black-list: "§eYou are now blocking messages from players in your black list."
+pms-enabled-with-black-list: "§eYou are now blocking messages from players in your blocked players list."
 pms-enabled-friends-only: "§6You are now only accepting messages from friends."
 pms-disabled: "§cYou are now blocking all messages."
 #
@@ -62,7 +62,7 @@ friend-request-accepted-receiver: "§aFriend request accepted!"
 friend-request-rejected-receiver: "§cFriend request rejected."
 player-not-on-friends-list: "§cThis player is not in your friends list."
 friend-removed-sender: "§c<player> has been removed from your friends list."
-friend-removed-receiver: "§c<player> has removed been removed from your friends list. (He removed you)"
+friend-removed-receiver: "§c<player> has removed you from their friends list. (He removed you)"
 find-same-server-as-sender: "§3<player> §ais in your same server!"
 friend-request-expired: "§cYou don't have any pending friend requests. (Or it has expired)"
 friend-requests-enabled: "§3You are able to receive friend requests."
@@ -74,14 +74,9 @@ friend-requests-disabled: "§cYou are no longer able to receive friend requests.
 #
 player-blocked: "§3You blocked §f<player>§3."
 error-player-already-blocked: "§cThis player is already in your blocked players list."
-#
-# ===============================================================================
-# Block/Ignore command messages.
-# ===============================================================================
-#
-blacklist-empty: "§3Your blocks list is empty. You have no enemies §e😎"
-blacklist-player-removed: "§aYou've removed §3<player> §afrom your blocks list."
-error-player-not-on-blacklist: "§cThis player is not in your black list."
+blacklist-empty: "§3Your blocked players list is empty. You have no enemies §e😎"
+blacklist-player-removed: "§aYou've removed §3<player> §afrom your blocked players list."
+error-player-not-on-blacklist: "§cThis player is not in your blocked players list."
 blocking-pointless-hint: "§cWarning: §3You are blocking someone while not blocking ANY message! You may want to change that using §e/pms§3."
 #
 # ===============================================================================

@@ -7,11 +7,27 @@ depend:
 softdepend:
   - Practice-Core
   - SkyWars-Core
-author: MCTitiPorca
+author: Algorhythmics
 description: Base commands and utilities for Dystellar Network
 website: dystellar.gg
 load: STARTUP
 commands:
+  load:
+    description: Load Offline Region.
+    usage: /load <filename>
+    permission: dystellar.admin
+  save:
+    permission: dystellar.admin
+    usage: /save <filename>
+    description: Save an Offline Region.
+  paste:
+    description: Paste an Offline Region.
+    usage: /paste
+    permission: dystellar.admin
+  wand:
+    usage: /wand
+    permission: dystellar.admin
+    description: Utility wand.
   unpunish:
     description: Unpunish a player
     permission: dystellar.admin

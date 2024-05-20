@@ -37,7 +37,7 @@ public class Scheduler {
         }
     }
 
-    public static <T> void splitTridimensionalArrayIteration(T[][][] array, GenericRunnable<T> task, int maxOperationsPerTick) {
+    public static <T> void splitTridimensionalArrayIteration(T[][][] array, GenericRunnableWithAutoCancel<T> task, int maxOperationsPerTick) {
         AtomicInteger i = new AtomicInteger();
         AtomicInteger j = new AtomicInteger();
         AtomicInteger k = new AtomicInteger();
@@ -49,14 +49,14 @@ public class Scheduler {
             } else {
                 next(i, j, k, isFinished, array, task, maxOperationsPerTick);
             }
-        }, 0L, 1L);
+        }, 1L, 1L);
     }
 
-    private static <T> void next(AtomicInteger i, AtomicInteger j, AtomicInteger k, AtomicBoolean isFinished, T[][][] array, GenericRunnable<T> task, int maxOperationsPerTick) {
+    private static <T> void next(AtomicInteger i, AtomicInteger j, AtomicInteger k, AtomicBoolean isFinished, T[][][] array, GenericRunnableWithAutoCancel<T> task, int maxOperationsPerTick) {
         int index = 0;
         while (index < maxOperationsPerTick) {
             T obj = array[i.get()][j.get()][k.get()];
-            task.run(obj);
+            task.run(obj, isFinished);
             k.getAndIncrement();
             if (!(array[i.get()][j.get()].length < k.get())) {
                 k.set(0);

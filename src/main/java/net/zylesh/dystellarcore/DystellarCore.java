@@ -201,6 +201,7 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         new GeneralListeners();
         new FriendCommand();
         new SuffixCommand();
+        new WandCommand();
         new UnpunishCommand();
         // Some exploits fix.
         PacketListener.registerPacketHandler(new IPacketListener() {
@@ -248,6 +249,16 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             config.load(conf);
             spawnitems.load(si);
             lang.load(m);
+            String currentVersion = lang.getString("config-version");
+            InputStreamReader reader0 = new InputStreamReader(getResource("lang-en.yml"));
+            YamlConfiguration rawLang = YamlConfiguration.loadConfiguration(reader0);
+            rawLang.load(reader0);
+            reader0.close();
+            String newVersion = rawLang.getString("config-version");
+            if (currentVersion.equals("1.0") && newVersion.equals("1.1")) {
+                saveResource("lang-en.yml", true);
+                lang.load(m);
+            }
             Msgs.init();
             if (am.createNewFile()) {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClassLoader().getResourceAsStream("automated-messages.txt")))); PrintWriter writer = new PrintWriter(am)) {
