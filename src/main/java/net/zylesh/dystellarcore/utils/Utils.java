@@ -134,19 +134,22 @@ public class Utils {
         p.getInventory().setBoots(null);
     }
 
-    public static String bytesToHexString(byte[] bytes) {
+    public static String bytesToString(byte[] bytes) {
         StringBuilder builder = new StringBuilder();
+        builder.append(bytes.length).append(":;:");
         for (byte b : bytes) {
-            builder.append(String.format("%02X", b));
+            builder.append(b).append(";");
         }
         return builder.toString();
     }
 
-    public static byte[] hexStringToBytes(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + (Character.digit(s.charAt(i + 1), 16)));
+    public static byte[] stringToBytes(String s, boolean compatibilityLayer) {
+        if (compatibilityLayer) return new byte[50];
+        String[] split = s.split(":;:");
+        byte[] data = new byte[Integer.parseInt(split[0])];
+        String[] split2 = split[1].split(";");
+        for (int i = 0; i < split2.length; i++) {
+            data[i] = Byte.parseByte(split2[i]);
         }
         return data;
     }

@@ -26,7 +26,7 @@ public class MariaDB {
 
     private MariaDB() {}
 
-    private static final int SERIALIZAION_VERSION = 0;
+    private static final int SERIALIZAION_VERSION = 1;
 
     private static String HOST;
     private static int PORT;
@@ -84,24 +84,24 @@ public class MariaDB {
                 user.setScoreboardEnabled(resultSet.getBoolean("scoreboard"));
                 for (String uuids : resultSet.getString("ignoreList").split(";"))
                     user.getIgnoreList().add(UUID.fromString(uuids));
-                user.assignTips(Utils.hexStringToBytes(resultSet.getString("tips")));
-
-                user.assignExtraOptions(Utils.hexStringToBytes(resultSet.getString("otherConfigs")));
+                if (version == 0) {
+                    user.assignTips(Utils.stringToBytes(resultSet.getString("tips"), true));
+                    user.assignExtraOptions(Utils.stringToBytes(resultSet.getString("otherConfigs"), true));
+                } else {
+                    user.assignTips(Utils.stringToBytes(resultSet.getString("tips"), false));
+                    user.assignExtraOptions(Utils.stringToBytes(resultSet.getString("otherConfigs"), false));
+                }
                 return user;
             } else {
                 user = new User(uuid, IP, name);
 
                 byte[] tips = new byte[50];
-
-                tips[Consts.FIRST_FRIEND_TIP_POS] = Consts.BYTE_FALSE;
-
                 user.assignTips(tips);
 
                 byte[] otherConfigs = new byte[50];
-
                 otherConfigs[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] = Consts.BYTE_TRUE;
-
                 user.assignExtraOptions(otherConfigs);
+
                 return user;
             }
         } catch (SQLException e) {
@@ -168,9 +168,9 @@ public class MariaDB {
             for (UUID uuid : user.friends) builder.append(uuid).append(";");
             statement.setString(13, builder.toString());
 
-            statement.setString(14, Utils.bytesToHexString(user.extraOptions));
+            statement.setString(14, Utils.bytesToString(user.extraOptions));
 
-            statement.setString(15, Utils.bytesToHexString(user.tipsSent));
+            statement.setString(15, Utils.bytesToString(user.tipsSent));
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
