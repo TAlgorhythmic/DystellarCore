@@ -761,8 +761,13 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
                     getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
                     return;
                 }
-                player.openInventory(packConfirmation);
-                prompts.add(player);
+                User user = User.get(player);
+                if (user.extraOptions[Consts.EXTRA_OPTION_RESOURCEPACK_PROMPT_POS] == Consts.BYTE_TRUE) {
+                    player.openInventory(packConfirmation);
+                    prompts.add(player);
+                } else {
+                    sendResourcePack(player);
+                }
                 break;
             }
             case PUNISHMENT_ADD_CLIENTBOUND: {
@@ -809,6 +814,10 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         }
     }
 
+    private void sendResourcePack(Player p) {
+        p.setResourcePack(PACK_LINK);
+    }
+
     private static final Set<Player> prompts = new HashSet<>();
 
     @EventHandler
@@ -821,9 +830,9 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             if (i.equals(CONFIRM)) {
                 prompts.remove(p);
                 p.closeInventory();
-                Bukkit.getScheduler().runTaskLater(this, () -> {
-                    p.setResourcePack(PACK_LINK);
-                }, 5L);
+                User user = User.get(p);
+                user.extraOptions[Consts.EXTRA_OPTION_RESOURCEPACK_PROMPT_POS] = Consts.BYTE_FALSE;
+                Bukkit.getScheduler().runTaskLater(this, () -> sendResourcePack(p), 5L);
             } else if (i.equals(DENY)) {
                 prompts.remove(p);
                 p.kickPlayer(ChatColor.RED + "Resource Pack denied.");

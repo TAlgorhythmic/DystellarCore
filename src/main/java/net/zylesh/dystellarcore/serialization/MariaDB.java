@@ -100,6 +100,7 @@ public class MariaDB {
 
                 byte[] otherConfigs = new byte[50];
                 otherConfigs[Consts.EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS] = Consts.BYTE_TRUE;
+                otherConfigs[Consts.EXTRA_OPTION_RESOURCEPACK_PROMPT_POS] = Consts.BYTE_TRUE;
                 user.assignExtraOptions(otherConfigs);
 
                 return user;

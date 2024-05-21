@@ -20,5 +20,7 @@ public class Consts {
             " "
     };
 
-    public static final byte EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS = 0;
+    public static final byte EXTRA_OPTION_FRIEND_REQUESTS_ENABLED_POS = 1;
+
+    public static final byte EXTRA_OPTION_RESOURCEPACK_PROMPT_POS = 2;
 }
