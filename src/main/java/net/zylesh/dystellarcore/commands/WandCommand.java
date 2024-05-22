@@ -139,15 +139,16 @@ public class WandCommand implements CommandExecutor, Listener {
             DystellarCore.getAsyncManager().submit(() -> {
                 String filename = strings[0].endsWith(".rscheme") ? strings[0] : strings[0] + ".rscheme";
                 BlockGeometrySchemaUtilRepresentation representation = new BlockGeometrySchemaUtilRepresentation(p.getWorld(), new Vector(pos1.getBlockX(), pos1.getBlockY(), pos1.getBlockZ()), new Vector(pos2.getBlockX(), pos2.getBlockY(), pos2.getBlockZ()));
-                File path = new File(DystellarCore.getInstance().getDataFolder() + File.separator + "region_schemes", filename);
+                File path = new File(DystellarCore.getInstance().getDataFolder() + File.separator + "region_schemes");
                 if (path.exists()) {
                     p.sendMessage(ChatColor.RED + "This region scheme already exists!");
                     return;
                 }
                 path.mkdirs();
+                File path2 = new File(path, filename);
                 p.sendMessage(ChatColor.DARK_GREEN + "Saving...");
                 try {
-                    BlocksSchemes.save(representation, path);
+                    BlocksSchemes.save(representation, path2);
                     p.sendMessage(ChatColor.GREEN + "Region Scheme successfully saved!");
                 } catch (IOException e) {
                     p.sendMessage(ChatColor.RED + "There was an error trying to save this region scheme. Check logs.");

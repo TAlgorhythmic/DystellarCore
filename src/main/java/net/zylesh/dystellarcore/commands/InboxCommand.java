@@ -132,9 +132,11 @@ public class InboxCommand implements CommandExecutor, Listener {
                 sending = true;
                 p.sendMessage(ChatColor.DARK_AQUA + "Type the player's name you want to send this mail to. Write whitespaces on the message if you want to cancel.");
             } else if (i.equals(DELETE)) {
-
+                // TODO
             } else if (i.equals(BACK)) {
-
+                p.closeInventory();
+                deselect();
+                p.openInventory(inv);
             }
         }
     }
