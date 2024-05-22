@@ -6,7 +6,7 @@
 
     <groupId>net.zylesh</groupId>
     <artifactId>DystellarCore</artifactId>
-    <version>4.1-RC3</version>
+    <version>4.1-RC4</version>
     <packaging>jar</packaging>
 
     <name>DystellarCore</name>
@@ -76,7 +76,7 @@
             <artifactId>practice</artifactId>
             <version>2.0-RELEASE</version>
             <scope>system</scope>
-            <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-3.0-RC1.jar</systemPath>
+            <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-3.0-RC2.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>cb</groupId>
