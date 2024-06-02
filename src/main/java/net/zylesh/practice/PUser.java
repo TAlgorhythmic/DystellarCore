@@ -836,6 +836,7 @@ public class PUser implements Comparable<PUser>, Listener {
             editing = new HashMap<>();
         }
 
+        @EventHandler
         public void onItemInteract(PlayerInteractEvent event) {
             if (event.hasItem()) {
                 if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) || event.getAction().equals(Action.RIGHT_CLICK_AIR)) {
@@ -847,6 +848,7 @@ public class PUser implements Comparable<PUser>, Listener {
             }
         }
 
+        @EventHandler
         public void onInvClose(InventoryCloseEvent event) {
             if (event.getInventory().equals(editInv.get((Player) event.getPlayer()))) {
                 PUser playerUser = PUser.get(event.getPlayer().getUniqueId());

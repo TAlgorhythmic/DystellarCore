@@ -21,8 +21,6 @@ public final class PApi {
 
     public static final Map<String, Ladder> LADDERS = new HashMap<>();
     public static final Map<String, Ladder> LADDERS_BY_DISPLAYNAME = new HashMap<>();
-    public static final Map<String, PArena> ARENAS = new HashMap<>();
-    public static final Map<String, PArena> ARENAS_BY_DISPLAYNAME = new HashMap<>();
 
     public static final Map<Integer, PKillEffect> KILL_EFFECTS_BY_SLOT = new HashMap<>();
 
