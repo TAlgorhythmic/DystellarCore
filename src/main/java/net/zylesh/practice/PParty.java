@@ -6,8 +6,7 @@ import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.*;
 
-import static net.zylesh.practice.practicecore.util.Msg.ERROR_PARTY_FULL;
-import static net.zylesh.practice.practicecore.util.Msg.PARTY_DISBAND_BROADCAST;
+import static net.zylesh.practice.practicecore.util.Msg.*;
 
 public class PParty implements Comparable<PParty>, Serializable {
 
@@ -82,13 +81,15 @@ public class PParty implements Comparable<PParty>, Serializable {
      **/
     public void disband() {
         List<PUser> playersSafe = new ArrayList<>(players);
-        broadcast(PARTY_DISBAND_BROADCAST);
-        for (PUser p : getPlayers()) {
-            if (!p.isInGame()) {
+        for (PUser p : playersSafe) {
+            if (p.equals(leader))
+                p.getPlayer().sendMessage(PARTY_DISBAND_SELF);
+            else
+                p.getPlayer().sendMessage(PARTY_DISBAND_BROADCAST);
+            p.leaveCurrentParty();
+            if (!p.isInGame())
                 Practice.giveSpawnItems(p);
-            }
         }
-        playersSafe.forEach(PUser::leaveCurrentParty);
     }
 
     public void onPlayerJoin(PUser playerUser) {
