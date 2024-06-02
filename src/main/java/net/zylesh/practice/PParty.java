@@ -82,8 +82,13 @@ public class PParty implements Comparable<PParty>, Serializable {
      **/
     public void disband() {
         List<PUser> playersSafe = new ArrayList<>(players);
+        broadcast(PARTY_DISBAND_BROADCAST);
+        for (PUser p : getPlayers()) {
+            if (!p.isInGame()) {
+                Practice.giveSpawnItems(p);
+            }
+        }
         playersSafe.forEach(PUser::leaveCurrentParty);
-        playersSafe.forEach(playerUser -> playerUser.getPlayer().sendMessage(PARTY_DISBAND_BROADCAST));
     }
 
     public void onPlayerJoin(PUser playerUser) {
