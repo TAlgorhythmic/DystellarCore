@@ -3,9 +3,9 @@ package net.zylesh.dystellarcore;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import net.minecraft.server.v1_7_R4.*;
 import net.zylesh.dystellarcore.arenasapi.AbstractArena;
 import net.zylesh.dystellarcore.commands.*;
+import net.zylesh.dystellarcore.config.ConfValues;
 import net.zylesh.dystellarcore.core.*;
 import net.zylesh.dystellarcore.core.PacketListener;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
@@ -20,13 +20,13 @@ import net.zylesh.dystellarcore.listeners.PluginMessageScheduler;
 import net.zylesh.dystellarcore.listeners.Scoreboards;
 import net.zylesh.dystellarcore.listeners.SpawnMechanics;
 import net.zylesh.dystellarcore.serialization.*;
-import net.zylesh.dystellarcore.utils.Validate;
+import net.zylesh.dystellarcore.services.Services;
+import net.zylesh.dystellarcore.utils.Hooks;
 import net.zylesh.practice.PKillEffect;
 import org.bukkit.*;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_7_R4.conversations.ConversationTracker;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,10 +38,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
-import org.bukkit.util.Vector;
 
 import java.io.*;
 import java.sql.Connection;
@@ -53,9 +51,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static net.zylesh.dystellarcore.commands.UnpunishCommand.createInventory;
@@ -65,12 +60,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
 
     private static DystellarCore INSTANCE;
 
-    private static final ScheduledExecutorService asyncManager = Executors.newScheduledThreadPool(2);
-
-    public static ScheduledExecutorService getAsyncManager() {
-        return asyncManager;
-    }
-
     public static DystellarCore getInstance() {
         return INSTANCE;
     }
@@ -78,158 +67,49 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     private static final String channel = "dyst:ellar";
 
     private final File conf = new File(getDataFolder(), "config.yml");
-    private final YamlConfiguration config = YamlConfiguration.loadConfiguration(conf);
     private final File si = new File(getDataFolder(), "spawnitems.yml");
-    private final YamlConfiguration spawnitems = YamlConfiguration.loadConfiguration(si);
     private final File am = new File(getDataFolder(), "automated-messages.txt");
     private final File m = new File(getDataFolder(), "lang-en.yml");
+
     private final YamlConfiguration lang = YamlConfiguration.loadConfiguration(m);
-
-    public static boolean SKYWARS_HOOK = false;
-    public static boolean PRACTICE_HOOK = false;
-    public static String BROADCAST_FORMAT;
-    public static String SCOREBOARD_TITLE;
-    public static List<String> SCOREBOARD_LINES;
-    public static List<String> FREEZE_MESSAGE;
-    public static String UNFREEZE_MESSAGE;
-    public static boolean SCOREBOARD_ENABLED = false;
-    public static boolean VOID_TELEPORT = false;
-    public static boolean JOIN_TELEPORT = false;
-    public static Location SPAWN_LOCATION;
-    public static boolean ALLOW_BANNED_PLAYERS = false;
-    public static String BAN_MESSAGE;
-    public static String BLACKLIST_MESSAGE;
-    public static String RANKED_BAN_MESSAGE;
-    public static String MUTE_MESSAGE;
-    public static boolean HANDLE_SPAWN_PROTECTION = false;
-    public static boolean HANDLE_SPAWN_MECHANICS = false;
-    public static String PLAYER_MSG_DISABLED;
-    public static String MSG_SEND_FORMAT;
-    public static String MSG_RECEIVE_FORMAT;
-    public static List<String> WARN_MESSAGE;
-    public static String KICK_MESSAGE;
-    public static int REFRESH_RATE_SCORE;
-    public static boolean ALLOW_SIGNS;
-    public static boolean AUTOMATED_MESSAGES_ENABLED = true;
-    public static int AUTOMATED_MESSAGES_RATE = 360;
-    public static final List<String> AUTOMATED_MESSAGES = new ArrayList<>();
-    private static final AtomicInteger i = new AtomicInteger();
-    public static boolean PREVENT_WEATHER = true;
-    public static boolean PACK_ENABLED = false;
-    public static String PACK_LINK;
-    public static boolean DEBUG_MODE = false;
-
-    public static final ItemStack NULL_GLASS = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
-    static {
-        ItemMeta meta = NULL_GLASS.getItemMeta();
-        meta.setDisplayName(ChatColor.GRAY + " ");
-        NULL_GLASS.setItemMeta(meta);
-    }
-
+    private final YamlConfiguration config = YamlConfiguration.loadConfiguration(conf);
+    private final YamlConfiguration spawnitems = YamlConfiguration.loadConfiguration(si);
     @Override
     public void onEnable() {
-        try {
-            if (ConversationTracker.checkPoint() != 1061574390) {
-                Bukkit.broadcastMessage(ChatColor.GREEN + "Server Shutting down :D");
-                Bukkit.getServer().shutdown();
-            }
-        } catch (Exception e) {
-            Bukkit.getServer().shutdown();
-        }
         INSTANCE = this;
-        for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
-            if (plugin.getName().equals("SkyWars-Core")) {
-                SKYWARS_HOOK = true;
-                Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[Dystellar] Hooked into SkyWars plugin.");
-                break;
-            }
-            if (plugin.getName().equals("Practice-Core")) {
-                PRACTICE_HOOK = true;
-                Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[Dystellar] Hooked into Practice plugin.");
-                break;
-            }
-        }
+        Hooks.registerHooks();
         loadConfig();
         initialize();
-        if (AUTOMATED_MESSAGES_ENABLED && !AUTOMATED_MESSAGES.isEmpty()) {
-            asyncManager.scheduleAtFixedRate(() -> {
-                PacketPlayOutChat chat = new PacketPlayOutChat(ChatSerializer.a(AUTOMATED_MESSAGES.get(i.get())));
-                synchronized (Bukkit.getOnlinePlayers()) {
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendPacket(chat);
-                    }
-                }
-                i.incrementAndGet();
-                if (i.get() >= AUTOMATED_MESSAGES.size()) i.set(0);
-            }, AUTOMATED_MESSAGES_RATE, AUTOMATED_MESSAGES_RATE, TimeUnit.SECONDS);
-        }
+
+        if (ConfValues.AUTOMATED_MESSAGES_ENABLED)
+            Services.startAutomatedMessagesService();
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, channel);
         Bukkit.getMessenger().registerIncomingPluginChannel(this, channel, this);
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         Bukkit.getPluginManager().registerEvents(this, this);
-        if (HANDLE_SPAWN_MECHANICS) new SpawnMechanics();
-        if (HANDLE_SPAWN_PROTECTION) new EditmodeCommand();
-        if (SCOREBOARD_ENABLED) new Scoreboards();
-        new SetSpawnCommand();
-        new GameModeCommand();
-        new HealCommand();
-        new FlyCommand();
-        new FreezeCommand();
-        new BroadcastCommand();
-        new JoinCommand();
-        new User.UserListener();
-        new Inbox.SenderListener();
-        new MSGCommand();
-        new Punish();
-        new ReplyCommand();
-        new BanCommand();
-        new BlacklistCommand();
-        new MuteCommand();
-        new NoteCommand();
-        new PunishmentsCommand();
-        new NotesCommand();
-        new GiveItemCommand();
-        new ItemMetaCommand();
-        new PingCommand();
-        new ToggleChatCommand();
-        new TogglePrivateMessagesCommand();
-        new ToggleGlobalTabComplete();
-        new PacketListener();
-        new PluginMessageScheduler();
-        new IgnoreCommand();
-        new IgnoreListCommand();
-        new InboxCommand();
-        new GeneralListeners();
-        new FriendCommand();
-        new SuffixCommand();
-        new WandCommand();
-        new UnpunishCommand();
-        // Some exploits fix.
-        PacketListener.registerPacketHandler(new IPacketListener() {
-            @Override
-            public void onPacketReceive(Packet packet, Player player, AtomicBoolean cancel) {
-                if (packet instanceof PacketPlayInTabComplete) {
-                    if (player.hasPermission("dystellar.bypassall")) return;
-                    PacketPlayInTabComplete tabComplete = (PacketPlayInTabComplete) packet;
-                    String s = tabComplete.c();
-                    if (s == null || s.length() < 3 || s.matches("[a-zA-Z\\-_]*:")) cancel.set(true);
-                } else if (packet instanceof PacketPlayInUpdateSign) {
-                    PacketPlayInUpdateSign update = (PacketPlayInUpdateSign) packet;
-                    for (String s : update.f()) {
-                        if (!Validate.validateSign(s)) {
-                            cancel.set(true);
-                            return;
-                        }
 
-                    }
-                }
-            }
+        // Listeners start
+        if (ConfValues.SCOREBOARD_ENABLED) new Scoreboards();
+        if (ConfValues.HANDLE_SPAWN_MECHANICS) new SpawnMechanics();
+        new User.UserListener(); new Inbox.SenderListener(); new Punish();
+        new PacketListener(); new GeneralListeners();
+        // Listeners end
 
-            @Override
-            public void onPacketSend(Packet packet, Player player, AtomicBoolean cancel) {
+        // Commands start
+        if (ConfValues.HANDLE_SPAWN_PROTECTION) new EditmodeCommand();
+        new SetSpawnCommand(); new GameModeCommand(); new HealCommand();
+        new FlyCommand(); new FreezeCommand(); new BroadcastCommand();
+        new JoinCommand(); new MSGCommand(); new ReplyCommand();
+        new BanCommand(); new BlacklistCommand(); new MuteCommand();
+        new NoteCommand(); new PunishmentsCommand(); new NotesCommand();
+        new GiveItemCommand(); new ItemMetaCommand(); new PingCommand();
+        new ToggleChatCommand(); new TogglePrivateMessagesCommand();
+        new ToggleGlobalTabComplete(); new IgnoreCommand(); new IgnoreListCommand();
+        new InboxCommand(); new FriendCommand(); new SuffixCommand();
+        new WandCommand(); new UnpunishCommand();
+        // Commands end
 
-            }
-        });
+        Services.registerAntiSignExploit(); // TODO: version conditional
         AbstractArena.init();
     }
 
@@ -244,9 +124,9 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     private void loadConfig() {
         try {
             Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[Dystellar] Loading configuration...");
-            if (!conf.exists()) saveResource("config.yml", true);
-            if (!si.exists()) saveResource("spawnitems.yml", true);
-            if (!m.exists()) saveResource("lang-en.yml", true);
+            saveResource("config.yml", false);
+            saveResource("spawnitems.yml", false);
+            saveResource("lang-en.yml", false);
             config.load(conf);
             spawnitems.load(si);
             lang.load(m);

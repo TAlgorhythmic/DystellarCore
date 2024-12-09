@@ -4,16 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.zylesh</groupId>
+    <groupId>gg.dystellar</groupId>
     <artifactId>DystellarCore</artifactId>
-    <version>4.1-RC4</version>
+    <version>5.0-RC1</version>
     <packaging>jar</packaging>
 
     <name>DystellarCore</name>
 
     <description>Base commands and utilities for Dystellar Network</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>dystellar.gg</url>
@@ -61,58 +61,54 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-    </build>
+     </build>
+
+     <repositories>
+        <repository>
+           <id>lunarclient</id>
+           <url>https://repo.lunarclient.dev</url>
+        </repository>
+         <repository>
+             <id>placeholderapi</id>
+             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
+         <repository>
+             <id>spigot-repo</id>
+             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+         </repository>
+      </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.7.10-R0.1-SNAPSHOT</version>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot</artifactId>
+            <version>1.18.2-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+       <dependency>
+         <groupId>com.lunarclient</groupId>
+        <artifactId>apollo-api</artifactId>
+        <version>1.1.6</version>
+      </dependency>
+       <dependency>
+            <groupId>com.mohistmc</groupId>
+            <artifactId>mohist</artifactId>
+            <version>1.18.2</version>
             <scope>system</scope>
-            <systemPath>/home/inti/IdeaProjects/ZyleshSpigot-full-master/ZyLeshSpigot-Server/target/spigot.jar</systemPath>
+            <systemPath>/home/inti/Downloads/deps/mohist-1.18.2-187-server.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>net.zylesh</groupId>
-            <artifactId>practice</artifactId>
-            <version>2.0-RELEASE</version>
-            <scope>system</scope>
-            <systemPath>/home/inti/IdeaProjects/Practice2/target/Practice-Core-3.0-RC2.jar</systemPath>
+         <groupId>me.clip</groupId>
+          <artifactId>placeholderapi</artifactId>
+          <version>2.11.6</version>
+         <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>cb</groupId>
-            <artifactId>api</artifactId>
-            <version>3.1.0</version>
-            <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/plugins/CheatBreakerAPI.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.lunarclient</groupId>
-            <artifactId>bukkitapi</artifactId>
-            <version>v1.0.1</version>
-            <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/plugins/LunarAPI.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>net.zylesh</groupId>
-            <artifactId>skywars</artifactId>
-            <version>1.0-RELEASE</version>
-            <scope>system</scope>
-            <systemPath>/home/inti/IdeaProjects/SkyWarsCore/target/SkyWars-Core-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>placeholder</groupId>
-            <artifactId>api</artifactId>
-            <version>1.0-RELEASE</version>
-            <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/plugins/PlaceholderAPI-2.11.4.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>luckperms</groupId>
-            <artifactId>api</artifactId>
-            <version>1.0-RELEASE</version>
-            <scope>system</scope>
-            <systemPath>/home/inti/Desktop/practice/plugins/LuckPerms-Bukkit-Legacy-5.3.39.jar</systemPath>
-        </dependency>
+      <dependency>
+         <groupId>net.luckperms</groupId>
+         <artifactId>api</artifactId>
+         <version>5.4</version>
+         <scope>provided</scope>
+      </dependency>
         <dependency>
             <groupId>fr.mrmicky</groupId>
             <artifactId>fastboard</artifactId>

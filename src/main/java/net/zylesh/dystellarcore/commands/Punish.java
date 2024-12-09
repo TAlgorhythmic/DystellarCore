@@ -25,6 +25,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -70,6 +71,7 @@ public class Punish implements CommandExecutor, Listener {
 
     private static final Inventory inv = Bukkit.createInventory(null, 54, ChatColor.RED + "Punishments");
 
+    // TODO: Separate command and listener into modules for readability
 
     public Punish() {
         Bukkit.getPluginCommand("punish").setExecutor(this);
@@ -78,7 +80,7 @@ public class Punish implements CommandExecutor, Listener {
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+    public boolean onCommand(CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {
         if (!commandSender.hasPermission("dystellar.staff") || !(commandSender instanceof Player)) return true;
         Player p = (Player) commandSender;
         if (strings.length < 1) {
