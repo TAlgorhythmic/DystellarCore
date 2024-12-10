@@ -1,7 +1,14 @@
 package net.zylesh.dystellarcore.config;
 
+import net.zylesh.dystellarcore.DystellarCore;
+import net.zylesh.dystellarcore.serialization.LocationSerialization;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,4 +46,65 @@ public class ConfValues {
     public static boolean PACK_ENABLED = false;
     public static String PACK_LINK;
     public static boolean DEBUG_MODE = false;
+
+    public static void init(YamlConfiguration conf) {
+        BROADCAST_FORMAT = ChatColor.translateAlternateColorCodes('&', conf.getString("broadcast-format"));
+        SCOREBOARD_TITLE = ChatColor.translateAlternateColorCodes('&', conf.getString("scoreboard.title"));
+        SCOREBOARD_LINES = new ArrayList<>();
+        for (String line : conf.getStringList("scoreboard.lines")) {
+            SCOREBOARD_LINES.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        REFRESH_RATE_SCORE = conf.getInt("scoreboard.refresh-rate");
+        FREEZE_MESSAGE = new ArrayList<>();
+        for (String line : conf.getStringList("freeze-message")) {
+            FREEZE_MESSAGE.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        UNFREEZE_MESSAGE = ChatColor.translateAlternateColorCodes('&', conf.getString("unfreeze-message"));
+        SCOREBOARD_ENABLED = conf.getBoolean("scoreboard-enabled");
+        VOID_TELEPORT = conf.getBoolean("teleport-on-void");
+        JOIN_TELEPORT = conf.getBoolean("teleport-on-join");
+        if (conf.contains("spawn-location")) SPAWN_LOCATION = LocationSerialization.stringToLocation(conf.getString("spawn-location"));
+        ALLOW_BANNED_PLAYERS = conf.getBoolean("allow-banned-players");
+        List<String> ban_msg = conf.getStringList("ban-message");
+        StringBuilder builder = new StringBuilder();
+        for (String ban : ban_msg) {
+            builder.append(ChatColor.translateAlternateColorCodes('&', ban)).append("\n");
+        }
+        builder.delete(builder.length() - 3, builder.length());
+        BAN_MESSAGE = builder.toString();
+        List<String> blacklist_msg = conf.getStringList("blacklist-message");
+        builder = new StringBuilder();
+        for (String blacklist : blacklist_msg) {
+            builder.append(ChatColor.translateAlternateColorCodes('&', blacklist)).append("\n");
+        }
+        BLACKLIST_MESSAGE = builder.toString();
+        RANKED_BAN_MESSAGE = ChatColor.translateAlternateColorCodes('&', conf.getString("ranked-ban-message"));
+        MUTE_MESSAGE = ChatColor.translateAlternateColorCodes('&', conf.getString("mute-message"));
+        HANDLE_SPAWN_PROTECTION = conf.getBoolean("handle-spawn-protection");
+        HANDLE_SPAWN_MECHANICS = conf.getBoolean("handle-spawn-mechanics");
+        PLAYER_MSG_DISABLED = ChatColor.translateAlternateColorCodes('&', conf.getString("player-msg-disabled"));
+        MSG_SEND_FORMAT = ChatColor.translateAlternateColorCodes('&', conf.getString("msg-send-format"));
+        MSG_RECEIVE_FORMAT = ChatColor.translateAlternateColorCodes('&', conf.getString("msg-receive-format"));
+        WARN_MESSAGE = new ArrayList<>();
+        for (String line : conf.getStringList("warn-message")) {
+            WARN_MESSAGE.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        KICK_MESSAGE = ChatColor.translateAlternateColorCodes('&', conf.getString("kick-message"));
+        ALLOW_SIGNS = conf.getBoolean("block-signs-crafting");
+        AUTOMATED_MESSAGES_ENABLED = conf.getBoolean("automated-messages-enabled");
+        AUTOMATED_MESSAGES_RATE = conf.getInt("automated-messages-rate");
+        PREVENT_WEATHER = conf.getBoolean("prevent-weather-changing");
+        DEBUG_MODE = conf.getBoolean("debug-mode");
+        try (BufferedReader reader = new BufferedReader(new FileReader(DystellarCore.getInstance().am))) {
+            reader.lines().forEach(s -> {
+                if (s.startsWith("-=")) {
+                    AUTOMATED_MESSAGES.add(s.substring(2));
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        PACK_ENABLED = conf.getBoolean("send-texturepack");
+        PACK_LINK = conf.getString("texturepack-link");
+    }
 }

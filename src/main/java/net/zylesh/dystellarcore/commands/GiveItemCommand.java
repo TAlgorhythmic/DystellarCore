@@ -1,6 +1,5 @@
 package net.zylesh.dystellarcore.commands;
 
-import net.zylesh.skywars.SkywarsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import gg.zylesh.skywars.SkywarsAPI;
 
 import java.util.Arrays;
 

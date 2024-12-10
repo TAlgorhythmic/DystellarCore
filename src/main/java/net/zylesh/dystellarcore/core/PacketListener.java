@@ -1,8 +1,5 @@
 package net.zylesh.dystellarcore.core;
 
-import net.minecraft.server.v1_7_R4.NetworkManager;
-import net.minecraft.server.v1_7_R4.Packet;
-import net.minecraft.util.io.netty.channel.*;
 import net.zylesh.dystellarcore.DystellarCore;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
@@ -12,6 +9,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import gg.minecraft.server.v1_7_R4.NetworkManager;
+import gg.minecraft.server.v1_7_R4.Packet;
+import gg.minecraft.util.io.netty.channel.*;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -30,7 +31,7 @@ public class PacketListener implements Listener {
             field.setAccessible(true);
             Channel channel = (Channel)field.get((((CraftPlayer)player).getHandle()).playerConnection.networkManager);
             channel.eventLoop().submit(() -> {
-                channel.pipeline().remove(player.getName());
+                CHANNEL.pipeline().remove(player.getName());
                 return null;
             });
         } catch (Exception e) {

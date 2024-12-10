@@ -8,8 +8,7 @@ import net.zylesh.dystellarcore.core.punishments.*;
 import net.zylesh.dystellarcore.utils.Utils;
 import net.zylesh.practice.PParty;
 import net.zylesh.practice.PUser;
-import net.zylesh.skywars.SkywarsAPI;
-import net.zylesh.skywars.common.Team;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -26,6 +25,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+
+import gg.zylesh.skywars.SkywarsAPI;
+import gg.zylesh.skywars.common.Team;
 
 import java.time.LocalDateTime;
 import java.util.*;

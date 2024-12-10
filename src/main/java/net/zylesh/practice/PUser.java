@@ -2,14 +2,7 @@ package net.zylesh.practice;
 
 import net.zylesh.dystellarcore.utils.Scheduler;
 import net.zylesh.dystellarcore.utils.Utils;
-import net.zylesh.practice.practicecore.Main;
-import net.zylesh.practice.practicecore.Practice;
-import net.zylesh.practice.practicecore.core.GameFFA;
-import net.zylesh.practice.practicecore.core.GameVersus;
-import net.zylesh.practice.practicecore.core.QueueEntry;
-import net.zylesh.practice.practicecore.core.QueueType;
-import net.zylesh.practice.practicecore.events.PlayerKitDeselectEvent;
-import net.zylesh.practice.practicecore.listeners.Scoreboards;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -27,13 +20,23 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import gg.zylesh.practice.practicecore.Main;
+import gg.zylesh.practice.practicecore.Practice;
+import gg.zylesh.practice.practicecore.core.GameFFA;
+import gg.zylesh.practice.practicecore.core.GameVersus;
+import gg.zylesh.practice.practicecore.core.QueueEntry;
+import gg.zylesh.practice.practicecore.core.QueueType;
+import gg.zylesh.practice.practicecore.events.PlayerKitDeselectEvent;
+import gg.zylesh.practice.practicecore.listeners.Scoreboards;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import static gg.zylesh.practice.practicecore.util.Msg.PARTY_JOIN_BROADCAST;
+import static gg.zylesh.practice.practicecore.util.Msg.PLAYER_SPECTATE_BROADCAST;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static net.zylesh.practice.practicecore.util.Msg.PARTY_JOIN_BROADCAST;
-import static net.zylesh.practice.practicecore.util.Msg.PLAYER_SPECTATE_BROADCAST;
 
 public class PUser implements Comparable<PUser>, Listener {
 

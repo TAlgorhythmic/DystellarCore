@@ -1,15 +1,12 @@
 package net.zylesh.dystellarcore.utils;
 
-import com.cheatbreaker.api.CheatBreakerAPI;
-import com.cheatbreaker.nethandler.server.CBPacketTitle;
-import com.lunarclient.bukkitapi.LunarClientAPI;
-import com.lunarclient.bukkitapi.nethandler.client.LCPacketTitle;
-import com.lunarclient.bukkitapi.title.LCTitleBuilder;
-import com.lunarclient.bukkitapi.title.TitleType;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+
+import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.practice.PUser;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
-import org.spigotmc.ProtocolInjector;
 
 import java.lang.reflect.Array;
 import java.time.Duration;
@@ -27,23 +24,8 @@ public class Utils {
         return (between > 0 ? between + " days, " : "") + (betweenHours > 0 ? betweenHours + " hours and " : "") + (betweenMinutes > 0 ? betweenMinutes + " minutes." : "");
     }
 
-    public static void sendTitle(Player player, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        if (LunarClientAPI.getInstance().isRunningLunarClient(player)) {
-            LCPacketTitle titlePacket = LCTitleBuilder.of(title, TitleType.TITLE).fadeInFor(Duration.ofSeconds(fadeIn)).displayFor(Duration.ofSeconds(stay)).fadeOutFor(Duration.ofSeconds(fadeOut)).build();
-            LCPacketTitle subtitlePacket = LCTitleBuilder.of(subtitle, TitleType.SUBTITLE).fadeInFor(Duration.ofSeconds(fadeIn)).displayFor(Duration.ofSeconds(stay)).fadeOutFor(Duration.ofSeconds(fadeOut)).build();
-            LunarClientAPI.getInstance().sendPacket(player, titlePacket);
-            LunarClientAPI.getInstance().sendPacket(player, subtitlePacket);
-        } else if (CheatBreakerAPI.getInstance().isRunningCheatBreaker(player)) {
-            CBPacketTitle titlePacket = new CBPacketTitle(com.cheatbreaker.api.object.TitleType.TITLE.name().toLowerCase(), title, stay * 1000L, fadeIn * 1000L, fadeOut * 1000L);
-            CBPacketTitle subtitlePacket = new CBPacketTitle(com.cheatbreaker.api.object.TitleType.SUBTITLE.name().toLowerCase(), subtitle, stay * 1000L, fadeIn * 1000L, fadeOut * 1000L);
-            CheatBreakerAPI.getInstance().sendPacket(player, titlePacket);
-            CheatBreakerAPI.getInstance().sendPacket(player, subtitlePacket);
-        } else {
-            ProtocolInjector.PacketTitle titlePacket = new ProtocolInjector.PacketTitle(ProtocolInjector.PacketTitle.Action.TITLE, fadeIn, stay, fadeOut);
-            ProtocolInjector.PacketTitle subtitlePacket = new ProtocolInjector.PacketTitle(ProtocolInjector.PacketTitle.Action.SUBTITLE, fadeIn, stay, fadeOut);
-            player.sendPacket(titlePacket);
-            player.sendPacket(subtitlePacket);
-        }
+	public static void sendTitle(Player player, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+		player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
     }
 
     public static <T> boolean contains(T[] array, T item) {
@@ -156,5 +138,24 @@ public class Utils {
 
     public static boolean arePlayersInSameGame(PUser user, PUser user1) {
         return user.getLastGame() != null && user.getLastGame().equals(user1.getLastGame()) && !user.getLastGame().isEnded();
+    }
+
+	public void sendPluginMessage(Player player, byte typeId, Object...extraData) {
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeByte(typeId); // Subchannel
+        if (extraData != null) {
+            for (Object o : extraData) {
+                if (o instanceof String) out.writeUTF((String) o);
+                else if (o instanceof Byte) out.writeByte((byte) o);
+                else if (o instanceof Integer) out.writeInt((int) o);
+                else if (o instanceof Float) out.writeFloat((float) o);
+                else if (o instanceof Double) out.writeDouble((double) o);
+                else if (o instanceof Boolean) out.writeBoolean((boolean) o);
+                else if (o instanceof Long) out.writeLong((long) o);
+                else if (o instanceof Character) out.writeChar((char) o);
+                else if (o instanceof Short) out.writeShort((short) o);
+            }
+        }
+        player.sendPluginMessage(DystellarCore.getInstance(), DystellarCore.CHANNEL, out.toByteArray());
     }
 }

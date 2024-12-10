@@ -19,12 +19,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import static gg.zylesh.dystellarcore.DystellarCore.DEMAND_PUNISHMENTS_DATA;
+
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static net.zylesh.dystellarcore.DystellarCore.DEMAND_PUNISHMENTS_DATA;
 
 public class UnpunishCommand implements Listener, CommandExecutor {
 

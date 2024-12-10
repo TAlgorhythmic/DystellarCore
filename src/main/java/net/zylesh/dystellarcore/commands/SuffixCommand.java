@@ -4,6 +4,9 @@ import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
+
+import static gg.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,8 +19,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
-
-import static net.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
 
 public class SuffixCommand implements CommandExecutor, Listener {
 

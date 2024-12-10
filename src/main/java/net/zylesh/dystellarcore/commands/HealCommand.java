@@ -3,12 +3,14 @@ package net.zylesh.dystellarcore.commands;
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.practice.PUser;
-import net.zylesh.skywars.SkywarsAPI;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import gg.zylesh.skywars.SkywarsAPI;
 
 public class HealCommand implements CommandExecutor {
 

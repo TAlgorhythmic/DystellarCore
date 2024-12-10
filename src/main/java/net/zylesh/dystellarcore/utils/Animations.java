@@ -1,10 +1,8 @@
 package net.zylesh.dystellarcore.utils;
 
-import net.minecraft.server.v1_7_R4.*;
 import net.zylesh.practice.PKillEffect;
 import net.zylesh.practice.PUser;
-import net.zylesh.practice.practicecore.core.GameFFA;
-import net.zylesh.practice.practicecore.core.GameVersus;
+
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,6 +10,10 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import gg.minecraft.server.v1_7_R4.*;
+import gg.zylesh.practice.practicecore.core.GameFFA;
+import gg.zylesh.practice.practicecore.core.GameVersus;
 
 import java.util.ArrayList;
 import java.util.List;

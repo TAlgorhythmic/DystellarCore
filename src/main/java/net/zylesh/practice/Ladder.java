@@ -1,7 +1,8 @@
 package net.zylesh.practice;
 
 import eu.vortexdev.api.KnockbackAPI;
-import net.zylesh.practice.practicecore.Main;
+import gg.zylesh.practice.practicecore.Main;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;

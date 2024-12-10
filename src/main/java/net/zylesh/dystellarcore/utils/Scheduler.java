@@ -15,16 +15,16 @@ public class Scheduler {
         Iterator<T> iterator = collection.iterator();
         AtomicReference<BukkitTask> task1 = new AtomicReference<>();
         task1.set(Bukkit.getScheduler().runTaskTimer(DystellarCore.getInstance(), () -> {
-            if (iterator.hasNext()) {
+            if (iterator.hasNext())
                 next(iterator, task, maxIterationsPerTick);
-            } else {
+            else
                 cancelTask(task1.get());
-            }
         }, 0L, 1L));
     }
 
     private static void cancelTask(BukkitTask task) {
-        if (task == null) return;
+        if (task == null)
+            return;
         task.cancel();
     }
 

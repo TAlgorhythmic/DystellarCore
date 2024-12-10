@@ -3,7 +3,7 @@ package net.zylesh.dystellarcore.commands;
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.Msgs;
 import net.zylesh.practice.PUser;
-import net.zylesh.skywars.SkywarsAPI;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -19,6 +19,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import gg.zylesh.skywars.SkywarsAPI;
 
 import java.util.AbstractMap;
 import java.util.HashMap;

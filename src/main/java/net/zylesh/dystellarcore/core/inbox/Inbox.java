@@ -13,11 +13,11 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import static gg.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static net.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
 
 public class Inbox {
 

@@ -6,7 +6,7 @@
 
     <groupId>gg.dystellar</groupId>
     <artifactId>DystellarCore</artifactId>
-    <version>5.0-RC1</version>
+    <version>1.0-RC1</version>
     <packaging>jar</packaging>
 
     <name>DystellarCore</name>

@@ -1,12 +1,13 @@
 package net.zylesh.practice;
 
-import net.zylesh.practice.practicecore.Practice;
-
 import javax.annotation.Nonnull;
+
+import gg.zylesh.practice.practicecore.Practice;
+
+import static gg.zylesh.practice.practicecore.util.Msg.*;
+
 import java.io.Serializable;
 import java.util.*;
-
-import static net.zylesh.practice.practicecore.util.Msg.*;
 
 public class PParty implements Comparable<PParty>, Serializable {
 

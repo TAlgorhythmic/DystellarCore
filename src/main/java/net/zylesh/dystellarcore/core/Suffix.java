@@ -8,11 +8,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nullable;
+
+import static gg.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static net.zylesh.dystellarcore.DystellarCore.NULL_GLASS;
 
 public enum Suffix {
 

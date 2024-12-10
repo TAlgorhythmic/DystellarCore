@@ -1,12 +1,14 @@
 package net.zylesh.practice;
 
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
-import net.zylesh.practice.practicecore.Main;
+
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import gg.zylesh.practice.practicecore.Main;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,11 +2,12 @@ package net.zylesh.practice;
 
 import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.serialization.LocationSerialization;
-import net.zylesh.practice.practicecore.Main;
 import net.zylesh.practice.serialize.PMariaDB;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+
+import gg.zylesh.practice.practicecore.Main;
 
 import java.util.HashMap;
 import java.util.Map;
