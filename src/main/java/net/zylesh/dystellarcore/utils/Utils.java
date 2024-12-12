@@ -140,7 +140,7 @@ public class Utils {
         return user.getLastGame() != null && user.getLastGame().equals(user1.getLastGame()) && !user.getLastGame().isEnded();
     }
 
-	public void sendPluginMessage(Player player, byte typeId, Object...extraData) {
+	public static void sendPluginMessage(Player player, byte typeId, Object...extraData) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeByte(typeId); // Subchannel
         if (extraData != null) {

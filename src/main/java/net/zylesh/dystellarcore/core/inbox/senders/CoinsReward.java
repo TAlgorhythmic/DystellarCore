@@ -1,6 +1,8 @@
 package net.zylesh.dystellarcore.core.inbox.senders;
 
 import net.zylesh.dystellarcore.core.inbox.Inbox;
+import net.zylesh.dystellarcore.core.inbox.SenderTypes;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class CoinsReward extends Reward {
 
@@ -79,7 +82,7 @@ public class CoinsReward extends Reward {
         if (isClaimed) {
             inbox.deleteSender(this);
             Player p = Bukkit.getPlayer(inbox.getUser().getUUID());
-            if (p != null) p.playSound(p.getLocation(), Sound.CLICK, 1.4f, 1.4f);
+            if (p != null) p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1.4f, 1.4f);
             delete();
         }
     }
@@ -97,7 +100,7 @@ public class CoinsReward extends Reward {
     public boolean claim() {
         if (isClaimed) return false;
         inbox.getUser().coins += coins;
-        Bukkit.getPlayer(inbox.getUser().getUUID()).playSound(Bukkit.getPlayer(inbox.getUser().getUUID()).getLocation(), Sound.LEVEL_UP, 1.12f, 1.12f);
+        Bukkit.getPlayer(inbox.getUser().getUUID()).playSound(Bukkit.getPlayer(inbox.getUser().getUUID()).getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.12f, 1.12f);
         return true;
     }
 
@@ -105,4 +108,9 @@ public class CoinsReward extends Reward {
     public CoinsReward clone(Inbox inbox) {
         return new CoinsReward(inbox, id, from, message, submissionDate, isDeleted, title, isClaimed, coins);
     }
+
+	@Override
+	public Object[] encode(UUID target) {
+        return new Object[] {target.toString(), SenderTypes.COINS_REWARD, id, submissionDate.format(DateTimeFormatter.ISO_DATE_TIME), coins, title, getSerializedMessage(), getFrom(), isClaimed(), isDeleted};
+	}
 }

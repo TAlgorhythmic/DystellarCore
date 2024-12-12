@@ -2,7 +2,7 @@ package net.zylesh.dystellarcore.serialization;
 
 import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
-import net.zylesh.dystellarcore.core.inbox.InboxSender;
+import net.zylesh.dystellarcore.core.inbox.Sendable;
 import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
 import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
 import net.zylesh.dystellarcore.core.inbox.senders.Message;
@@ -20,7 +20,7 @@ public class InboxSerialization {
 
     public static String inboxToString(Inbox inbox) {
         StringBuilder builder = new StringBuilder();
-        for (InboxSender sender : inbox.getSenders()) {
+        for (Sendable sender : inbox.getSenders()) {
             builder.append(senderToString(sender, sender.getSerialID())).append(SEPARATOR);
         }
         return builder.toString();
@@ -30,14 +30,14 @@ public class InboxSerialization {
         String[] split = s.split(SEPARATOR);
         Inbox inbox = new Inbox(user);
         for (String string : split) {
-            InboxSender sender = stringToSender(string, inbox);
+            Sendable sender = stringToSender(string, inbox);
             inbox.getSenders().add(sender);
         }
         inbox.update();
         return inbox;
     }
 
-    public static String senderToString(InboxSender sender, byte serial) {
+    public static String senderToString(Sendable sender, byte serial) {
         StringBuilder builder = new StringBuilder();
         String submission = sender.getSubmissionDate().format(DateTimeFormatter.ISO_DATE_TIME);
         builder.append(serial)
@@ -99,9 +99,9 @@ public class InboxSerialization {
         return builder.toString();
     }
 
-    public static InboxSender stringToSender(String s, @Nullable Inbox inbox) {
+    public static Sendable stringToSender(String s, @Nullable Inbox inbox) {
         String[] split = s.split(SEPARATOR_FIELDS);
-        InboxSender sender = null;
+        Sendable sender = null;
         byte serial = Byte.parseByte(split[0]);
         int id = Integer.parseInt(split[1]);
         LocalDateTime submission = LocalDateTime.parse(split[2], DateTimeFormatter.ISO_DATE_TIME);

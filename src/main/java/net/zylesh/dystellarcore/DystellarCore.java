@@ -9,11 +9,9 @@ import net.zylesh.dystellarcore.config.ConfValues;
 import net.zylesh.dystellarcore.core.*;
 import net.zylesh.dystellarcore.core.PacketListener;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
-import net.zylesh.dystellarcore.core.inbox.InboxSender;
+import net.zylesh.dystellarcore.core.inbox.Sendable;
 import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
-import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
 import net.zylesh.dystellarcore.core.inbox.senders.Message;
-import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.listeners.GeneralListeners;
 import net.zylesh.dystellarcore.listeners.ResourceListener;
@@ -23,7 +21,8 @@ import net.zylesh.dystellarcore.serialization.*;
 import net.zylesh.dystellarcore.services.Services;
 import net.zylesh.dystellarcore.services.messaging.Types;
 import net.zylesh.dystellarcore.utils.Hooks;
-import net.zylesh.practice.PKillEffect;
+import net.zylesh.dystellarcore.utils.Utils;
+
 import org.bukkit.*;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -203,22 +202,15 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
         }
     }
 
-    private static final byte MESSAGE = 0;
-    private static final byte PKILL_EFFECT = 1;
-    private static final byte COINS_REWARD = 2;
-    private static final byte ELO_GAIN_NOTIFIER = 3;
-
-    public void addInboxMessage(UUID target, InboxSender sender, Player issuer /* The player that issued the command, for just in case uuid (player) introduced is not online.*/) {
+    public void addInboxMessage(UUID target, Sendable sender, Player issuer) {
         if (User.getUsers().containsKey(target)) {
             User.get(target).getInbox().addSender(sender);
         } else sendInbox(sender, issuer, target);
     }
 
-    private void sendInbox(InboxSender sender, Player player, UUID target) {
-        List<Object> obj = new ArrayList<>();
-        Integer id = sender.getId();
-        String submission = sender.getSubmissionDate().format(DateTimeFormatter.ISO_DATE_TIME);
-        if (sender instanceof PKillEffectReward) {
+    private void sendInbox(Sendable sender, Player player, UUID target) {
+		Utils.sendPluginMessage(player, Types.INBOX_UPDATE, sender.encode(target));
+        /*if (sender instanceof PKillEffectReward) {
             PKillEffectReward reward = (PKillEffectReward) sender;
             String effect = reward.getKillEffect().name();
             String title = reward.getTitle();
@@ -227,15 +219,6 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             Boolean claimed = reward.isClaimed();
             Boolean deleted = reward.isDeleted();
             Collections.addAll(obj, target.toString(), PKILL_EFFECT, id, submission, effect, title, msg, from, claimed, deleted);
-        } else if (sender instanceof CoinsReward) {
-            CoinsReward reward = (CoinsReward) sender;
-            Integer coins = reward.getCoins();
-            String title = reward.getTitle();
-            String msg = reward.getSerializedMessage();
-            String from = reward.getFrom();
-            Boolean claimed = reward.isClaimed();
-            Boolean deleted = reward.isDeleted();
-            Collections.addAll(obj, target.toString(), COINS_REWARD, id, submission, coins, title, msg, from, claimed, deleted);
         } else if (sender instanceof EloGainNotifier) {
             EloGainNotifier reward = (EloGainNotifier) sender;
             Integer elo = reward.getElo();
@@ -247,34 +230,13 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
             Boolean deleted = reward.isDeleted();
             if (compatibility == EloGainNotifier.PRACTICE) Collections.addAll(obj, target.toString(), ELO_GAIN_NOTIFIER, id, submission, elo, compatibility, ladder, msg, from, claimed, deleted);
             else if (compatibility == EloGainNotifier.SKYWARS) Collections.addAll(obj, target.toString(), ELO_GAIN_NOTIFIER, id, submission, elo, compatibility, msg, from, claimed, deleted);
-        } else if (sender instanceof Message) {
-            Message reward = (Message) sender;
-            String msg = reward.getSerializedMessage();
-            String from = reward.getFrom();
-            Boolean deleted = reward.isDeleted();
-            Collections.addAll(obj, target.toString(), MESSAGE, id, submission, msg, from, deleted);
-        }
-        sendPluginMessage(player, INBOX_UPDATE, obj.toArray(new Object[0]));
+        }*/
     }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onJoin(PlayerJoinEvent event) {
-		Player p = event.getPlayer();
-        awaitingPlayers.add(p.getUniqueId());
-        Bukkit.getScheduler().runTaskLater(this, () -> sendPluginMessage(p, REGISTER), 15L);
-        Bukkit.getScheduler().runTaskLater(this, () -> {
-            if (awaitingPlayers.contains(event.getPlayer().getUniqueId())) {
-                p.kickPlayer(ChatColor.RED + "You are not allowed to join this server. (Contact us if you think this is an error)");
-                awaitingPlayers.remove(event.getPlayer().getUniqueId());
-            }
-        }, 35L);
-    }
-
-    private final Set<UUID> awaitingPlayers = new HashSet<>();
 
     @Override
     public void onPluginMessageReceived(String s, @NotNull Player p, byte[] bytes) {
-        if (!s.equalsIgnoreCase(CHANNEL)) return;
+        if (!s.equalsIgnoreCase(CHANNEL))
+			return;
         Types.handle(p, bytes);
     }
 

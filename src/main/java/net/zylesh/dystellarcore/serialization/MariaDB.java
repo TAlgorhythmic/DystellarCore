@@ -4,7 +4,7 @@ import net.zylesh.dystellarcore.DystellarCore;
 import net.zylesh.dystellarcore.core.inbox.Inbox;
 import net.zylesh.dystellarcore.core.Suffix;
 import net.zylesh.dystellarcore.core.User;
-import net.zylesh.dystellarcore.core.inbox.InboxSender;
+import net.zylesh.dystellarcore.core.inbox.Sendable;
 import net.zylesh.dystellarcore.core.punishments.Ban;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.core.punishments.SenderContainer;
@@ -363,7 +363,7 @@ public class MariaDB {
         ) {
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
-                InboxSender sender = InboxSerialization.stringToSender(rs.getString("serialized"), null);
+                Sendable sender = InboxSerialization.stringToSender(rs.getString("serialized"), null);
                 containers.add(new SenderContainer(sender));
             }
         } catch (SQLException e) {

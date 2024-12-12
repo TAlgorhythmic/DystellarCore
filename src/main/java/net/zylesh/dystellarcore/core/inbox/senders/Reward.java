@@ -5,6 +5,7 @@ import net.zylesh.dystellarcore.core.inbox.Inbox;
 import org.bukkit.inventory.ItemStack;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public abstract class Reward extends Message implements Claimable {
 
@@ -53,4 +54,7 @@ public abstract class Reward extends Message implements Claimable {
     public boolean isClaimed() {
         return isClaimed;
     }
+
+	@Override
+	public abstract Object[] encode(UUID target);
 }

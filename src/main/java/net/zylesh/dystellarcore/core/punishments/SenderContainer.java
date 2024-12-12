@@ -1,6 +1,6 @@
 package net.zylesh.dystellarcore.core.punishments;
 
-import net.zylesh.dystellarcore.core.inbox.InboxSender;
+import net.zylesh.dystellarcore.core.inbox.Sendable;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -10,10 +10,10 @@ import java.util.List;
 
 public class SenderContainer {
 
-    private final InboxSender sender;
+    private final Sendable sender;
     private ItemStack icon;
 
-    public SenderContainer(InboxSender sender) {
+    public SenderContainer(Sendable sender) {
         this.sender = sender;
         init();
     }
@@ -31,7 +31,7 @@ public class SenderContainer {
         icon.setItemMeta(meta);
     }
 
-    public InboxSender getSender() {
+    public Sendable getSender() {
         return sender;
     }
 

@@ -1,7 +1,9 @@
 package net.zylesh.dystellarcore.core.inbox.senders;
 
 import net.zylesh.dystellarcore.core.inbox.Inbox;
-import net.zylesh.dystellarcore.core.inbox.InboxSender;
+import net.zylesh.dystellarcore.core.inbox.Sendable;
+import net.zylesh.dystellarcore.core.inbox.SenderTypes;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,8 +18,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
-public class Message implements InboxSender {
+public class Message implements Sendable {
 
     public static final byte ID = 0;
 
@@ -105,7 +108,7 @@ public class Message implements InboxSender {
     public void onRightClick() {
         inbox.deleteSender(this);
         Player p = Bukkit.getPlayer(inbox.getUser().getUUID());
-        if (p != null) p.playSound(p.getLocation(), Sound.CLICK, 1.4f, 1.4f);
+        if (p != null) p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1.4f, 1.4f);
         delete();
     }
 
@@ -128,7 +131,7 @@ public class Message implements InboxSender {
     }
 
     @Override
-    public int compareTo(InboxSender o) {
+    public int compareTo(Sendable o) {
         return submissionDate.compareTo(o.getSubmissionDate());
     }
 
@@ -138,4 +141,12 @@ public class Message implements InboxSender {
     public Message clone(Inbox inbox) {
         return new Message(inbox, id, from, message, LocalDateTime.now(), isDeleted);
     }
+
+	@Override
+	public Object[] encode(UUID target) {
+		String msg = getSerializedMessage();
+		String from = getFrom();
+		Boolean deleted = isDeleted();
+		return new Object[] {target.toString(), SenderTypes.MESSAGE, id, submissionDate.format(DateTimeFormatter.ISO_DATE_TIME), msg, from, deleted};
+	}
 }

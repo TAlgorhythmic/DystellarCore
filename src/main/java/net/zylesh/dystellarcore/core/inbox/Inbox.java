@@ -33,7 +33,7 @@ public class Inbox {
 
     private final User user;
     private final Inventory inbox;
-    protected final SortedSet<InboxSender> senders = Collections.synchronizedSortedSet(new TreeSet<>());
+    protected final SortedSet<Sendable> senders = Collections.synchronizedSortedSet(new TreeSet<>());
 
     public Inbox(User user) {
         this.user = user;
@@ -43,7 +43,7 @@ public class Inbox {
         Inbox.SenderListener.registerInbox(user);
     }
 
-    public Set<InboxSender> getSenders() {
+    public Set<Sendable> getSenders() {
         return senders;
     }
 
@@ -51,18 +51,18 @@ public class Inbox {
         return user;
     }
 
-    public void addSender(InboxSender inboxSender) {
+    public void addSender(Sendable inboxSender) {
         senders.add(inboxSender);
         update();
     }
 
-    public void deleteSender(InboxSender inboxSender) {
+    public void deleteSender(Sendable inboxSender) {
         if (senders.remove(inboxSender)) update();
     }
 
     public void update() {
         int position = 9;
-        for (InboxSender inboxSender : senders) {
+        for (Sendable inboxSender : senders) {
             if (position > 44) return;
             if (inboxSender.isDeleted()) continue;
             inbox.setItem(position, inboxSender instanceof Claimable && ((Claimable) inboxSender).isClaimed() ? inboxSender.getReadIcon() : inboxSender.getUnreadIcon());
@@ -101,7 +101,7 @@ public class Inbox {
                 User user = User.get(event.getWhoClicked().getUniqueId());
                 if (user == null) return;
                 int pos = 9;
-                for (InboxSender sender : user.getInbox().senders) {
+                for (Sendable sender : user.getInbox().senders) {
                     if (pos > 44) break;
                     if (sender.getReadIcon().equals(i) || sender.getReadIcon().equals(i)) {
                         if (event.isLeftClick()) sender.onLeftClick();

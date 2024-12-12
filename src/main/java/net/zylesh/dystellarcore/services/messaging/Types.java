@@ -5,17 +5,14 @@ import com.google.common.io.ByteStreams;
 import net.zylesh.dystellarcore.commands.FriendCommand;
 import net.zylesh.dystellarcore.commands.InboxCommand;
 import net.zylesh.dystellarcore.core.User;
-import net.zylesh.dystellarcore.core.inbox.InboxSender;
+import net.zylesh.dystellarcore.core.inbox.Sendable;
 import net.zylesh.dystellarcore.core.inbox.senders.CoinsReward;
-import net.zylesh.dystellarcore.core.inbox.senders.EloGainNotifier;
 import net.zylesh.dystellarcore.core.inbox.senders.Message;
-import net.zylesh.dystellarcore.core.inbox.senders.prewards.PKillEffectReward;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.serialization.Consts;
 import net.zylesh.dystellarcore.serialization.InboxSerialization;
 import net.zylesh.dystellarcore.serialization.MariaDB;
 import net.zylesh.dystellarcore.serialization.Punishments;
-import net.zylesh.practice.PKillEffect;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -34,10 +31,11 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class Types {
 
-    private static final byte REGISTER = 0;
-    private static final byte REGISTER_RECEIVED = 1;
-    private static final byte INBOX_UPDATE = 2;
-    private static final byte INBOX_MANAGER_UPDATE = 3;
+    public static final byte REGISTER = 0;
+    public static final byte REGISTER_RECEIVED = 1;
+    public static final byte INBOX_UPDATE = 2;
+    public static final byte INBOX_MANAGER_UPDATE = 3;
+
     public static final byte GLOBAL_TAB_REGISTER = 4;
     public static final byte GLOBAL_TAB_UNREGISTER = 5;
     public static final byte FRIEND_ADD_REQUEST = 6;
@@ -315,7 +313,7 @@ public class Types {
                     return;
                 }
                 User user = User.get(player);
-                InboxSender sender = InboxSerialization.stringToSender(in.readUTF(), user.getInbox());
+                Sendable sender = InboxSerialization.stringToSender(in.readUTF(), user.getInbox());
                 user.getInbox().addSender(sender);
                 break;
             }
