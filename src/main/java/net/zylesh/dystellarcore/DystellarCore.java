@@ -163,8 +163,9 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
 
     private void initDb() throws IOException, SQLException {
         String setup;
-        try (InputStream in = getClassLoader().getResourceAsStream("database.sql")) {
-            setup = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining());
+        try (InputStream in = getClassLoader().getResourceAsStream("database.sql");
+				BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            setup = reader.lines().collect(Collectors.joining());
             String[] queries = setup.split(";");
             for (String query : queries) {
                 if (query.isEmpty()) continue;
