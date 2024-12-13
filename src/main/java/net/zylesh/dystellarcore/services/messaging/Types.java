@@ -69,23 +69,16 @@ public class Types {
             case DEMAND_PUNISHMENTS_DATA:
 				Handler.handlePunData(in); break;
             case PUNISHMENTS_DATA_RESPONSE:
-                Handler.handlePunDataRes(in); break;
-            case REGISTER_RECEIVED: {
-                String unsafe = in.readUTF();
-                Player player = Bukkit.getPlayer(unsafe);
-                if (player == null || !player.isOnline()) {
-                    getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
-                    return;
-                }
-                awaitingPlayers.remove(player.getUniqueId());
-            } break;
+                Handler.handlePunDataRes(p, in); break;
+            case REGISTER_RECEIVED:
+				Handler.handleRegRes(in); break;
             case INBOX_UPDATE: {
                 UUID uuid = UUID.fromString(in.readUTF());
                 if (!User.getUsers().containsKey(uuid)) return;
                 User user = User.get(uuid);
                 byte type = in.readByte();
                 switch (type) {
-                    case PKILL_EFFECT: {
+                    /*case PKILL_EFFECT: {
                         int iid = in.readInt();
                         LocalDateTime submission = LocalDateTime.parse(in.readUTF(), DateTimeFormatter.ISO_DATE_TIME);
                         PKillEffect effect = PKillEffect.valueOf(in.readUTF());
@@ -98,7 +91,7 @@ public class Types {
                         reward.initializeIcons();
                         user.getInbox().addSender(reward);
                         break;
-                    }
+                    }*/
                     case COINS_REWARD: {
                         int iid = in.readInt();
                         LocalDateTime submission = LocalDateTime.parse(in.readUTF(), DateTimeFormatter.ISO_DATE_TIME);

@@ -15,6 +15,7 @@ import net.zylesh.dystellarcore.core.User;
 import net.zylesh.dystellarcore.core.punishments.Punishment;
 import net.zylesh.dystellarcore.serialization.Punishments;
 import net.zylesh.dystellarcore.utils.Utils;
+import net.zylesh.dystellarcore.utils.factory.InventoryBuilder;
 
 public class Handler {
 
@@ -37,7 +38,51 @@ public class Handler {
 		Set<Punishment> punishments = Punishments.deserializePunishments(in.readUTF(), new HashSet<>());
 
 		invs.put(p.getUniqueId(), new AbstractMap.SimpleImmutableEntry<>(target, new Punishment[27]));
-		Inventory inv = createInventory(p, punishments);
+		Inventory inv = InventoryBuilder.punishmentsInv(p, punishments);
 		p.openInventory(inv);
 	}
+
+	public static void handleRegRes(ByteArrayDataInput in) {
+		String unsafe = in.readUTF();
+		Player player = Bukkit.getPlayer(unsafe);
+		if (player == null || !player.isOnline()) {
+			Bukkit.getLogger().warning("Received a packet but the player who's supposed to affect is not online.");
+			return;
+		}
+		awaitingPlayers.remove(player.getUniqueId());
+	}
+
+	public static void handleInboxUpdate() {}
+
+	public static void handleInboxManagerUpdate() {}
+
+	public static void handleFriendReqApprove() {}
+
+	public static void handleFriendReqDeny() {}
+
+	public static void handleFriendReqDisabled() {}
+
+	public static void handleFriendAddReq() {}
+
+	public static void handleDemIsPlayerAcceptingReqs() {}
+
+	public static void handleDemIsPlayerWithinNetwork() {}
+
+	public static void handleFriendRemove() {}
+
+	public static void handleDemFindPlayerRes() {}
+
+	public static void handleDemPlayerNotOnline() {}
+
+	public static void handleFriendReqAccept() {}
+
+	public static void handleFriendReqReject() {}
+
+	public static void handleInboxSend() {}
+
+	public static void handleShouldSendPackRes() {}
+
+	public static void handlePunishmentAddClientbound() {}
+
+	public static void handleRemovePunishmentById() {}
 }

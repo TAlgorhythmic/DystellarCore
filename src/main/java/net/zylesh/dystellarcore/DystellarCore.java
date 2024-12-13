@@ -242,11 +242,4 @@ public final class DystellarCore extends JavaPlugin implements PluginMessageList
     }
 
     public final Map<UUID, UUID> requests = new HashMap<>();
-
-    private final Map<String, Map.Entry<Runnable, Runnable>> runnables = new ConcurrentHashMap<>();
-
-    public void executeIfOnline(Player p, String s, Runnable ifTrue, Runnable ifFalse) {
-        runnables.put(s, new AbstractMap.SimpleImmutableEntry<>(ifTrue, ifFalse));
-        sendPluginMessage(p, DEMAND_IS_PLAYER_ONLINE_WITHIN_NETWORK, s);
-    }
 }
