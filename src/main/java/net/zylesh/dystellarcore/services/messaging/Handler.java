@@ -97,18 +97,6 @@ public class Handler {
 		}
 	}
 
-	public static void handleInboxManagerUpdate() {}
-
-	public static void handleFriendReqApprove() {}
-
-	public static void handleFriendReqDeny() {}
-
-	public static void handleFriendReqDisabled() {}
-
-	public static void handleFriendAddReq() {}
-
-	public static void handleDemIsPlayerAcceptingReqs() {}
-
 	public static void handleDemIsPlayerWithinNetwork(Player p, ByteArrayDataInput in) {
 		String pe = in.readUTF();
 		if (runnables.containsKey(pe)) {
@@ -148,10 +136,6 @@ public class Handler {
 		player.sendMessage(ChatColor.RED + "This player is not online.");
 	}
 
-	public static void handleFriendReqAccept() {}
-
-	public static void handleFriendReqReject() {}
-
 	public static void handleInboxSend(Player p, ByteArrayDataInput in) {
 		String unsafe = in.readUTF();
 		Player player = Bukkit.getPlayer(unsafe);
@@ -163,8 +147,6 @@ public class Handler {
 		Sendable sender = InboxSerialization.stringToSender(in.readUTF(), user.getInbox());
 		user.getInbox().addSender(sender);
 	}
-
-	public static void handleShouldSendPackRes() {}
 
 	public static void handlePunishmentAddServer(Player p, ByteArrayDataInput in) {
 		String unsafe = in.readUTF();
